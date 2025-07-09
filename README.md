@@ -9,14 +9,17 @@
 ### Installation
 ```bash
 # 1. Clone repository
-git clone https://github.com/your-org/your-project.git
-cd your-project
+git clone https://github.com/rafaeljosebraga/SAGE.git
+cd SAGE
 
 # 2. Copy environment file
 cp .env.example .env
 
+# --IGNORAR ESSE PEDAÇO POR ENQUANTO--
 # 3. Generate app key (run inside container)
 ./vendor/bin/sail artisan key:generate
+# --IGNORAR ESSE PEDAÇO POR ENQUANTO--
+
 
 # 4. Build containers (first time only)
 ./vendor/bin/sail build --no-cache
