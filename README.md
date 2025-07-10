@@ -13,7 +13,7 @@ git clone https://github.com/rafaeljosebraga/SAGE.git
 cd SAGE
 
 # 2. Copy environment file
-cp .env.example .env
+#cp .env.example .env
 
 # --IGNORAR ESSE PEDAÇO POR ENQUANTO--
 # 3. Generate app key (run inside container)
