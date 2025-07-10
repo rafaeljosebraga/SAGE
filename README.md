@@ -36,3 +36,7 @@ cp .env.example .env
 
 # 8. Start frontend dev server
 ./vendor/bin/sail npm run dev
+
+
+#Adicional Boraver
+docker run --rm -v $(pwd):/app composer install --ignore-platform-reqs
