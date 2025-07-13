@@ -114,38 +114,38 @@
 }
 
 .dark {
-    --background: rgb(23, 41, 42);
-    --foreground: rgb(220, 225, 225);
-    --card: rgb(28, 49, 50);
-    --card-foreground: rgb(220, 225, 225);
-    --popover: rgb(28, 49, 50);
-    --popover-foreground: rgb(220, 225, 225);
-    --primary: rgb(76, 141, 143);
-    --primary-foreground: rgb(220, 225, 225);
-    --secondary: rgb(35, 61, 62);
-    --secondary-foreground: rgb(220, 225, 225);
-    --muted: rgb(35, 61, 62);
+    --background: rgb(14, 25, 26);
+    --foreground: rgb(240, 245, 245);
+    --card: rgb(20, 35, 36);
+    --card-foreground: rgb(240, 245, 245);
+    --popover: rgb(20, 35, 36);
+    --popover-foreground: rgb(240, 245, 245);
+    --primary: rgb(51, 89, 91);
+    --primary-foreground: rgb(240, 245, 245);
+    --secondary: rgb(25, 43, 44);
+    --secondary-foreground: rgb(240, 245, 245);
+    --muted: rgb(25, 43, 44);
     --muted-foreground: rgb(156, 167, 167);
-    --accent: rgb(47, 82, 83);
-    --accent-foreground: rgb(220, 225, 225);
-    --destructive: rgb(184, 71, 71);
-    --destructive-foreground: rgb(255, 220, 220);
-    --border: rgb(35, 61, 62);
-    --input: rgb(35, 61, 62);
-    --ring: rgb(76, 141, 143);
-    --chart-1: rgb(76, 141, 143);
-    --chart-2: rgb(143, 76, 76);
-    --chart-3: rgb(76, 143, 95);
-    --chart-4: rgb(143, 127, 76);
-    --chart-5: rgb(95, 76, 143);
-    --sidebar: rgb(28, 49, 50);
-    --sidebar-foreground: rgb(220, 225, 225);
-    --sidebar-primary: rgb(76, 141, 143);
-    --sidebar-primary-foreground: rgb(220, 225, 225);
-    --sidebar-accent: rgb(47, 82, 83);
-    --sidebar-accent-foreground: rgb(220, 225, 225);
-    --sidebar-border: rgb(35, 61, 62);
-    --sidebar-ring: rgb(76, 141, 143);
+    --accent: rgb(33, 57, 58);
+    --accent-foreground: rgb(240, 245, 245);
+    --destructive: rgb(153, 51, 51);
+    --destructive-foreground: rgb(255, 230, 230);
+    --border: rgb(25, 43, 44);
+    --input: rgb(25, 43, 44);
+    --ring: rgb(51, 89, 91);
+    --chart-1: rgb(51, 89, 91);
+    --chart-2: rgb(91, 51, 51);
+    --chart-3: rgb(51, 91, 64);
+    --chart-4: rgb(91, 82, 51);
+    --chart-5: rgb(64, 51, 91);
+    --sidebar: rgb(34, 51, 52);
+    --sidebar-foreground: rgb(240, 245, 245);
+    --sidebar-primary: rgb(51, 89, 91);
+    --sidebar-primary-foreground: rgb(240, 245, 245);
+    --sidebar-accent: rgb(33, 57, 58);
+    --sidebar-accent-foreground: rgb(240, 245, 245);
+    --sidebar-border: rgb(25, 43, 44);
+    --sidebar-ring: rgb(51, 89, 91);
 }
 
 @layer base {
