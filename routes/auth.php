@@ -53,4 +53,9 @@ Route::middleware('auth')->group(function () {
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
+
+    // Rota GET para logout que redireciona corretamente
+    Route::get('logout', function () {
+        return view('auth.logout-form');
+    });
 });
