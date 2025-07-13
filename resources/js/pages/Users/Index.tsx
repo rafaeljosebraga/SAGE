@@ -51,13 +51,13 @@ export default function UsersIndex({ auth, users }: UsersIndexProps) {
         
         switch (perfil.toLowerCase()) {
             case 'administrador':
-                return 'destructive'; // Vermelho para admin
+                return 'custom'; // Alterado de 'destructive' para 'custom'
             case 'diretor_geral':
-                return 'default'; // Azul escuro para diretor geral
+                return 'default';
             case 'coordenador':
-                return 'outline'; // Borda para coordenador
+                return 'outline';
             case 'servidores':
-                return 'secondary'; // Cinza para servidores
+                return 'secondary';
             default:
                 return 'secondary';
         }
@@ -73,8 +73,8 @@ export default function UsersIndex({ auth, users }: UsersIndexProps) {
 
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-3xl font-bold">Usuários</h1>
-                    <Button asChild>
+                    <h1 className="text-3xl font-bold text-gray-500">Usuários</h1>
+                    <Button asChild className="bg-[#D2CBB9] hover:bg-[#EF7D4C] text-black">
                         <Link href={route('users.create')}>
                             <Plus className="mr-2 h-4 w-4" />
                             Novo Usuário
@@ -102,7 +102,20 @@ export default function UsersIndex({ auth, users }: UsersIndexProps) {
                                         </TableCell>
                                         <TableCell>{user.email}</TableCell>
                                         <TableCell>
-                                            <Badge variant={getPerfilVariant(user.perfil_acesso)}>
+                                            <Badge 
+                                                variant={getPerfilVariant(user.perfil_acesso)}
+                                                className={
+                                                    user.perfil_acesso?.toLowerCase() === 'administrador' 
+                                                        ? 'bg-[#EF7D4C] hover:bg-[#f0875d] text-white border-transparent' 
+                                                        : user.perfil_acesso?.toLowerCase() === 'coordenador'
+                                                        ? 'bg-[#957157] hover:bg-[#856147] text-white border-transparent'
+                                                        : user.perfil_acesso?.toLowerCase() === 'diretor_geral'
+                                                        ? 'bg-[#F1DEC5] hover:bg-[#e5d2b9] text-gray-600 border-transparent'
+                                                        : user.perfil_acesso?.toLowerCase() === 'servidores'
+                                                        ? 'bg-[#285355] hover:bg-[#1d4446] text-white border-transparent'
+                                                        : ''
+                                                }
+                                            >
                                                 {formatPerfil(user.perfil_acesso)}
                                             </Badge>
                                         </TableCell>
@@ -125,7 +138,7 @@ export default function UsersIndex({ auth, users }: UsersIndexProps) {
                                                         <Button
                                                             variant="outline"
                                                             size="sm"
-                                                            className="text-red-600 hover:text-red-700"
+                                                            className="text-[#F26326] hover:text-[#e5724a]" 
                                                         >
                                                             <Trash2 className="h-4 w-4" />
                                                         </Button>
