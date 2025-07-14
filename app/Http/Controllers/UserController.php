@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -117,7 +118,7 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         try {
-            if ($user->id === auth()->id()) {
+            if ($user->id === Auth::id()) {
                 return back()->withErrors(['error' => 'Você não pode excluir sua própria conta.']);
             }
 

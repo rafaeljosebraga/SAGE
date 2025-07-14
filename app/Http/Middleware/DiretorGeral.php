@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
-class CanManageUsers
+class DiretorGeral
 {
     /**
      * Handle an incoming request.
@@ -18,8 +18,9 @@ class CanManageUsers
     public function handle(Request $request, Closure $next): Response
     {
         $user = Auth::user();
-        if (!$user || !($user instanceof User) || !$user->canManageUsers()) {
-            abort(403, 'Acesso negado. Você não tem permissão para gerenciar usuários.');
+        
+        if (!$user || !($user instanceof User) || !$user->isDiretorGeral()) {
+            abort(403, 'Acesso negado. Apenas Diretores Gerais podem acessar esta área.');
         }
 
         return $next($request);

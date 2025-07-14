@@ -16,3 +16,14 @@ export function useCanManageUsers() {
 
     return user.perfil_acesso === 'administrador';
 }
+
+export function useIsDiretorGeral() {
+    const auth = useAuth();
+    const user = auth?.user as User;
+
+    if (!user || !user.perfil_acesso) {
+        return false;
+    }
+
+    return user.perfil_acesso === 'diretor_geral';
+}
