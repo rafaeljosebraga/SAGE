@@ -23,16 +23,14 @@ interface EspacosCreateProps {
     };
     localizacoes: Localizacao[];
     recursos: Recurso[];
-    users: User[];
 }
 
-export default function EspacosCreate({ auth, localizacoes, recursos, users }: EspacosCreateProps) {
+export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosCreateProps) {
     const { data, setData, post, processing, errors } = useForm({
         nome: '',
         descricao: '',
         capacidade: '',
         localizacao_id: '',
-        responsavel_id: '',
         status: 'ativo',
         disponivel_reserva: true as boolean,
         recursos: [] as number[],
@@ -132,7 +130,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos, users }: E
                             <CardTitle>Configurações</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="localizacao_id">Localização *</Label>
                                     <Select
@@ -152,28 +150,6 @@ export default function EspacosCreate({ auth, localizacoes, recursos, users }: E
                                     </Select>
                                     {errors.localizacao_id && (
                                         <p className="text-sm text-red-500">{errors.localizacao_id}</p>
-                                    )}
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="responsavel_id">Responsável</Label>
-                                    <Select
-                                        value={data.responsavel_id}
-                                        onValueChange={(value) => setData('responsavel_id', value)}
-                                    >
-                                        <SelectTrigger className={errors.responsavel_id ? 'border-red-500' : ''}>
-                                            <SelectValue placeholder="Selecione um responsável" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {users.map((user) => (
-                                                <SelectItem key={user.id} value={user.id.toString()}>
-                                                    {user.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    {errors.responsavel_id && (
-                                        <p className="text-sm text-red-500">{errors.responsavel_id}</p>
                                     )}
                                 </div>
 
