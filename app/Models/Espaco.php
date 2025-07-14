@@ -16,7 +16,6 @@ class Espaco extends Model
         'descricao',
         'localizacao_id',
         'recursos_fixos',
-        'fotos',
         'status',
         'responsavel_id',
         'disponivel_reserva',
@@ -27,7 +26,6 @@ class Espaco extends Model
 
     protected $casts = [
         'recursos_fixos' => 'array',
-        'fotos' => 'array',
         'disponivel_reserva' => 'boolean',
         'capacidade' => 'integer',
     ];

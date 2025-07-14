@@ -390,64 +390,6 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                                 </div>
                             )}
 
-                            {/* Fotos */}
-                            <div className="bg-muted/30 p-4 rounded-lg border border-border">
-                                <label className="text-sm font-medium text-muted-foreground">Fotos do Espaço</label>
-                                {selectedEspaco.fotos && Array.isArray(selectedEspaco.fotos) && selectedEspaco.fotos.length > 0 ? (
-                                    <div className="mt-3 grid grid-cols-2 md:grid-cols-3 gap-3">
-                                        {selectedEspaco.fotos.map((foto, index) => {
-                                            // Garante que a URL seja absoluta
-                                            const fotoUrl = foto.startsWith('http') ? foto : `${window.location.origin}${foto}`;
-                                            
-                                            return (
-                                                <div key={index} className="relative group">
-                                                    <img 
-                                                        src={fotoUrl} 
-                                                        alt={`Foto ${index + 1} do espaço ${selectedEspaco.nome}`}
-                                                        className="w-full h-32 object-cover rounded-lg border border-border shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
-                                                        onError={(e) => {
-                                                            const target = e.target as HTMLImageElement;
-                                                            target.style.display = 'none';
-                                                            const parent = target.parentElement;
-                                                            if (parent) {
-                                                                parent.innerHTML = `
-                                                                    <div class="w-full h-32 bg-muted rounded-lg border border-border flex items-center justify-center">
-                                                                        <div class="text-center text-muted-foreground">
-                                                                            <svg class="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                                                            </svg>
-                                                                            <p class="text-xs">Imagem não encontrada</p>
-                                                                        </div>
-                                                                    </div>
-                                                                `;
-                                                            }
-                                                        }}
-                                                        onClick={() => {
-                                                            // Abre a imagem em uma nova aba para visualização completa
-                                                            window.open(fotoUrl, '_blank');
-                                                        }}
-                                                    />
-                                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-lg transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                                                        <div className="bg-white/90 dark:bg-black/90 rounded-full p-2">
-                                                            <Eye className="h-4 w-4 text-gray-700 dark:text-gray-300" />
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                ) : (
-                                    <div className="mt-3 flex items-center justify-center py-8 text-muted-foreground">
-                                        <div className="text-center">
-                                            <svg className="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                            </svg>
-                                            <p className="text-sm">Nenhuma foto disponível</p>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
                             {/* Informações de Auditoria */}
                             <div className="bg-muted/30 p-4 rounded-lg border border-border border-t">
                                 <h3 className="text-lg font-medium text-card-foreground mb-3">Informações de Auditoria</h3>

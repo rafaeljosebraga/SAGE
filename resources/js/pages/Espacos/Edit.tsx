@@ -12,7 +12,6 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { PhotoUpload } from '@/components/ui/photo-upload';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Save } from 'lucide-react';
 import { type User, type Localizacao, type Recurso, type Espaco, type BreadcrumbItem } from '@/types';
@@ -38,7 +37,6 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos, user
         status: espaco.status || 'ativo',
         disponivel_reserva: espaco.disponivel_reserva || false,
         recursos: espaco.recursos?.map(r => r.id) || [] as number[],
-        fotos: [] as File[],
     });
 
     const submit: FormEventHandler = (e) => {
@@ -243,72 +241,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos, user
                         </Card>
                     )}
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Fotos do Espaço</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            {/* Fotos Atuais */}
-                            {espaco.fotos && Array.isArray(espaco.fotos) && espaco.fotos.length > 0 && (
-                                <div>
-                                    <Label className="text-sm font-medium text-muted-foreground">Fotos Atuais</Label>
-                                    <div className="mt-2 grid grid-cols-2 md:grid-cols-4 gap-3">
-                                        {espaco.fotos.map((foto, index) => {
-                                            const fotoUrl = foto.startsWith('http') ? foto : `${window.location.origin}${foto}`;
-                                            
-                                            return (
-                                                <div key={index} className="relative group">
-                                                    <img 
-                                                        src={fotoUrl} 
-                                                        alt={`Foto ${index + 1} do espaço`}
-                                                        className="w-full h-24 object-cover rounded-lg border border-border shadow-sm cursor-pointer hover:shadow-md transition-shadow"
-                                                        onError={(e) => {
-                                                            const target = e.target as HTMLImageElement;
-                                                            target.style.display = 'none';
-                                                            const parent = target.parentElement;
-                                                            if (parent) {
-                                                                parent.innerHTML = `
-                                                                    <div class="w-full h-24 bg-muted rounded-lg border border-border flex items-center justify-center">
-                                                                        <div class="text-center text-muted-foreground">
-                                                                            <svg class="w-6 h-6 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                                                            </svg>
-                                                                            <p class="text-xs">Erro</p>
-                                                                        </div>
-                                                                    </div>
-                                                                `;
-                                                            }
-                                                        }}
-                                                        onClick={() => {
-                                                            // Abre a imagem em uma nova aba para visualização completa
-                                                            window.open(fotoUrl, '_blank');
-                                                        }}
-                                                    />
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Upload de Novas Fotos */}
-                            <div>
-                                <PhotoUpload
-                                    value={data.fotos}
-                                    onChange={(files) => setData('fotos', files)}
-                                    maxFiles={10}
-                                    maxFileSize={5}
-                                    label="Substituir Fotos"
-                                    description="Selecione novas fotos para substituir as atuais (opcional)"
-                                    error={errors.fotos}
-                                />
-                                <p className="text-xs text-muted-foreground mt-2">
-                                    ⚠️ Ao selecionar novas fotos, todas as fotos atuais serão substituídas.
-                                </p>
-                            </div>
-                        </CardContent>
-                    </Card>
-
+                    
                     <div className="flex items-center gap-4">
                         <Button
                             type="submit"

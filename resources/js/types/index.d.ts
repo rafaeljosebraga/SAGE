@@ -81,7 +81,6 @@ export interface Espaco {
     descricao?: string;
     localizacao_id?: number;
     recursos_fixos?: any[];
-    fotos?: string[];
     status: 'ativo' | 'inativo' | 'manutencao';
     responsavel_id?: number;
     disponivel_reserva: boolean;
