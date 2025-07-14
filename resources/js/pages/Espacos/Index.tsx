@@ -2,7 +2,7 @@ import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Head, Link, router } from '@inertiajs/react';
-import { Plus, Pencil, Trash2, MapPin, Users } from 'lucide-react';
+import { Plus, Pencil, Trash2, MapPin, Users, Eye, X } from 'lucide-react';
 import { type User, type Espaco, type BreadcrumbItem } from '@/types';
 import { FilterableTable, type ColumnConfig } from '@/components/ui/filterable-table';
 import {
@@ -16,6 +16,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { useState } from 'react';
 
 interface EspacosIndexProps {
     auth: {
@@ -25,8 +26,31 @@ interface EspacosIndexProps {
 }
 
 export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
+    const [selectedEspaco, setSelectedEspaco] = useState<Espaco | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
     const handleDelete = (id: number) => {
         router.delete(`/espacos/${id}`);
+    };
+
+    const handleViewDetails = (espaco: Espaco) => {
+        setSelectedEspaco(espaco);
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setSelectedEspaco(null);
+    };
+
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
     };
 
     const getStatusVariant = (status: string) => {
@@ -153,6 +177,14 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                     <Button
                         variant="outline"
                         size="sm"
+                        onClick={() => handleViewDetails(espaco)}
+                        className="text-blue-600 hover:text-blue-700"
+                    >
+                        <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
                         asChild
                     >
                         <Link href={`/espacos/${espaco.id}/edit`}>
@@ -226,6 +258,198 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                     emptyMessage="Nenhum espaço encontrado."
                 />
             </div>
+
+            {/* Modal de Detalhes do Espaço */}
+            {isModalOpen && selectedEspaco && (
+                <div 
+                    className="fixed inset-0 bg-black/30 dark:bg-black/50 flex items-center justify-center z-50"
+                    onClick={closeModal}
+                >
+                    <div 
+                        className="bg-card border border-border rounded-xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Header do Modal */}
+                        <div className="flex items-center justify-between p-6 border-b border-border bg-card flex-shrink-0">
+                            <h2 className="text-2xl font-bold text-card-foreground">
+                                Detalhes do Espaço
+                            </h2>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={closeModal}
+                                className="text-muted-foreground hover:text-card-foreground rounded-lg"
+                            >
+                                <X className="h-5 w-5" />
+                            </Button>
+                        </div>
+
+                        {/* Conteúdo do Modal */}
+                        <div className="p-6 space-y-6 overflow-y-auto flex-1 bg-card">
+                            {/* Informações Básicas */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                                    <label className="text-sm font-medium text-muted-foreground">Nome</label>
+                                    <p className="text-lg font-semibold text-card-foreground mt-1">{selectedEspaco.nome}</p>
+                                </div>
+                                <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                                    <label className="text-sm font-medium text-muted-foreground">ID</label>
+                                    <p className="text-lg text-card-foreground mt-1">#{selectedEspaco.id}</p>
+                                </div>
+                            </div>
+
+                            {/* Capacidade e Status */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                                    <label className="text-sm font-medium text-muted-foreground">Capacidade</label>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <Users className="h-5 w-5 text-muted-foreground" />
+                                        <p className="text-lg text-card-foreground">{selectedEspaco.capacidade} pessoas</p>
+                                    </div>
+                                </div>
+                                <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                                    <label className="text-sm font-medium text-muted-foreground">Status</label>
+                                    <div className="mt-1">
+                                        <Badge 
+                                            variant={getStatusVariant(selectedEspaco.status)}
+                                            className={`${getStatusColor(selectedEspaco.status)} text-sm rounded-full`}
+                                        >
+                                            {formatStatus(selectedEspaco.status)}
+                                        </Badge>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Localização e Responsável */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                                    <label className="text-sm font-medium text-muted-foreground">Localização</label>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <MapPin className="h-5 w-5 text-muted-foreground" />
+                                        <p className="text-lg text-card-foreground">
+                                            {selectedEspaco.localizacao?.nome || 'Não definida'}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                                    <label className="text-sm font-medium text-muted-foreground">Responsável</label>
+                                    <p className="text-lg text-card-foreground mt-1">
+                                        {selectedEspaco.responsavel?.name || 'Não definido'}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Disponibilidade para Reserva */}
+                            <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                                <label className="text-sm font-medium text-muted-foreground">Disponível para Reserva</label>
+                                <div className="mt-1">
+                                    <Badge 
+                                        variant={selectedEspaco.disponivel_reserva ? 'default' : 'secondary'}
+                                        className={`text-sm rounded-full ${
+                                            selectedEspaco.disponivel_reserva 
+                                                ? 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800' 
+                                                : 'bg-muted text-muted-foreground border-border'
+                                        }`}
+                                    >
+                                        {selectedEspaco.disponivel_reserva ? 'Sim' : 'Não'}
+                                    </Badge>
+                                </div>
+                            </div>
+
+                            {/* Descrição */}
+                            {selectedEspaco.descricao && (
+                                <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                                    <label className="text-sm font-medium text-muted-foreground">Descrição</label>
+                                    <p className="text-card-foreground mt-1 leading-relaxed">{selectedEspaco.descricao}</p>
+                                </div>
+                            )}
+
+                            {/* Observações */}
+                            {selectedEspaco.observacoes && (
+                                <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                                    <label className="text-sm font-medium text-muted-foreground">Observações</label>
+                                    <p className="text-card-foreground mt-1 leading-relaxed">{selectedEspaco.observacoes}</p>
+                                </div>
+                            )}
+
+                            {/* Recursos */}
+                            {selectedEspaco.recursos && selectedEspaco.recursos.length > 0 && (
+                                <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                                    <label className="text-sm font-medium text-muted-foreground">Recursos Disponíveis</label>
+                                    <div className="mt-2 flex flex-wrap gap-2">
+                                        {selectedEspaco.recursos.map((recurso) => (
+                                            <Badge 
+                                                key={recurso.id} 
+                                                variant="outline"
+                                                className="text-sm rounded-full border-border text-card-foreground"
+                                            >
+                                                {recurso.nome}
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Fotos */}
+                            {selectedEspaco.fotos && selectedEspaco.fotos.length > 0 && (
+                                <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                                    <label className="text-sm font-medium text-muted-foreground">Fotos</label>
+                                    <div className="mt-2 grid grid-cols-2 md:grid-cols-3 gap-3">
+                                        {selectedEspaco.fotos.map((foto, index) => (
+                                            <img 
+                                                key={index}
+                                                src={foto} 
+                                                alt={`Foto ${index + 1} do espaço`}
+                                                className="w-full h-24 object-cover rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow"
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Informações de Auditoria */}
+                            <div className="bg-muted/30 p-4 rounded-lg border border-border border-t">
+                                <h3 className="text-lg font-medium text-card-foreground mb-3">Informações de Auditoria</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                    <div className="bg-background/50 p-3 rounded-md border border-border">
+                                        <label className="text-muted-foreground font-medium">Criado em</label>
+                                        <p className="text-card-foreground mt-1">{formatDate(selectedEspaco.created_at)}</p>
+                                    </div>
+                                    <div className="bg-background/50 p-3 rounded-md border border-border">
+                                        <label className="text-muted-foreground font-medium">Atualizado em</label>
+                                        <p className="text-card-foreground mt-1">{formatDate(selectedEspaco.updated_at)}</p>
+                                    </div>
+                                    {selectedEspaco.createdBy && (
+                                        <div className="bg-background/50 p-3 rounded-md border border-border">
+                                            <label className="text-muted-foreground font-medium">Criado por</label>
+                                            <p className="text-card-foreground mt-1">{selectedEspaco.createdBy.name}</p>
+                                        </div>
+                                    )}
+                                    {selectedEspaco.updatedBy && (
+                                        <div className="bg-background/50 p-3 rounded-md border border-border">
+                                            <label className="text-muted-foreground font-medium">Atualizado por</label>
+                                            <p className="text-card-foreground mt-1">{selectedEspaco.updatedBy.name}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Footer do Modal */}
+                        <div className="flex justify-end gap-3 p-6 border-t border-border bg-muted/20 flex-shrink-0">
+                            <Button
+                                asChild
+                                className="bg-[#D2CBB9] hover:bg-[#EF7D4C] text-black rounded-lg"
+                            >
+                                <Link href={`/espacos/${selectedEspaco.id}/edit`}>
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    Editar
+                                </Link>
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </AppLayout>
     );
 }
