@@ -126,6 +126,7 @@ export default function UsersIndex({ auth, users }: UsersIndexProps) {
                         variant="outline"
                         size="sm"
                         asChild
+                        className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black"
                     >
                         <Link href={`/users/${user.id}/edit`}>
                             <Pencil className="h-4 w-4" />
@@ -136,7 +137,7 @@ export default function UsersIndex({ auth, users }: UsersIndexProps) {
                             <Button
                                 variant="outline"
                                 size="sm"
-                                className="text-[#F26326] hover:text-[#e5724a]" 
+                               className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-[#F26326] hover:text-black dark:text-[#F26326] dark:hover:text-black"
                             >
                                 <Trash2 className="h-4 w-4" />
                             </Button>
@@ -180,7 +181,7 @@ export default function UsersIndex({ auth, users }: UsersIndexProps) {
             <div className="space-y-6">
                    <div className="flex items-center justify-between px-6 py-4">
         <h1 className="text-3xl font-bold text-black dark:text-white">Usuários</h1>
-     <Button asChild className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black">
+    <Button asChild className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black">
             <Link href={route('users.create')}>
                 <Plus className="mr-2 h-4 w-4" />
                 Novo Usuário
