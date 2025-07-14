@@ -16,7 +16,7 @@ return new class extends Migration
                 ->constrained("espacos")
                 ->onDelete("cascade");
             $table->foreignId("user_id")
-                ->constrained("user")
+                ->constrained("users")
                 ->onDelete("cascade");
             $table->primary(['espaco_id', 'user_id']); // composite key
         });
