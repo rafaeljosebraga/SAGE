@@ -30,7 +30,7 @@ class AdminUserSeeder extends Seeder
         User::updateOrCreate(
             ['email' => 'admin@sage.com'],
             [
-                'name' => 'Administrador Sistema',
+                'name' => 'Administrador do Sistema',
                 'email' => 'admin@sage.com',
                 'perfil_acesso' => 'administrador',
                 'password' => Hash::make('admin123'),
