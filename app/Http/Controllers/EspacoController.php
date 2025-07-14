@@ -8,9 +8,11 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Espaco;
 use App\Models\Localizacao;
 use App\Models\Recurso;
+use App\Traits\ManipulaFotos;
 
 class EspacoController extends Controller
 {
+    use ManipulaFotos;
     /**
      * Display a listing of the resource.
      */
@@ -49,11 +51,19 @@ class EspacoController extends Controller
             'localizacao_id' => 'nullable|exists:localizacoes,id',
             'recursos_fixos' => 'nullable|array',
             'fotos' => 'nullable|array',
+            'fotos.*' => 'image|mimes:jpeg,jpg,png,webp|max:5120', // 5MB max por foto
             'status' => 'required|in:ativo,inativo,manutencao',
             'responsavel_id' => 'nullable|exists:users,id',
             'disponivel_reserva' => 'sometimes|boolean',
             'observacoes' => 'nullable|string',
         ]);
+
+        // Processa upload das fotos usando método reutilizável
+        if ($request->hasFile('fotos')) {
+            $data['fotos'] = $this->uploadFotos($request->file('fotos'), 'espacos/fotos');
+        } else {
+            $data['fotos'] = [];
+        }
 
         // Adiciona campos de auditoria
         $data['created_by'] = Auth::id();
@@ -114,11 +124,23 @@ class EspacoController extends Controller
             'localizacao_id' => 'nullable|exists:localizacoes,id',
             'recursos_fixos' => 'nullable|array',
             'fotos' => 'nullable|array',
+            'fotos.*' => 'image|mimes:jpeg,jpg,png,webp|max:5120', // 5MB max por foto
             'status' => 'required|in:ativo,inativo,manutencao',
             'responsavel_id' => 'nullable|exists:users,id',
             'disponivel_reserva' => 'sometimes|boolean',
             'observacoes' => 'nullable|string',
         ]);
+
+        // Se novas fotos foram enviadas, processa o upload
+        if ($request->hasFile('fotos')) {
+            // Remove fotos antigas se existirem
+            if ($espaco->fotos) {
+                $this->removerFotos($espaco->fotos);
+            }
+            
+            // Faz upload das novas fotos
+            $data['fotos'] = $this->uploadFotos($request->file('fotos'), 'espacos/fotos');
+        }
 
         // Adiciona campo de auditoria para atualização
         $data['updated_by'] = Auth::id();
@@ -139,6 +161,12 @@ class EspacoController extends Controller
     public function destroy($id)
     {
         $espaco = Espaco::findOrFail($id);
+        
+        // Remove fotos associadas antes de deletar o espaço
+        if ($espaco->fotos) {
+            $this->removerFotos($espaco->fotos);
+        }
+        
         $espaco->delete();
         return redirect()->route('espacos.index')->with('success', 'Espaço removido com sucesso!');
     }

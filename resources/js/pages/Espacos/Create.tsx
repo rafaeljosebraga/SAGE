@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PhotoUpload } from '@/components/ui/photo-upload';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Save } from 'lucide-react';
 import { type User, type Localizacao, type Recurso, type BreadcrumbItem } from '@/types';
@@ -34,6 +35,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
         status: 'ativo',
         disponivel_reserva: true as boolean,
         recursos: [] as number[],
+        fotos: [] as File[],
     });
 
     const submit: FormEventHandler = (e) => {
@@ -215,6 +217,23 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                             </CardContent>
                         </Card>
                     )}
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Fotos do Espaço</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <PhotoUpload
+                                value={data.fotos}
+                                onChange={(files) => setData('fotos', files)}
+                                maxFiles={10}
+                                maxFileSize={5}
+                                label=""
+                                description="Adicione fotos do espaço para melhor visualização"
+                                error={errors.fotos}
+                            />
+                        </CardContent>
+                    </Card>
 
                     <div className="flex items-center gap-4">
                         <Button
