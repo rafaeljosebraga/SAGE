@@ -178,18 +178,14 @@ export default function UsersIndex({ auth, users }: UsersIndexProps) {
             <Head title="Usuários" />
 
             <div className="space-y-6">
-                <div className="flex items-center justify-between px-1">
-                    <div className="flex-1">
-                        <h1 className="text-3xl font-bold text-gray-500">Usuários</h1>
-                    </div>
-                    <div className="flex-shrink-0">
-                        <Button asChild className="bg-[#D2CBB9] hover:bg-[#EF7D4C] text-black">
-                            <Link href="/users/create">
-                                <Plus className="mr-2 h-4 w-4" />
-                                Novo Usuário
-                            </Link>
-                        </Button>
-                    </div>
+                <div className="flex items-center justify-between px-6 py-4"> {}
+                    <h1 className="text-3xl font-bold text-white">Usuários</h1>
+                    <Button asChild className="bg-[#D2CBB9] hover:bg-[#EF7D4C] text-black">
+                        <Link href={route('users.create')}>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Novo Usuário
+                        </Link>
+                    </Button>
                 </div>
 
                 <FilterableTable 

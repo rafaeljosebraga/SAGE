@@ -46,16 +46,16 @@ source ~/.bashrc
 # Atualizar Projeto para o gerenciar usuário
 
 ```bash
- Executar Migrações
+# Executar Migrações
 ./vendor/bin/sail artisan migrate
 
-Recriar Usuários com Novos Perfis
+# Recriar Usuários com Novos Perfis
 ./vendor/bin/sail artisan db:seed --class=AdminUserSeeder
 
-Compilar Frontend
-npm run build
+# Compilar Frontend
+npm run dev
 
-Limpar Cache
+# Limpar Cache
 ./vendor/bin/sail artisan cache:clear
 ./vendor/bin/sail artisan config:clear
 ./vendor/bin/sail artisan view:clear
