@@ -96,7 +96,7 @@ export default function RecursosIndex({ auth, recursos }: RecursosIndexProps) {
             key: 'marca_modelo',
             label: 'Marca/Modelo',
             getValue: (recurso) => {
-                return recurso.marca && recurso.modelo 
+                return recurso.marca && recurso.modelo
                     ? `${recurso.marca} - ${recurso.modelo}`
                     : recurso.marca || recurso.modelo || 'Não informado';
             }
@@ -111,7 +111,7 @@ export default function RecursosIndex({ auth, recursos }: RecursosIndexProps) {
                 { value: 'indisponivel', label: 'Indisponível' }
             ],
             render: (value, recurso) => (
-                <Badge 
+                <Badge
                     variant={getStatusVariant(recurso.status)}
                     className={`${getStatusColor(recurso.status)} flex items-center gap-1 w-fit`}
                 >
@@ -130,28 +130,17 @@ export default function RecursosIndex({ auth, recursos }: RecursosIndexProps) {
             ],
             getValue: (recurso) => recurso.fixo ? 'true' : 'false',
             render: (value, recurso) => (
-                <Badge 
+                <Badge
                     variant={recurso.fixo ? 'default' : 'outline'}
                     className={
-                        recurso.fixo 
-                            ? 'bg-blue-100 text-blue-800 border-blue-200' 
+                        recurso.fixo
+                            ? 'bg-blue-100 text-blue-800 border-blue-200'
                             : 'bg-gray-100 text-gray-800 border-gray-200'
                     }
                 >
                     {recurso.fixo ? 'Fixo' : 'Móvel'}
                 </Badge>
             )
-        },
-        {
-            key: 'createdBy.name',
-            label: 'Criado por',
-            getValue: (recurso) => recurso.createdBy?.name || 'Sistema'
-        },
-        {
-            key: 'created_at',
-            label: 'Criado em',
-            type: 'date',
-            getValue: (recurso) => new Date(recurso.created_at).toLocaleDateString('pt-BR')
         },
         {
             key: 'acoes',
@@ -174,7 +163,7 @@ export default function RecursosIndex({ auth, recursos }: RecursosIndexProps) {
                             <Button
                                 variant="outline"
                                 size="sm"
-                                className="text-[#F26326] hover:text-[#e5724a]" 
+                                className="text-[#F26326] hover:text-[#e5724a]"
                             >
                                 <Trash2 className="h-4 w-4" />
                             </Button>
@@ -185,7 +174,7 @@ export default function RecursosIndex({ auth, recursos }: RecursosIndexProps) {
                                     Confirmar exclusão
                                 </AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    Tem certeza que deseja excluir o recurso {recurso.nome}? 
+                                    Tem certeza que deseja excluir o recurso {recurso.nome}?
                                     Esta ação não pode ser desfeita e pode afetar espaços vinculados.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
@@ -230,7 +219,7 @@ export default function RecursosIndex({ auth, recursos }: RecursosIndexProps) {
                     </div>
                 </div>
 
-                <FilterableTable 
+                <FilterableTable
                     data={recursos}
                     columns={columns}
                     emptyMessage="Nenhum recurso encontrado."

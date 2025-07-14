@@ -45,17 +45,6 @@ export default function LocalizacoesIndex({ auth, localizacoes }: LocalizacoesIn
             getValue: (localizacao) => localizacao.descricao || 'Sem descrição'
         },
         {
-            key: 'createdBy.name',
-            label: 'Criado por',
-            getValue: (localizacao) => localizacao.createdBy?.name || 'Sistema'
-        },
-        {
-            key: 'created_at',
-            label: 'Criado em',
-            type: 'date',
-            getValue: (localizacao) => new Date(localizacao.created_at).toLocaleDateString('pt-BR')
-        },
-        {
             key: 'acoes',
             label: 'Ações',
             searchable: false,
@@ -76,7 +65,7 @@ export default function LocalizacoesIndex({ auth, localizacoes }: LocalizacoesIn
                             <Button
                                 variant="outline"
                                 size="sm"
-                                className="text-[#F26326] hover:text-[#e5724a]" 
+                                className="text-[#F26326] hover:text-[#e5724a]"
                             >
                                 <Trash2 className="h-4 w-4" />
                             </Button>
@@ -87,7 +76,7 @@ export default function LocalizacoesIndex({ auth, localizacoes }: LocalizacoesIn
                                     Confirmar exclusão
                                 </AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    Tem certeza que deseja excluir a localização {localizacao.nome}? 
+                                    Tem certeza que deseja excluir a localização {localizacao.nome}?
                                     Esta ação não pode ser desfeita e pode afetar espaços vinculados.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
@@ -132,7 +121,7 @@ export default function LocalizacoesIndex({ auth, localizacoes }: LocalizacoesIn
                     </div>
                 </div>
 
-                <FilterableTable 
+                <FilterableTable
                     data={localizacoes}
                     columns={columns}
                     emptyMessage="Nenhuma localização encontrada."
