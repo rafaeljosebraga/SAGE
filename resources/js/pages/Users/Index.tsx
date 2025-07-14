@@ -184,9 +184,12 @@ export default function UsersIndex({ auth, users }: UsersIndexProps) {
                     </Table>
                 </div>
 
+
+
+
                 {users.last_page > 1 && (
-                    <div className="flex items-center justify-between">
-                        <p className="text-sm text-gray-700">
+                    <div className="flex items-center justify-between ">
+                        <p className="text-sm text-gray-700 px-6">
                             Mostrando {users.data.length} de {users.total} usuários
                         </p>
                         <div className="flex gap-2">
