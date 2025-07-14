@@ -178,15 +178,15 @@ export default function UsersIndex({ auth, users }: UsersIndexProps) {
             <Head title="Usuários" />
 
             <div className="space-y-6">
-                <div className="flex items-center justify-between px-6 py-4"> {}
-                    <h1 className="text-3xl font-bold text-white">Usuários</h1>
-                    <Button asChild className="bg-[#D2CBB9] hover:bg-[#EF7D4C] text-black">
-                        <Link href={route('users.create')}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Novo Usuário
-                        </Link>
-                    </Button>
-                </div>
+                   <div className="flex items-center justify-between px-6 py-4">
+        <h1 className="text-3xl font-bold text-black dark:text-white">Usuários</h1>
+     <Button asChild className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black">
+            <Link href={route('users.create')}>
+                <Plus className="mr-2 h-4 w-4" />
+                Novo Usuário
+            </Link>
+        </Button>
+    </div>
 
                 <FilterableTable 
                     data={users.data}
@@ -194,9 +194,12 @@ export default function UsersIndex({ auth, users }: UsersIndexProps) {
                     emptyMessage="Nenhum usuário encontrado."
                 />
 
+
+
+
                 {users.last_page > 1 && (
-                    <div className="flex items-center justify-between">
-                        <p className="text-sm text-gray-700">
+                    <div className="flex items-center justify-between ">
+                        <p className="text-sm text-gray-700 px-6">
                             Mostrando {users.data.length} de {users.total} usuários
                         </p>
                         <div className="flex gap-2">
