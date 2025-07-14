@@ -41,3 +41,22 @@ docker run --rm -v $(pwd):/app composer install --ignore-platform-reqs
 echo $SHELL
 echo "alias sail='sh $([ -f sail ] && echo sail || echo vendor/bin/sail)'" >> ~/.bashrc
 source ~/.bashrc
+```
+
+# Atualizar Projeto para o gerenciar usuário
+
+```bash
+# Executar Migrações
+./vendor/bin/sail artisan migrate
+
+# Recriar Usuários com Novos Perfis
+./vendor/bin/sail artisan db:seed --class=AdminUserSeeder
+
+# Compilar Frontend
+npm run dev
+
+# Limpar Cache
+./vendor/bin/sail artisan cache:clear
+./vendor/bin/sail artisan config:clear
+./vendor/bin/sail artisan view:clear
+```

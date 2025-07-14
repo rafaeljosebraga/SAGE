@@ -21,6 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'perfil_acesso',
     ];
 
     /**
@@ -44,5 +45,43 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Verifica se o usuário é diretor geral
+     */
+    public function isDiretorGeral(): bool
+    {
+        return $this->perfil_acesso === 'diretor_geral';
+    }
+
+    /**
+     * Verifica se o usuário é administrador
+     */
+    public function isAdministrador(): bool
+    {
+        return $this->perfil_acesso === 'administrador';
+    }
+
+    /**
+     * Verifica se o usuário tem permissão para gerenciar usuários
+     */
+    public function canManageUsers(): bool
+    {
+        return $this->perfil_acesso === 'administrador';
+    }
+
+    /**
+     * Retorna o nome formatado do perfil de acesso do usuário
+     */
+    public function getPerfilAcessoNameAttribute(): string
+    {
+        return match($this->perfil_acesso) {
+            'administrador' => 'Administrador',
+            'diretor_geral' => 'Diretor Geral',
+            'coordenador' => 'Coordenador',
+            'servidores' => 'Servidores',
+            default => 'Servidores'
+        };
     }
 }
