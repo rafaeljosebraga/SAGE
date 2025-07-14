@@ -205,9 +205,9 @@ export default function RecursosIndex({ auth, recursos }: RecursosIndexProps) {
             <Head title="Recursos" />
 
             <div className="space-y-6">
-                <div className="flex items-center justify-between px-1">
+                <div className="flex items-center justify-between px-6 py-4">
                     <div className="flex-1">
-                        <h1 className="text-3xl font-bold text-gray-500">Recursos</h1>
+                   <h1 className="text-3xl font-bold text-black dark:text-white">Recursos</h1>
                     </div>
                     <div className="flex-shrink-0">
                         <Button asChild className="bg-[#D2CBB9] hover:bg-[#EF7D4C] text-black">
