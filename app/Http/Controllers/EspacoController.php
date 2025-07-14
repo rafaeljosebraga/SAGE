@@ -29,7 +29,7 @@ class EspacoController extends Controller
         $localizacoes = Localizacao::all();
         $recursos = Recurso::all();
         $users = \App\Models\User::all();
-        
+
         return inertia('Espacos/Create', [
             'localizacoes' => $localizacoes,
             'recursos' => $recursos,
@@ -57,7 +57,7 @@ class EspacoController extends Controller
         // Adiciona campos de auditoria
         $data['created_by'] = Auth::id();
         $data['updated_by'] = Auth::id();
-        
+
         // Define valor padrão para disponivel_reserva se não foi enviado
         if (!isset($data['disponivel_reserva'])) {
             $data['disponivel_reserva'] = true;
@@ -92,7 +92,7 @@ class EspacoController extends Controller
             $localizacoes = Localizacao::all();
             $recursos = Recurso::all();
             $users = \App\Models\User::all();
-            
+
             return inertia('Espacos/Edit', [
                 'espaco' => $espaco,
                 'localizacoes' => $localizacoes,
