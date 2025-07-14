@@ -1,19 +1,10 @@
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Head, Link, router } from '@inertiajs/react';
-import { Plus, Pencil, Trash2, Package, CheckCircle, XCircle, AlertTriangle, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, Package, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import { type User, type Recurso, type BreadcrumbItem } from '@/types';
-import { useState, useMemo } from 'react';
+import { FilterableTable, type ColumnConfig } from '@/components/ui/filterable-table';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -34,36 +25,9 @@ interface RecursosIndexProps {
 }
 
 export default function RecursosIndex({ auth, recursos }: RecursosIndexProps) {
-    const [searchTerm, setSearchTerm] = useState('');
-
     const handleDelete = (id: number) => {
-        router.delete(route('recursos.destroy', id));
+        router.delete(`/recursos/${id}`);
     };
-
-    // Filtrar recursos baseado no termo de busca
-    const filteredRecursos = useMemo(() => {
-        if (!searchTerm.trim()) {
-            return recursos;
-        }
-
-        const term = searchTerm.toLowerCase();
-        return recursos.filter((recurso) => {
-            const marcaModelo = recurso.marca && recurso.modelo
-                ? `${recurso.marca} - ${recurso.modelo}`
-                : recurso.marca || recurso.modelo || '';
-            
-            return (
-                recurso.nome.toLowerCase().includes(term) ||
-                marcaModelo.toLowerCase().includes(term) ||
-                recurso.status.toLowerCase().includes(term) ||
-                (recurso.fixo ? 'fixo' : 'móvel').includes(term) ||
-                (recurso.createdBy?.name || '').toLowerCase().includes(term) ||
-                (recurso.descricao || '').toLowerCase().includes(term) ||
-                (recurso.observacoes || '').toLowerCase().includes(term) ||
-                new Date(recurso.created_at).toLocaleDateString('pt-BR').includes(term)
-            );
-        });
-    }, [recursos, searchTerm]);
 
     const getStatusVariant = (status: string) => {
         switch (status.toLowerCase()) {
@@ -117,8 +81,134 @@ export default function RecursosIndex({ auth, recursos }: RecursosIndexProps) {
         }
     };
 
+    const columns: ColumnConfig[] = [
+        {
+            key: 'nome',
+            label: 'Nome',
+            render: (value, recurso) => (
+                <div className="flex items-center gap-2 font-medium">
+                    <Package className="h-4 w-4 text-gray-500" />
+                    {value}
+                </div>
+            )
+        },
+        {
+            key: 'marca_modelo',
+            label: 'Marca/Modelo',
+            getValue: (recurso) => {
+                return recurso.marca && recurso.modelo 
+                    ? `${recurso.marca} - ${recurso.modelo}`
+                    : recurso.marca || recurso.modelo || 'Não informado';
+            }
+        },
+        {
+            key: 'status',
+            label: 'Status',
+            type: 'select',
+            options: [
+                { value: 'disponivel', label: 'Disponível' },
+                { value: 'manutencao', label: 'Manutenção' },
+                { value: 'indisponivel', label: 'Indisponível' }
+            ],
+            render: (value, recurso) => (
+                <Badge 
+                    variant={getStatusVariant(recurso.status)}
+                    className={`${getStatusColor(recurso.status)} flex items-center gap-1 w-fit`}
+                >
+                    {getStatusIcon(recurso.status)}
+                    {formatStatus(recurso.status)}
+                </Badge>
+            )
+        },
+        {
+            key: 'tipo',
+            label: 'Tipo',
+            type: 'select',
+            options: [
+                { value: 'true', label: 'Fixo' },
+                { value: 'false', label: 'Móvel' }
+            ],
+            getValue: (recurso) => recurso.fixo ? 'true' : 'false',
+            render: (value, recurso) => (
+                <Badge 
+                    variant={recurso.fixo ? 'default' : 'outline'}
+                    className={
+                        recurso.fixo 
+                            ? 'bg-blue-100 text-blue-800 border-blue-200' 
+                            : 'bg-gray-100 text-gray-800 border-gray-200'
+                    }
+                >
+                    {recurso.fixo ? 'Fixo' : 'Móvel'}
+                </Badge>
+            )
+        },
+        {
+            key: 'createdBy.name',
+            label: 'Criado por',
+            getValue: (recurso) => recurso.createdBy?.name || 'Sistema'
+        },
+        {
+            key: 'created_at',
+            label: 'Criado em',
+            type: 'date',
+            getValue: (recurso) => new Date(recurso.created_at).toLocaleDateString('pt-BR')
+        },
+        {
+            key: 'acoes',
+            label: 'Ações',
+            searchable: false,
+            sortable: false,
+            render: (value, recurso) => (
+                <div className="flex items-center justify-center gap-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        asChild
+                    >
+                        <Link href={`/recursos/${recurso.id}/edit`}>
+                            <Pencil className="h-4 w-4" />
+                        </Link>
+                    </Button>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-[#F26326] hover:text-[#e5724a]" 
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                    Confirmar exclusão
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Tem certeza que deseja excluir o recurso {recurso.nome}? 
+                                    Esta ação não pode ser desfeita e pode afetar espaços vinculados.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>
+                                    Cancelar
+                                </AlertDialogCancel>
+                                <AlertDialogAction
+                                    onClick={() => handleDelete(recurso.id)}
+                                    className="bg-red-600 hover:bg-red-700"
+                                >
+                                    Excluir
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </div>
+            )
+        }
+    ];
+
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Recursos', href: route('recursos.index') }
+        { title: 'Recursos', href: '/recursos' }
     ];
 
     return (
@@ -126,159 +216,25 @@ export default function RecursosIndex({ auth, recursos }: RecursosIndexProps) {
             <Head title="Recursos" />
 
             <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                    <h1 className="text-3xl font-bold text-gray-500">Recursos</h1>
-                    <Button asChild className="bg-[#D2CBB9] hover:bg-[#EF7D4C] text-black">
-                        <Link href={route('recursos.create')}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Novo Recurso
-                        </Link>
-                    </Button>
-                </div>
-
-                {/* Barra de Busca */}
-                <div className="flex items-center space-x-2">
-                    <div className="relative flex-1 max-w-sm">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                        <Input
-                            type="text"
-                            placeholder="Buscar recursos..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-10"
-                        />
+                <div className="flex items-center justify-between px-1">
+                    <div className="flex-1">
+                        <h1 className="text-3xl font-bold text-gray-500">Recursos</h1>
                     </div>
-                    {searchTerm && (
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setSearchTerm('')}
-                        >
-                            Limpar
+                    <div className="flex-shrink-0">
+                        <Button asChild className="bg-[#D2CBB9] hover:bg-[#EF7D4C] text-black">
+                            <Link href="/recursos/create">
+                                <Plus className="mr-2 h-4 w-4" />
+                                Novo Recurso
+                            </Link>
                         </Button>
-                    )}
+                    </div>
                 </div>
 
-                <div className="rounded-md border">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Nome</TableHead>
-                                <TableHead>Marca/Modelo</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Tipo</TableHead>
-                                <TableHead>Criado por</TableHead>
-                                <TableHead>Criado em</TableHead>
-                                <TableHead className="text-center">Ações</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {filteredRecursos.length > 0 ? (
-                                filteredRecursos.map((recurso) => (
-                                    <TableRow key={recurso.id}>
-                                        <TableCell className="font-medium">
-                                            <div className="flex items-center gap-2">
-                                                <Package className="h-4 w-4 text-gray-500" />
-                                                {recurso.nome}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            {recurso.marca && recurso.modelo 
-                                                ? `${recurso.marca} - ${recurso.modelo}`
-                                                : recurso.marca || recurso.modelo || 'Não informado'
-                                            }
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge 
-                                                variant={getStatusVariant(recurso.status)}
-                                                className={`${getStatusColor(recurso.status)} flex items-center gap-1 w-fit`}
-                                            >
-                                                {getStatusIcon(recurso.status)}
-                                                {formatStatus(recurso.status)}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge 
-                                                variant={recurso.fixo ? 'default' : 'outline'}
-                                                className={
-                                                    recurso.fixo 
-                                                        ? 'bg-blue-100 text-blue-800 border-blue-200' 
-                                                        : 'bg-gray-100 text-gray-800 border-gray-200'
-                                                }
-                                            >
-                                                {recurso.fixo ? 'Fixo' : 'Móvel'}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            {recurso.createdBy?.name || 'Sistema'}
-                                        </TableCell>
-                                        <TableCell>
-                                            {new Date(recurso.created_at).toLocaleDateString('pt-BR')}
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            <div className="flex items-center justify-center gap-2">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    asChild
-                                                >
-                                                    <Link href={route('recursos.edit', recurso.id)}>
-                                                        <Pencil className="h-4 w-4" />
-                                                    </Link>
-                                                </Button>
-                                                <AlertDialog>
-                                                    <AlertDialogTrigger asChild>
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            className="text-[#F26326] hover:text-[#e5724a]" 
-                                                        >
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
-                                                    </AlertDialogTrigger>
-                                                    <AlertDialogContent>
-                                                        <AlertDialogHeader>
-                                                            <AlertDialogTitle>
-                                                                Confirmar exclusão
-                                                            </AlertDialogTitle>
-                                                            <AlertDialogDescription>
-                                                                Tem certeza que deseja excluir o recurso {recurso.nome}? 
-                                                                Esta ação não pode ser desfeita e pode afetar espaços vinculados.
-                                                            </AlertDialogDescription>
-                                                        </AlertDialogHeader>
-                                                        <AlertDialogFooter>
-                                                            <AlertDialogCancel>
-                                                                Cancelar
-                                                            </AlertDialogCancel>
-                                                            <AlertDialogAction
-                                                                onClick={() => handleDelete(recurso.id)}
-                                                                className="bg-red-600 hover:bg-red-700"
-                                                            >
-                                                                Excluir
-                                                            </AlertDialogAction>
-                                                        </AlertDialogFooter>
-                                                    </AlertDialogContent>
-                                                </AlertDialog>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell
-                                        colSpan={7}
-                                        className="h-24 text-center text-gray-500"
-                                    >
-                                        {searchTerm
-                                            ? `Nenhum recurso encontrado para "${searchTerm}".`
-                                            : 'Nenhum recurso encontrado.'
-                                        }
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
+                <FilterableTable 
+                    data={recursos}
+                    columns={columns}
+                    emptyMessage="Nenhum recurso encontrado."
+                />
             </div>
         </AppLayout>
     );
