@@ -24,16 +24,14 @@ interface EspacosEditProps {
     espaco: Espaco;
     localizacoes: Localizacao[];
     recursos: Recurso[];
-    users: User[];
 }
 
-export default function EspacosEdit({ auth, espaco, localizacoes, recursos, users }: EspacosEditProps) {
+export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: EspacosEditProps) {
     const { data, setData, put, processing, errors } = useForm({
         nome: espaco.nome || '',
         descricao: espaco.descricao || '',
         capacidade: espaco.capacidade?.toString() || '',
         localizacao_id: espaco.localizacao_id?.toString() || '',
-        responsavel_id: espaco.responsavel_id?.toString() || '',
         status: espaco.status || 'ativo',
         disponivel_reserva: espaco.disponivel_reserva || false,
         recursos: espaco.recursos?.map(r => r.id) || [] as number[],
@@ -133,7 +131,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos, user
                             <CardTitle>Configurações</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="localizacao_id">Localização *</Label>
                                     <Select
@@ -153,28 +151,6 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos, user
                                     </Select>
                                     {errors.localizacao_id && (
                                         <p className="text-sm text-red-500">{errors.localizacao_id}</p>
-                                    )}
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="responsavel_id">Responsável</Label>
-                                    <Select
-                                        value={data.responsavel_id}
-                                        onValueChange={(value) => setData('responsavel_id', value)}
-                                    >
-                                        <SelectTrigger className={errors.responsavel_id ? 'border-red-500' : ''}>
-                                            <SelectValue placeholder="Selecione um responsável" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {users.map((user) => (
-                                                <SelectItem key={user.id} value={user.id.toString()}>
-                                                    {user.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    {errors.responsavel_id && (
-                                        <p className="text-sm text-red-500">{errors.responsavel_id}</p>
                                     )}
                                 </div>
 
@@ -241,7 +217,6 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos, user
                         </Card>
                     )}
 
-                    
                     <div className="flex items-center gap-4">
                         <Button
                             type="submit"
