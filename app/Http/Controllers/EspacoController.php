@@ -16,7 +16,7 @@ class EspacoController extends Controller
      */
     public function index()
     {
-        $espacos = Espaco::with(['localizacao', 'responsavel', 'recursos', 'fotos'])->get();
+        $espacos = Espaco::with(['localizacao', 'responsavel', 'recursos', 'fotos', 'createdBy', 'updatedBy'])->get();
         return inertia('Espacos/Index', ['espacos' => $espacos]);
     }
 
@@ -47,7 +47,6 @@ class EspacoController extends Controller
             'localizacao_id' => 'nullable|exists:localizacoes,id',
             'recursos_fixos' => 'nullable|array',
             'status' => 'required|in:ativo,inativo,manutencao',
-            'responsavel_id' => 'nullable|exists:users,id',
             'disponivel_reserva' => 'sometimes|boolean',
             'observacoes' => 'nullable|string',
         ]);
@@ -55,6 +54,9 @@ class EspacoController extends Controller
         // Adiciona campos de auditoria
         $data['created_by'] = Auth::id();
         $data['updated_by'] = Auth::id();
+        
+        // Define o responsável como o usuário logado que está criando o espaço
+        $data['responsavel_id'] = Auth::id();
         
         // Define valor padrão para disponivel_reserva se não foi enviado
         if (!isset($data['disponivel_reserva'])) {
@@ -76,7 +78,7 @@ class EspacoController extends Controller
      */
     public function show($id)
     {
-        $espaco = Espaco::with(['localizacao', 'responsavel', 'recursos', 'fotos'])->findOrFail($id);
+        $espaco = Espaco::with(['localizacao', 'responsavel', 'recursos', 'fotos', 'createdBy', 'updatedBy'])->findOrFail($id);
         return response()->json($espaco);
     }
 
@@ -85,7 +87,7 @@ class EspacoController extends Controller
      */
     public function edit($id)
     {
-        $espaco = Espaco::with(['recursos', 'fotos'])->findOrFail($id);
+        $espaco = Espaco::with(['recursos', 'fotos', 'createdBy', 'responsavel'])->findOrFail($id);
         $localizacoes = Localizacao::all();
         $recursos = Recurso::all();
         

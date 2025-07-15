@@ -22,10 +22,16 @@ class FotoSeeder extends Seeder
             foreach ($espacos->take(3) as $index => $espaco) {
                 // Criar algumas fotos de exemplo para os primeiros espaços
                 for ($i = 1; $i <= 2; $i++) {
+                    $nomeArquivo = 'foto_exemplo_' . ($index + 1) . '_' . $i . '.jpg';
+                    $caminho = 'espacos/exemplo/' . $nomeArquivo;
+                    $url = '/storage/' . $caminho;
+                    
                     Foto::create([
                         'espaco_id' => $espaco->id,
-                        'url' => '/storage/espacos/exemplo/foto' . ($index + 1) . '_' . $i . '.jpg',
-                        'nome_original' => 'foto_exemplo_' . ($index + 1) . '_' . $i . '.jpg',
+                        'url' => $url,
+                        'nome_original' => $nomeArquivo,
+                        'nome_arquivo' => $nomeArquivo,
+                        'caminho' => $caminho,
                         'tamanho' => rand(500000, 2000000), // 500KB a 2MB
                         'tipo_mime' => 'image/jpeg',
                         'ordem' => $i,

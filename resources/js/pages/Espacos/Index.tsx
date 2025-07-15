@@ -145,7 +145,7 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
         {
             key: 'responsavel.name',
             label: 'Responsável',
-            getValue: (espaco) => espaco.responsavel?.name || 'Não definido'
+            getValue: (espaco) => espaco.createdBy?.name || espaco.responsavel?.name || 'Não definido'
         },
         {
             key: 'status',
@@ -353,9 +353,34 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                                 </div>
                                 <div className="bg-muted/30 p-4 rounded-lg border border-border">
                                     <label className="text-sm font-medium text-muted-foreground">Responsável</label>
-                                    <p className="text-lg text-card-foreground mt-1">
-                                        {selectedEspaco.responsavel?.name || 'Não definido'}
-                                    </p>
+                                    {(selectedEspaco.createdBy || selectedEspaco.responsavel) ? (
+                                        <div className="mt-2 bg-background/50 p-3 rounded-md border border-border">
+                                            <div className="space-y-2">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                                                        <span className="text-sm font-medium text-primary">
+                                                            {(selectedEspaco.createdBy?.name || selectedEspaco.responsavel?.name || "").charAt(0).toUpperCase()}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <p className="text-sm font-medium text-card-foreground">
+                                                            {selectedEspaco.createdBy?.name || selectedEspaco.responsavel?.name}
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {selectedEspaco.createdBy?.email || selectedEspaco.responsavel?.email}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="pt-1">
+                                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                                                        {selectedEspaco.createdBy?.perfil_acesso || selectedEspaco.responsavel?.perfil_acesso || "Não definido"}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <p className="text-lg text-card-foreground mt-1">Não definido</p>
+                                    )}
                                 </div>
                             </div>
 

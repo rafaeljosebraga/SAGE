@@ -189,6 +189,43 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                         </CardContent>
                     </Card>
 
+                {/* Painel do Responsável */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Responsável pelo Espaço</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {(espaco.createdBy || espaco.responsavel) ? (
+                            <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                                        <span className="text-lg font-medium text-primary">
+                                            {(espaco.createdBy?.name || espaco.responsavel?.name || "").charAt(0).toUpperCase()}
+                                        </span>
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className="text-lg font-semibold text-card-foreground">
+                                            {espaco.createdBy?.name || espaco.responsavel?.name}
+                                        </h3>
+                                        <p className="text-sm text-muted-foreground">
+                                            {espaco.createdBy?.email || espaco.responsavel?.email}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                                            {espaco.createdBy?.perfil_acesso || espaco.responsavel?.perfil_acesso || "Não definido"}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="bg-muted/30 p-4 rounded-lg border border-border text-center">
+                                <p className="text-muted-foreground">Responsável não definido</p>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
                     {recursos.length > 0 && (
                         <Card>
                             <CardHeader>
