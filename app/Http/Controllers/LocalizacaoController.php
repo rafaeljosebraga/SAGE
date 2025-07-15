@@ -49,8 +49,8 @@ class LocalizacaoController extends Controller
      */
     public function show($id)
     {
-        $localizacao = Localizacao::with(['createdBy', 'updatedBy'])->findOrFail($id);
-        return response()->json($localizacao);
+        // Redirect to index instead of showing individual location
+        return redirect()->route('localizacoes.index');
     }
 
     /**

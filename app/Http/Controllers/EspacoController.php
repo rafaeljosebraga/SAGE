@@ -78,8 +78,8 @@ class EspacoController extends Controller
      */
     public function show($id)
     {
-        $espaco = Espaco::with(['localizacao', 'responsavel', 'recursos', 'fotos', 'createdBy', 'updatedBy'])->findOrFail($id);
-        return response()->json($espaco);
+        // Redirect to index instead of showing individual space
+        return redirect()->route('espacos.index');
     }
 
     /**
