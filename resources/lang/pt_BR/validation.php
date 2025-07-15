@@ -214,6 +214,7 @@ return [
         'time' => 'hora',
         'available' => 'disponível',
         'size' => 'tamanho',
+        'localizacao_id' => 'localização',
     ],
 
 ];

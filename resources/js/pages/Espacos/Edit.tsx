@@ -28,6 +28,28 @@ interface EspacosEditProps {
 }
 
 export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: EspacosEditProps) {
+    const formatPerfil = (perfil: string | undefined) => {
+        if (!perfil) return "Não definido";
+        return perfil.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+    };
+
+    const getPerfilColor = (perfil: string | undefined) => {
+        if (!perfil) return "bg-gray-100 text-gray-800 border-gray-200";
+        
+        switch (perfil.toLowerCase()) {
+            case "administrador":
+                return "bg-[#EF7D4C] text-white border-transparent";
+            case "coordenador":
+                return "bg-[#957157] text-white border-transparent";
+            case "diretor_geral":
+                return "bg-[#F1DEC5] text-gray-600 border-transparent";
+            case "servidores":
+                return "bg-[#285355] text-white border-transparent";
+            default:
+                return "bg-gray-100 text-gray-800 border-gray-200";
+        }
+    };
+
     const { data, setData, put, processing, errors } = useForm({
         nome: espaco.nome || '',
         descricao: espaco.descricao || '',
@@ -212,8 +234,8 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                                         </p>
                                     </div>
                                     <div>
-                                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200">
-                                            {espaco.createdBy?.perfil_acesso || espaco.responsavel?.perfil_acesso || "Não definido"}
+                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getPerfilColor(espaco.createdBy?.perfil_acesso || espaco.responsavel?.perfil_acesso)}`}>
+                                            {formatPerfil(espaco.createdBy?.perfil_acesso || espaco.responsavel?.perfil_acesso)}
                                         </span>
                                     </div>
                                 </div>

@@ -112,6 +112,28 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
         }
     };
 
+    const formatPerfil = (perfil: string | undefined) => {
+        if (!perfil) return "Não definido";
+        return perfil.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+    };
+
+    const getPerfilColor = (perfil: string | undefined) => {
+        if (!perfil) return "bg-gray-100 text-gray-800 border-gray-200";
+        
+        switch (perfil.toLowerCase()) {
+            case "administrador":
+                return "bg-[#EF7D4C] text-white border-transparent";
+            case "coordenador":
+                return "bg-[#957157] text-white border-transparent";
+            case "diretor_geral":
+                return "bg-[#F1DEC5] text-gray-600 border-transparent";
+            case "servidores":
+                return "bg-[#285355] text-white border-transparent";
+            default:
+                return "bg-gray-100 text-gray-800 border-gray-200";
+        }
+    };
+
     const columns: ColumnConfig[] = [
         {
             key: 'nome',
@@ -374,8 +396,8 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                                                     </div>
                                                 </div>
                                                 <div className="pt-1">
-                                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
-                                                        {selectedEspaco.createdBy?.perfil_acesso || selectedEspaco.responsavel?.perfil_acesso || "Não definido"}
+                                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPerfilColor(selectedEspaco.createdBy?.perfil_acesso || selectedEspaco.responsavel?.perfil_acesso)}`}>
+                                                        {formatPerfil(selectedEspaco.createdBy?.perfil_acesso || selectedEspaco.responsavel?.perfil_acesso)}
                                                     </span>
                                                 </div>
                                             </div>
