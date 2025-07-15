@@ -30,7 +30,7 @@ class EspacoController extends Controller
         $recursos = Recurso::all();
         $users = \App\Models\User::all();
 
-        
+
         return inertia('Espacos/Create', [
             'localizacoes' => $localizacoes,
             'recursos' => $recursos,
@@ -57,10 +57,10 @@ class EspacoController extends Controller
         $data['created_by'] = Auth::id();
         $data['updated_by'] = Auth::id();
 
-        
+
         // Define o responsável como o usuário logado que está criando o espaço
         $data['responsavel_id'] = Auth::id();
-        
+
         // Define valor padrão para disponivel_reserva se não foi enviado
         if (!isset($data['disponivel_reserva'])) {
             $data['disponivel_reserva'] = true;
@@ -109,7 +109,7 @@ class EspacoController extends Controller
         $espaco = Espaco::with(['recursos', 'fotos', 'createdBy', 'responsavel'])->findOrFail($id);
         $localizacoes = Localizacao::all();
         $recursos = Recurso::all();
-        
+
         return inertia('Espacos/Edit', [
             'espaco' => $espaco,
             'localizacoes' => $localizacoes,
@@ -153,7 +153,7 @@ class EspacoController extends Controller
     public function destroy($id)
     {
         $espaco = Espaco::with('fotos')->findOrFail($id);
-        
+
         // Remover todas as fotos do storage individualmente (para garantia)
         foreach ($espaco->fotos as $foto) {
             $caminhoArquivo = str_replace('/storage/', '', $foto->url);
@@ -161,16 +161,16 @@ class EspacoController extends Controller
                 Storage::disk('public')->delete($caminhoArquivo);
             }
         }
-        
+
         // Remover a pasta completa do espaço
         $pastaEspaco = 'espacos/' . $id;
         if (Storage::disk('public')->exists($pastaEspaco)) {
             Storage::disk('public')->deleteDirectory($pastaEspaco);
         }
-        
+
         // Deletar o espaço (as fotos serão deletadas automaticamente pelo cascade)
         $espaco->delete();
-        
+
         return redirect()->route('espacos.index')->with('success', 'Espaço, suas fotos e pasta removidos com sucesso!');
     }
     // public function all()

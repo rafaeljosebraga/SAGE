@@ -36,7 +36,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('localizacoes', LocalizacaoController::class);
         Route::resource('recursos', RecursoController::class);
         Route::resource('espaco-users', EspacoUserController::class);
-        Route::get('atribuir-permissoes', [EspacoUserController::class, 'index'])->name('atribuir-permissoes.index');
+        // Route::get('espaco-users/create', EspacoUserController::class);
+        // Route::get('atribuir-permissoes', EspacoUserController::class);
         // Rotas de Espaços em português
         Route::get("espacos", [EspacoController::class, "index"])->name("espacos.index");
         Route::get("espacos/criar", [EspacoController::class, "create"])->name("espacos.create");
@@ -45,7 +46,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get("espacos/{espaco}/editar", [EspacoController::class, "edit"])->name("espacos.edit");
         Route::put("espacos/{espaco}", [EspacoController::class, "update"])->name("espacos.update");
         Route::delete("espacos/{espaco}", [EspacoController::class, "destroy"])->name("espacos.destroy");
-        
+
         // Rotas de Localizações em português
         Route::get("localizacoes", [LocalizacaoController::class, "index"])->name("localizacoes.index");
         Route::get("localizacoes/criar", [LocalizacaoController::class, "create"])->name("localizacoes.create");
@@ -54,7 +55,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get("localizacoes/{localizacao}/editar", [LocalizacaoController::class, "edit"])->name("localizacoes.edit");
         Route::put("localizacoes/{localizacao}", [LocalizacaoController::class, "update"])->name("localizacoes.update");
         Route::delete("localizacoes/{localizacao}", [LocalizacaoController::class, "destroy"])->name("localizacoes.destroy");
-        
+
         // Rotas de Recursos em português
         Route::get("recursos", [RecursoController::class, "index"])->name("recursos.index");
         Route::get("recursos/criar", [RecursoController::class, "create"])->name("recursos.create");

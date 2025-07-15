@@ -68,7 +68,6 @@ class Espaco extends Model
     {
         return $this->belongsToMany(User::class, 'espaco_user');
     }
-}
 
     // Relacionamento com fotos
     public function fotos(): HasMany
