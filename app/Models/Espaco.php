@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Espaco extends Model
 {
@@ -69,3 +70,9 @@ class Espaco extends Model
     }
 }
 
+    // Relacionamento com fotos
+    public function fotos(): HasMany
+    {
+        return $this->hasMany(Foto::class, 'espaco_id')->orderBy('ordem');
+    }
+}

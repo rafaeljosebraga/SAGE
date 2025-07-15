@@ -2,7 +2,7 @@ import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Head, Link, router } from '@inertiajs/react';
-import { Plus, Pencil, Trash2, MapPin, Users, Eye, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, MapPin, Users, Eye, X, Image as ImageIcon, ZoomIn } from 'lucide-react';
 import { type User, type Espaco, type BreadcrumbItem } from '@/types';
 import { FilterableTable, type ColumnConfig } from '@/components/ui/filterable-table';
 import {
@@ -25,9 +25,19 @@ interface EspacosIndexProps {
     espacos: Espaco[];
 }
 
+interface Foto {
+    id: number;
+    url: string;
+    nome_original: string;
+    descricao?: string;
+    ordem: number;
+}
+
 export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
     const [selectedEspaco, setSelectedEspaco] = useState<Espaco | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedFoto, setSelectedFoto] = useState<Foto | null>(null);
+    const [isFotoModalOpen, setIsFotoModalOpen] = useState(false);
 
     const handleDelete = (id: number) => {
         router.delete(`/espacos/${id}`);
@@ -41,6 +51,16 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
     const closeModal = () => {
         setIsModalOpen(false);
         setSelectedEspaco(null);
+    };
+
+    const handleViewFoto = (foto: Foto) => {
+        setSelectedFoto(foto);
+        setIsFotoModalOpen(true);
+    };
+
+    const closeFotoModal = () => {
+        setIsFotoModalOpen(false);
+        setSelectedFoto(null);
     };
 
     const formatDate = (dateString: string) => {
@@ -92,6 +112,28 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
         }
     };
 
+    const formatPerfil = (perfil: string | undefined) => {
+        if (!perfil) return "Não definido";
+        return perfil.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+    };
+
+    const getPerfilColor = (perfil: string | undefined) => {
+        if (!perfil) return "bg-gray-100 text-gray-800 border-gray-200";
+        
+        switch (perfil.toLowerCase()) {
+            case "administrador":
+                return "bg-[#EF7D4C] text-white border-transparent";
+            case "coordenador":
+                return "bg-[#957157] text-white border-transparent";
+            case "diretor_geral":
+                return "bg-[#F1DEC5] text-gray-600 border-transparent";
+            case "servidores":
+                return "bg-[#285355] text-white border-transparent";
+            default:
+                return "bg-gray-100 text-gray-800 border-gray-200";
+        }
+    };
+
     const columns: ColumnConfig[] = [
         {
             key: 'nome',
@@ -125,7 +167,7 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
         {
             key: 'responsavel.name',
             label: 'Responsável',
-            getValue: (espaco) => espaco.responsavel?.name || 'Não definido'
+            getValue: (espaco) => espaco.createdBy?.name || espaco.responsavel?.name || 'Não definido'
         },
         {
             key: 'status',
@@ -178,7 +220,7 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                         variant="outline"
                         size="sm"
                         onClick={() => handleViewDetails(espaco)}
-                        className="text-blue-600 hover:text-blue-700"
+                        className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-blue-700 dark:text-blue-700"
                     >
                         <Eye className="h-4 w-4" />
                     </Button>
@@ -186,8 +228,10 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                         variant="outline"
                         size="sm"
                         asChild
+                        className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black"
+
                     >
-                        <Link href={`/espacos/${espaco.id}/edit`}>
+                        <Link href={`/espacos/${espaco.id}/editar`}>
                             <Pencil className="h-4 w-4" />
                         </Link>
                     </Button>
@@ -196,7 +240,7 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                             <Button
                                 variant="outline"
                                 size="sm"
-                                className="text-[#F26326] hover:text-[#e5724a]" 
+                                className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-[#F26326] hover:text-black dark:text-[#F26326] dark:hover:text-black"
                             >
                                 <Trash2 className="h-4 w-4" />
                             </Button>
@@ -238,13 +282,13 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
             <Head title="Espaços" />
 
             <div className="space-y-6">
-                <div className="flex items-center justify-between px-1">
+                <div className="flex items-center justify-between px-6 py-4">
                     <div className="flex-1">
-                        <h1 className="text-3xl font-bold text-gray-500">Espaços</h1>
+                        <h1 className="text-3xl font-bold text-black dark:text-white">Espaços</h1>
                     </div>
                     <div className="flex-shrink-0">
-                        <Button asChild className="bg-[#D2CBB9] hover:bg-[#EF7D4C] text-black">
-                            <Link href="/espacos/create">
+                        <Button asChild className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black ">
+                            <Link href="/espacos/criar">
                                 <Plus className="mr-2 h-4 w-4" />
                                 Novo Espaço
                             </Link>
@@ -266,7 +310,7 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                     onClick={closeModal}
                 >
                     <div 
-                        className="bg-card border border-border rounded-xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col"
+                        className="bg-card border border-border rounded-xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Header do Modal */}
@@ -287,14 +331,10 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                         {/* Conteúdo do Modal */}
                         <div className="p-6 space-y-6 overflow-y-auto flex-1 bg-card">
                             {/* Informações Básicas */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-4">
                                 <div className="bg-muted/30 p-4 rounded-lg border border-border">
                                     <label className="text-sm font-medium text-muted-foreground">Nome</label>
                                     <p className="text-lg font-semibold text-card-foreground mt-1">{selectedEspaco.nome}</p>
-                                </div>
-                                <div className="bg-muted/30 p-4 rounded-lg border border-border">
-                                    <label className="text-sm font-medium text-muted-foreground">ID</label>
-                                    <p className="text-lg text-card-foreground mt-1">#{selectedEspaco.id}</p>
                                 </div>
                             </div>
 
@@ -333,9 +373,34 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                                 </div>
                                 <div className="bg-muted/30 p-4 rounded-lg border border-border">
                                     <label className="text-sm font-medium text-muted-foreground">Responsável</label>
-                                    <p className="text-lg text-card-foreground mt-1">
-                                        {selectedEspaco.responsavel?.name || 'Não definido'}
-                                    </p>
+                                    {(selectedEspaco.createdBy || selectedEspaco.responsavel) ? (
+                                        <div className="mt-2 bg-background/50 p-3 rounded-md border border-border">
+                                            <div className="space-y-2">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                                                        <span className="text-sm font-medium text-primary">
+                                                            {(selectedEspaco.createdBy?.name || selectedEspaco.responsavel?.name || "").charAt(0).toUpperCase()}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <p className="text-sm font-medium text-card-foreground">
+                                                            {selectedEspaco.createdBy?.name || selectedEspaco.responsavel?.name}
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {selectedEspaco.createdBy?.email || selectedEspaco.responsavel?.email}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="pt-1">
+                                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPerfilColor(selectedEspaco.createdBy?.perfil_acesso || selectedEspaco.responsavel?.perfil_acesso)}`}>
+                                                        {formatPerfil(selectedEspaco.createdBy?.perfil_acesso || selectedEspaco.responsavel?.perfil_acesso)}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <p className="text-lg text-card-foreground mt-1">Não definido</p>
+                                    )}
                                 </div>
                             </div>
 
@@ -390,6 +455,49 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                                 </div>
                             )}
 
+                            {/* Fotos do Espaço */}
+                            <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                                    <label className="text-sm font-medium text-muted-foreground">
+                                        Fotos do Espaço
+                                        {selectedEspaco.fotos && selectedEspaco.fotos.length > 0 && (
+                                            <span className="ml-1">({selectedEspaco.fotos.length})</span>
+                                        )}
+                                    </label>
+                                </div>
+                                
+                                {selectedEspaco.fotos && selectedEspaco.fotos.length > 0 ? (
+                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                                        {selectedEspaco.fotos.map((foto) => (
+                                            <div 
+                                                key={foto.id} 
+                                                className="relative group cursor-pointer rounded-lg overflow-hidden border border-border hover:border-primary/50 transition-colors"
+                                                onClick={() => handleViewFoto(foto)}
+                                            >
+                                                <img
+                                                    src={foto.url}
+                                                    alt={foto.nome_original}
+                                                    className="w-full h-24 object-cover group-hover:scale-105 transition-transform duration-200"
+                                                />
+                                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                    <ZoomIn className="h-6 w-6 text-white" />
+                                                </div>
+                                                {/* Descrição sempre visível na parte inferior */}
+                                                <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-xs p-1 truncate">
+                                                    {foto.descricao ? foto.descricao : 'Sem descrição'}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-8 text-muted-foreground">
+                                        <ImageIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                                        <p className="text-sm">Nenhuma foto cadastrada para este espaço</p>
+                                    </div>
+                                )}
+                            </div>
+
                             {/* Informações de Auditoria */}
                             <div className="bg-muted/30 p-4 rounded-lg border border-border border-t">
                                 <h3 className="text-lg font-medium text-card-foreground mb-3">Informações de Auditoria</h3>
@@ -423,13 +531,50 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                             <Button
                                 onClick={() => {
                                     closeModal();
-                                    router.visit(`/espacos/${selectedEspaco.id}/edit`);
+                                    router.visit(`/espacos/${selectedEspaco.id}/editar`);
                                 }}
                                 className="bg-[#D2CBB9] hover:bg-[#EF7D4C] text-black rounded-lg"
                             >
                                 <Pencil className="mr-2 h-4 w-4" />
                                 Editar
                             </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal de Visualização de Foto - APENAS IMAGEM */}
+            {isFotoModalOpen && selectedFoto && (
+                <div 
+                    className="fixed inset-0 bg-black/80 flex items-center justify-center z-60"
+                    onClick={closeFotoModal}
+                >
+                    <div 
+                        className="bg-card border border-border rounded-xl shadow-2xl max-w-5xl max-h-[95vh] w-full mx-4 overflow-hidden flex flex-col"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Header do Modal de Foto */}
+                        <div className="flex items-center justify-between p-4 border-b border-border bg-card flex-shrink-0">
+                            <h3 className="text-lg font-semibold text-card-foreground">
+                                {selectedFoto.nome_original}
+                            </h3>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={closeFotoModal}
+                                className="text-muted-foreground hover:text-card-foreground rounded-lg"
+                            >
+                                <X className="h-5 w-5" />
+                            </Button>
+                        </div>
+
+                        {/* Imagem - Ocupa todo o espaço disponível */}
+                        <div className="flex-1 flex items-center justify-center p-6 bg-muted/10">
+                            <img
+                                src={selectedFoto.url}
+                                alt={selectedFoto.nome_original}
+                                className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
+                            />
                         </div>
                     </div>
                 </div>

@@ -10,17 +10,17 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
     const sidebarNavItems: NavItem[] = [
         {
             title: 'Perfil',
-            href: '/settings/profile',
+            href: '/configuracoes/perfil',
             icon: null,
         },
         {
             title: 'Senha',
-            href: '/settings/password',
+            href: '/configuracoes/senha',
             icon: null,
         },
         {
             title: 'Aparência',
-            href: '/settings/appearance',
+            href: '/configuracoes/aparencia',
             icon: null,
         },
     ];

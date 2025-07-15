@@ -74,6 +74,24 @@ export interface Recurso {
     updatedBy?: User;
 }
 
+export interface Foto {
+    id: number;
+    espaco_id: number;
+    url: string;
+    nome_original: string;
+    tamanho: number;
+    tipo_mime: string;
+    ordem: number;
+    descricao?: string;
+    created_by?: number;
+    updated_by?: number;
+    created_at: string;
+    updated_at: string;
+    espaco?: Espaco;
+    createdBy?: User;
+    updatedBy?: User;
+}
+
 export interface Espaco {
     id: number;
     nome: string;
@@ -92,6 +110,7 @@ export interface Espaco {
     localizacao?: Localizacao;
     responsavel?: User;
     recursos?: Recurso[];
+    fotos?: Foto[];
     createdBy?: User;
     updatedBy?: User;
 }

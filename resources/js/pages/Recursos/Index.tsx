@@ -153,8 +153,9 @@ export default function RecursosIndex({ auth, recursos }: RecursosIndexProps) {
                         variant="outline"
                         size="sm"
                         asChild
+                         className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black"
                     >
-                        <Link href={`/recursos/${recurso.id}/edit`}>
+                        <Link href={`/recursos/${recurso.id}/editar`}>
                             <Pencil className="h-4 w-4" />
                         </Link>
                     </Button>
@@ -163,7 +164,7 @@ export default function RecursosIndex({ auth, recursos }: RecursosIndexProps) {
                             <Button
                                 variant="outline"
                                 size="sm"
-                                className="text-[#F26326] hover:text-[#e5724a]"
+                                className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-[#F26326] hover:text-black dark:text-[#F26326] dark:hover:text-black"
                             >
                                 <Trash2 className="h-4 w-4" />
                             </Button>
@@ -205,13 +206,13 @@ export default function RecursosIndex({ auth, recursos }: RecursosIndexProps) {
             <Head title="Recursos" />
 
             <div className="space-y-6">
-                <div className="flex items-center justify-between px-1">
+                <div className="flex items-center justify-between px-6 py-4">
                     <div className="flex-1">
-                        <h1 className="text-3xl font-bold text-gray-500">Recursos</h1>
+                   <h1 className="text-3xl font-bold text-black dark:text-white">Recursos</h1>
                     </div>
-                    <div className="flex-shrink-0">
-                        <Button asChild className="bg-[#D2CBB9] hover:bg-[#EF7D4C] text-black">
-                            <Link href="/recursos/create">
+                    <div className="flex-shrink-0 mr-6">
+                       <Button asChild className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black ">
+                            <Link href="/recursos/criar">
                                 <Plus className="mr-2 h-4 w-4" />
                                 Novo Recurso
                             </Link>

@@ -16,11 +16,11 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
     {
         title: 'Gerenciar Usuários',
-        href: '/users',
+        href: '/usuarios',
     },
     {
         title: 'Adicionar Novo',
-        href: '/users/create',
+        href: '/usuarios/criar',
     },
 ];
 
@@ -39,7 +39,7 @@ export default function Create({ perfilAcesso }: Props) {
 
     const submit = (e: FormEvent) => {
         e.preventDefault();
-        post('/users', {
+        post('/usuarios', {
             onSuccess: () => reset(),
         });
     };
@@ -50,7 +50,7 @@ export default function Create({ perfilAcesso }: Props) {
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center gap-4">
-                    <Link href="/users">
+                    <Link href="/usuarios">
                         <Button variant="outline" size="sm">
                             <ArrowLeft className="mr-2 h-4 w-4" />
                             Voltar
@@ -153,7 +153,7 @@ export default function Create({ perfilAcesso }: Props) {
                                 <Button type="submit" disabled={processing}>
                                     {processing ? 'Criando...' : 'Criar Usuário'}
                                 </Button>
-                                <Link href="/users">
+                                <Link href="/usuarios">
                                     <Button type="button" variant="outline">
                                         Cancelar
                                     </Button>

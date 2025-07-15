@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PhotoUpload } from '@/components/ui/photo-upload';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Save } from 'lucide-react';
 import { type User, type Localizacao, type Recurso, type Espaco, type BreadcrumbItem } from '@/types';
@@ -27,6 +28,28 @@ interface EspacosEditProps {
 }
 
 export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: EspacosEditProps) {
+    const formatPerfil = (perfil: string | undefined) => {
+        if (!perfil) return "Não definido";
+        return perfil.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+    };
+
+    const getPerfilColor = (perfil: string | undefined) => {
+        if (!perfil) return "bg-gray-100 text-gray-800 border-gray-200";
+        
+        switch (perfil.toLowerCase()) {
+            case "administrador":
+                return "bg-[#EF7D4C] text-white border-transparent";
+            case "coordenador":
+                return "bg-[#957157] text-white border-transparent";
+            case "diretor_geral":
+                return "bg-[#F1DEC5] text-gray-600 border-transparent";
+            case "servidores":
+                return "bg-[#285355] text-white border-transparent";
+            default:
+                return "bg-gray-100 text-gray-800 border-gray-200";
+        }
+    };
+
     const { data, setData, put, processing, errors } = useForm({
         nome: espaco.nome || '',
         descricao: espaco.descricao || '',
@@ -67,7 +90,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                             Voltar
                         </Link>
                     </Button>
-                    <h1 className="text-3xl font-bold text-gray-500">Editar Espaço</h1>
+                            <h1 className="text-3xl font-bold text-black dark:text-white">Editar espaço</h1>
                 </div>
 
                 <form onSubmit={submit} className="space-y-6">
@@ -188,6 +211,43 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                         </CardContent>
                     </Card>
 
+                {/* Painel do Responsável */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Responsável pelo Espaço</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {(espaco.createdBy || espaco.responsavel) ? (
+                            <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                                        <span className="text-lg font-medium text-primary">
+                                            {(espaco.createdBy?.name || espaco.responsavel?.name || "").charAt(0).toUpperCase()}
+                                        </span>
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className="text-lg font-semibold text-card-foreground">
+                                            {espaco.createdBy?.name || espaco.responsavel?.name}
+                                        </h3>
+                                        <p className="text-sm text-muted-foreground">
+                                            {espaco.createdBy?.email || espaco.responsavel?.email}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getPerfilColor(espaco.createdBy?.perfil_acesso || espaco.responsavel?.perfil_acesso)}`}>
+                                            {formatPerfil(espaco.createdBy?.perfil_acesso || espaco.responsavel?.perfil_acesso)}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="bg-muted/30 p-4 rounded-lg border border-border text-center">
+                                <p className="text-muted-foreground">Responsável não definido</p>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
                     {recursos.length > 0 && (
                         <Card>
                             <CardHeader>
@@ -216,23 +276,40 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                             </CardContent>
                         </Card>
                     )}
-
-                    <div className="flex items-center gap-4">
-                        <Button
-                            type="submit"
-                            disabled={processing}
-                            className="bg-[#D2CBB9] hover:bg-[#EF7D4C] text-black"
-                        >
-                            <Save className="mr-2 h-4 w-4" />
-                            {processing ? 'Salvando...' : 'Salvar Alterações'}
-                        </Button>
-                        <Button variant="outline" asChild>
-                            <Link href={route('espacos.index')}>
-                                Cancelar
-                            </Link>
-                        </Button>
-                    </div>
                 </form>
+
+                {/* Seção de Fotos */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Fotos do Espaço</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <PhotoUpload
+                            espacoId={espaco.id}
+                            fotos={espaco.fotos || []}
+                            maxFiles={10}
+                            maxFileSize={5}
+                        />
+                    </CardContent>
+                </Card>
+
+                {/* Botões de Ação - Movidos para baixo das fotos */}
+                <div className="flex items-center gap-4">
+                    <Button
+                        type="submit"
+                        disabled={processing}
+                        className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black"
+                        onClick={submit}
+                    >
+                        <Save className="mr-2 h-4 w-4" />
+                        {processing ? 'Salvando...' : 'Salvar Alterações'}
+                    </Button>
+                    <Button variant="outline" asChild>
+                        <Link href={route('espacos.index')}>
+                            Cancelar
+                        </Link>
+                    </Button>
+                </div>
             </div>
         </AppLayout>
     );

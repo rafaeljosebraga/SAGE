@@ -44,7 +44,7 @@ export default function LocalizacoesEdit({ auth, localizacao }: LocalizacoesEdit
                             Voltar
                         </Link>
                     </Button>
-                    <h1 className="text-3xl font-bold text-gray-500">Editar Localização</h1>
+        <h1 className="text-3xl font-bold text-black dark:text-white">Editar Localização</h1>
                 </div>
 
                 <form onSubmit={submit} className="space-y-6">
@@ -89,7 +89,7 @@ export default function LocalizacoesEdit({ auth, localizacao }: LocalizacoesEdit
                         <Button
                             type="submit"
                             disabled={processing}
-                            className="bg-[#D2CBB9] hover:bg-[#EF7D4C] text-black"
+                             className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black"
                         >
                             <Save className="mr-2 h-4 w-4" />
                             {processing ? 'Salvando...' : 'Salvar Alterações'}

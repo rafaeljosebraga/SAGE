@@ -66,7 +66,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                             Voltar
                         </Link>
                     </Button>
-                    <h1 className="text-3xl font-bold text-gray-500">Novo Espaço</h1>
+                    <h1 className="text-3xl font-bold text-black dark:text-white">Novo Espaço</h1>
                 </div>
 
                 <form onSubmit={submit} className="space-y-6">
@@ -220,7 +220,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                         <Button
                             type="submit"
                             disabled={processing}
-                            className="bg-[#D2CBB9] hover:bg-[#EF7D4C] text-black"
+                             className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black"
                         >
                             <Save className="mr-2 h-4 w-4" />
                             {processing ? 'Salvando...' : 'Salvar Espaço'}
@@ -232,6 +232,15 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                         </Button>
                     </div>
                 </form>
+
+                {/* Nota sobre fotos */}
+                <Card>
+                    <CardContent className="p-4">
+                        <p className="text-sm text-gray-600">
+                            💡 <strong>Dica:</strong> Após criar o espaço, você poderá adicionar fotos na página de edição.
+                        </p>
+                    </CardContent>
+                </Card>
             </div>
         </AppLayout>
     );

@@ -51,12 +51,15 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
             <div className="space-y-6">
                 <div className="flex items-center gap-4">
                     <Button variant="outline" asChild>
-                        <Link href={route('recursos.index')}>
+                        <Link
+                            href={route('recursos.index')}
+                            className="flex items-center bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black"
+                        >
                             <ArrowLeft className="mr-2 h-4 w-4" />
                             Voltar
                         </Link>
                     </Button>
-                    <h1 className="text-3xl font-bold text-gray-500">Novo Recurso</h1>
+                     <h1 className="text-3xl font-bold text-black dark:text-white">Novo Recurso</h1>
                 </div>
 
                 <form onSubmit={submit} className="space-y-6">
@@ -188,7 +191,8 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                         <Button
                             type="submit"
                             disabled={processing}
-                            className="bg-[#D2CBB9] hover:bg-[#EF7D4C] text-black"
+                            className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black"
+                     
                         >
                             <Save className="mr-2 h-4 w-4" />
                             {processing ? 'Salvando...' : 'Salvar Recurso'}

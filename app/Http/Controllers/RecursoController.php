@@ -59,8 +59,8 @@ class RecursoController extends Controller
      */
     public function show($id)
     {
-        $recurso = Recurso::with(['createdBy', 'updatedBy'])->findOrFail($id);
-        return response()->json($recurso);
+        // Redirect to index instead of showing individual resource
+        return redirect()->route('recursos.index');
     }
 
     /**

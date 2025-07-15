@@ -15,7 +15,7 @@ import SettingsLayout from '@/layouts/settings/layout';
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Configurações de Perfil',
-        href: '/settings/profile',
+        href: '/configuracoes/perfil',
     },
 ];
 

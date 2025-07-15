@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use App\Models\Espaco;
 use App\Models\Localizacao;
 use App\Models\Recurso;
@@ -16,7 +16,7 @@ class EspacoController extends Controller
      */
     public function index()
     {
-        $espacos = Espaco::with(['localizacao', 'responsavel', 'recursos'])->get();
+        $espacos = Espaco::with(['localizacao', 'responsavel', 'recursos', 'fotos', 'createdBy', 'updatedBy'])->get();
         return inertia('Espacos/Index', ['espacos' => $espacos]);
     }
 
@@ -30,10 +30,10 @@ class EspacoController extends Controller
         $recursos = Recurso::all();
         $users = \App\Models\User::all();
 
+        
         return inertia('Espacos/Create', [
             'localizacoes' => $localizacoes,
             'recursos' => $recursos,
-            'users' => $users,
         ]);
     }
 
@@ -46,10 +46,9 @@ class EspacoController extends Controller
             'nome' => 'required|string|max:100',
             'capacidade' => 'required|integer|min:1',
             'descricao' => 'nullable|string',
-            'localizacao_id' => 'nullable|exists:localizacoes,id',
+            'localizacao_id' => 'required|exists:localizacoes,id',
             'recursos_fixos' => 'nullable|array',
             'status' => 'required|in:ativo,inativo,manutencao',
-            'responsavel_id' => 'nullable|exists:users,id',
             'disponivel_reserva' => 'sometimes|boolean',
             'observacoes' => 'nullable|string',
         ]);
@@ -58,6 +57,10 @@ class EspacoController extends Controller
         $data['created_by'] = Auth::id();
         $data['updated_by'] = Auth::id();
 
+        
+        // Define o responsável como o usuário logado que está criando o espaço
+        $data['responsavel_id'] = Auth::id();
+        
         // Define valor padrão para disponivel_reserva se não foi enviado
         if (!isset($data['disponivel_reserva'])) {
             $data['disponivel_reserva'] = true;
@@ -78,8 +81,8 @@ class EspacoController extends Controller
      */
     public function show($id)
     {
-        $espaco = Espaco::with(['localizacao', 'responsavel', 'recursos'])->findOrFail($id);
-        return response()->json($espaco);
+        // Redirect to index instead of showing individual space
+        return redirect()->route('espacos.index');
     }
 
     /**
@@ -103,6 +106,15 @@ class EspacoController extends Controller
             Log::error('Erro no edit de espaços: ' . $e->getMessage());
             return redirect()->route('espacos.index')->with('error', 'Erro ao carregar espaço para edição.');
         }
+        $espaco = Espaco::with(['recursos', 'fotos', 'createdBy', 'responsavel'])->findOrFail($id);
+        $localizacoes = Localizacao::all();
+        $recursos = Recurso::all();
+        
+        return inertia('Espacos/Edit', [
+            'espaco' => $espaco,
+            'localizacoes' => $localizacoes,
+            'recursos' => $recursos,
+        ]);
     }
 
     /**
@@ -115,10 +127,9 @@ class EspacoController extends Controller
             'nome' => 'required|string|max:100',
             'capacidade' => 'required|integer|min:1',
             'descricao' => 'nullable|string',
-            'localizacao_id' => 'nullable|exists:localizacoes,id',
+            'localizacao_id' => 'required|exists:localizacoes,id',
             'recursos_fixos' => 'nullable|array',
             'status' => 'required|in:ativo,inativo,manutencao',
-            'responsavel_id' => 'nullable|exists:users,id',
             'disponivel_reserva' => 'sometimes|boolean',
             'observacoes' => 'nullable|string',
         ]);
@@ -141,9 +152,26 @@ class EspacoController extends Controller
      */
     public function destroy($id)
     {
-        $espaco = Espaco::findOrFail($id);
+        $espaco = Espaco::with('fotos')->findOrFail($id);
+        
+        // Remover todas as fotos do storage individualmente (para garantia)
+        foreach ($espaco->fotos as $foto) {
+            $caminhoArquivo = str_replace('/storage/', '', $foto->url);
+            if (Storage::disk('public')->exists($caminhoArquivo)) {
+                Storage::disk('public')->delete($caminhoArquivo);
+            }
+        }
+        
+        // Remover a pasta completa do espaço
+        $pastaEspaco = 'espacos/' . $id;
+        if (Storage::disk('public')->exists($pastaEspaco)) {
+            Storage::disk('public')->deleteDirectory($pastaEspaco);
+        }
+        
+        // Deletar o espaço (as fotos serão deletadas automaticamente pelo cascade)
         $espaco->delete();
-        return redirect()->route('espacos.index')->with('success', 'Espaço removido com sucesso!');
+        
+        return redirect()->route('espacos.index')->with('success', 'Espaço, suas fotos e pasta removidos com sucesso!');
     }
     // public function all()
     // {
