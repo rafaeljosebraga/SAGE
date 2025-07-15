@@ -68,7 +68,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                             Voltar
                         </Link>
                     </Button>
-                    <h1 className="text-3xl font-bold text-gray-500">Editar Espaço</h1>
+                            <h1 className="text-3xl font-bold text-black dark:text-white">Editar espaço</h1>
                 </div>
 
                 <form onSubmit={submit} className="space-y-6">
@@ -276,7 +276,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                     <Button
                         type="submit"
                         disabled={processing}
-                        className="bg-[#D2CBB9] hover:bg-[#EF7D4C] text-black"
+                        className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black"
                         onClick={submit}
                     >
                         <Save className="mr-2 h-4 w-4" />
