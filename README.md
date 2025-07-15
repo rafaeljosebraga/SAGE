@@ -60,3 +60,15 @@ npm run dev
 ./vendor/bin/sail artisan config:clear
 ./vendor/bin/sail artisan view:clear
 ```
+
+# Exemplos de comandos úteis para desenvolvimento
+```bash
+# Cria link simbólico
+./vendor/bin/sail artisan storage:link
+
+# Criação de Middleware
+./vendor/bin/sail artisan make:middleware CanManageUsers
+
+# Criação de Seeder
+/vendor/bin/sail artisan make:seeder AdminUserSeeder
+```
