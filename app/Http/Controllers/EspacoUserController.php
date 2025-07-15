@@ -17,7 +17,7 @@ class EspacoUserController extends Controller
         $users = User::select('id', 'name')->get();
         $espacos = Espaco::select('id', 'nome')->get();
 
-        return Inertia::render('EspacoUser/Index', [
+        return Inertia::render('AtribuirPermissoes/Index', [
             'users' => $users,
             'espacos' => $espacos,
         ]);
@@ -39,7 +39,16 @@ class EspacoUserController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validatedData = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'espaco_id' => 'required|exists:espacos,id',
+        ]);
+
+        $user = User::find($validatedData['user_id']);
+        $user->espacos()->attach($validatedData['espaco_id']);
+
+        return redirect()->route('espaco-users.index')
+            ->with('success', 'Espaço atribuído ao usuário com sucesso!');
     }
 
     /**
@@ -47,7 +56,14 @@ class EspacoUserController extends Controller
      */
     public function show(string $id)
     {
-        //
+        if (!ctype_digit($id)) {
+            abort(404, 'ID inválido');
+        }
+
+        $user = User::with('espacos')->findOrFail($id);
+        return Inertia::render('EspacoUser/Show', [
+            'user' => $user,
+        ]);
     }
 
     /**
@@ -55,7 +71,17 @@ class EspacoUserController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        if (!ctype_digit($id)) {
+            abort(404, 'ID inválido');
+        }
+
+        $user = User::with('espacos')->findOrFail($id);
+        $espacos = Espaco::all();
+
+        return Inertia::render('EspacoUser/Edit', [
+            'user' => $user,
+            'espacos' => $espacos,
+        ]);
     }
 
     /**
@@ -63,7 +89,20 @@ class EspacoUserController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        if (!ctype_digit($id)) {
+            abort(404, 'ID inválido');
+        }
+
+        $validatedData = $request->validate([
+            'espaco_ids' => 'required|array',
+            'espaco_ids.*' => 'exists:espacos,id',
+        ]);
+
+        $user = User::findOrFail($id);
+        $user->espacos()->sync($validatedData['espaco_ids']);
+
+        return redirect()->route('espaco-users.index')
+            ->with('success', 'Espaços do usuário atualizados com sucesso!');
     }
 
     /**
@@ -71,7 +110,21 @@ class EspacoUserController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        if (!ctype_digit($id)) {
+            abort(404, 'ID inválido');
+        }
+
+        $user = User::findOrFail($id);
+
+        try {
+            $user->espacos()->detach();
+            $user->delete();
+
+            return redirect()->route('espaco-users.index')
+                ->with('success', 'Usuário e suas associações de espaços removidos com sucesso!');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Erro ao remover usuário e associações. Tente novamente.']);
+        }
     }
     public function assignEspacoToUser(Request $request)
     {
