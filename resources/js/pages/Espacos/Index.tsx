@@ -231,7 +231,7 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                         className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black"
 
                     >
-                        <Link href={`/espacos/${espaco.id}/edit`}>
+                        <Link href={`/espacos/${espaco.id}/editar`}>
                             <Pencil className="h-4 w-4" />
                         </Link>
                     </Button>
@@ -288,7 +288,7 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                     </div>
                     <div className="flex-shrink-0">
                         <Button asChild className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black ">
-                            <Link href="/espacos/create">
+                            <Link href="/espacos/criar">
                                 <Plus className="mr-2 h-4 w-4" />
                                 Novo Espaço
                             </Link>
@@ -331,14 +331,10 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                         {/* Conteúdo do Modal */}
                         <div className="p-6 space-y-6 overflow-y-auto flex-1 bg-card">
                             {/* Informações Básicas */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-4">
                                 <div className="bg-muted/30 p-4 rounded-lg border border-border">
                                     <label className="text-sm font-medium text-muted-foreground">Nome</label>
                                     <p className="text-lg font-semibold text-card-foreground mt-1">{selectedEspaco.nome}</p>
-                                </div>
-                                <div className="bg-muted/30 p-4 rounded-lg border border-border">
-                                    <label className="text-sm font-medium text-muted-foreground">ID</label>
-                                    <p className="text-lg text-card-foreground mt-1">#{selectedEspaco.id}</p>
                                 </div>
                             </div>
 
@@ -535,7 +531,7 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                             <Button
                                 onClick={() => {
                                     closeModal();
-                                    router.visit(`/espacos/${selectedEspaco.id}/edit`);
+                                    router.visit(`/espacos/${selectedEspaco.id}/editar`);
                                 }}
                                 className="bg-[#D2CBB9] hover:bg-[#EF7D4C] text-black rounded-lg"
                             >

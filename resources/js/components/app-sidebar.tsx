@@ -22,7 +22,7 @@ export function AppSidebar() {
             ? [
                   {
                       title: 'Gerenciar Usuários',
-                      href: '/users',
+                      href: '/usuarios',
                       icon: Users,
                   },
               ]

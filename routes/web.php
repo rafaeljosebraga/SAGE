@@ -19,16 +19,43 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Rotas para gerenciar usuários (APENAS para usuários com permissão de administrador)
     Route::middleware(['can-manage-users'])->group(function () {
-        Route::resource('users', UserController::class)->except(['show']);
+        // Rotas de Usuários em português
+        Route::get("usuarios", [UserController::class, "index"])->name("users.index");
+        Route::get("usuarios/criar", [UserController::class, "create"])->name("users.create");
+        Route::post("usuarios", [UserController::class, "store"])->name("users.store");
+        Route::get("usuarios/{user}/editar", [UserController::class, "edit"])->name("users.edit");
+        Route::put("usuarios/{user}", [UserController::class, "update"])->name("users.update");
+        Route::delete("usuarios/{user}", [UserController::class, "destroy"])->name("users.destroy");
     });
 
     // Rotas para gerenciamento de espaços, localizações e recursos (APENAS Diretor Geral)
     Route::middleware(['diretor-geral'])->group(function () {
-        Route::resource('espacos', EspacoController::class);
+        // Rotas de Espaços em português
+        Route::get("espacos", [EspacoController::class, "index"])->name("espacos.index");
+        Route::get("espacos/criar", [EspacoController::class, "create"])->name("espacos.create");
+        Route::post("espacos", [EspacoController::class, "store"])->name("espacos.store");
+        Route::get("espacos/{espaco}", [EspacoController::class, "show"])->name("espacos.show");
+        Route::get("espacos/{espaco}/editar", [EspacoController::class, "edit"])->name("espacos.edit");
+        Route::put("espacos/{espaco}", [EspacoController::class, "update"])->name("espacos.update");
+        Route::delete("espacos/{espaco}", [EspacoController::class, "destroy"])->name("espacos.destroy");
         Route::resource('localizacoes', LocalizacaoController::class);
-        Route::resource('recursos', RecursoController::class);
+        // Rotas de Localizações em português
+        Route::get("localizacoes", [LocalizacaoController::class, "index"])->name("localizacoes.index");
+        Route::get("localizacoes/criar", [LocalizacaoController::class, "create"])->name("localizacoes.create");
+        Route::post("localizacoes", [LocalizacaoController::class, "store"])->name("localizacoes.store");
+        Route::get("localizacoes/{localizacao}", [LocalizacaoController::class, "show"])->name("localizacoes.show");
+        Route::get("localizacoes/{localizacao}/editar", [LocalizacaoController::class, "edit"])->name("localizacoes.edit");
+        Route::put("localizacoes/{localizacao}", [LocalizacaoController::class, "update"])->name("localizacoes.update");
+        Route::delete("localizacoes/{localizacao}", [LocalizacaoController::class, "destroy"])->name("localizacoes.destroy");
         
-        // Rotas para fotos dos espaços
+        // Rotas de Recursos em português
+        Route::get("recursos", [RecursoController::class, "index"])->name("recursos.index");
+        Route::get("recursos/criar", [RecursoController::class, "create"])->name("recursos.create");
+        Route::post("recursos", [RecursoController::class, "store"])->name("recursos.store");
+        Route::get("recursos/{recurso}", [RecursoController::class, "show"])->name("recursos.show");
+        Route::get("recursos/{recurso}/editar", [RecursoController::class, "edit"])->name("recursos.edit");
+        Route::put("recursos/{recurso}", [RecursoController::class, "update"])->name("recursos.update");
+        Route::delete("recursos/{recurso}", [RecursoController::class, "destroy"])->name("recursos.destroy");
         Route::resource('fotos', FotoController::class);
         Route::post('fotos/reorder', [FotoController::class, 'reorder'])->name('fotos.reorder');
     });

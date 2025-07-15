@@ -29,11 +29,11 @@ export default function Edit({ user, perfilAcesso }: Props) {
         },
         {
             title: 'Gerenciar Usuários',
-            href: '/users',
+            href: '/usuarios',
         },
         {
             title: `Editar ${user.name}`,
-            href: `/users/${user.id}/edit`,
+            href: `/usuarios/${user.id}/editar`,
         },
     ];
 
@@ -45,7 +45,7 @@ export default function Edit({ user, perfilAcesso }: Props) {
 
     const submit = (e: FormEvent) => {
         e.preventDefault();
-        put(`/users/${user.id}`);
+        put(`/usuarios/${user.id}`);
     };
 
     return (
@@ -54,7 +54,7 @@ export default function Edit({ user, perfilAcesso }: Props) {
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center gap-4">
-                    <Link href="/users">
+                    <Link href="/usuarios">
                         <Button variant="outline" size="sm">
                             <ArrowLeft className="mr-2 h-4 w-4" />
                             Voltar
@@ -127,7 +127,7 @@ export default function Edit({ user, perfilAcesso }: Props) {
                                 <Button type="submit" disabled={processing}>
                                     {processing ? 'Salvando...' : 'Salvar Alterações'}
                                 </Button>
-                                <Link href="/users">
+                                <Link href="/usuarios">
                                     <Button type="button" variant="outline">
                                         Cancelar
                                     </Button>

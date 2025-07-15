@@ -31,7 +31,7 @@ interface UsersIndexProps {
 
 export default function UsersIndex({ auth, users }: UsersIndexProps) {
     const handleDelete = (id: number) => {
-        router.delete(`/users/${id}`);
+        router.delete(`/usuarios/${id}`);
     };
 
     const formatPerfil = (perfil: string | undefined) => {
@@ -128,7 +128,7 @@ export default function UsersIndex({ auth, users }: UsersIndexProps) {
                         asChild
                         className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black"
                     >
-                        <Link href={`/users/${user.id}/edit`}>
+                        <Link href={`/usuarios/${user.id}/editar`}>
                             <Pencil className="h-4 w-4" />
                         </Link>
                     </Button>
@@ -171,7 +171,7 @@ export default function UsersIndex({ auth, users }: UsersIndexProps) {
     ];
 
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Usuários', href: '/users' }
+        { title: 'Usuários', href: '/usuarios' }
     ];
 
     return (
@@ -207,7 +207,7 @@ export default function UsersIndex({ auth, users }: UsersIndexProps) {
                             {users.current_page > 1 && (
                                 <Button
                                     variant="outline"
-                                    onClick={() => router.get(`/users?page=${users.current_page - 1}`)}
+                                    onClick={() => router.get(`/usuarios?page=${users.current_page - 1}`)}
                                 >
                                     Anterior
                                 </Button>
@@ -215,7 +215,7 @@ export default function UsersIndex({ auth, users }: UsersIndexProps) {
                             {users.current_page < users.last_page && (
                                 <Button
                                     variant="outline"
-                                    onClick={() => router.get(`/users?page=${users.current_page + 1}`)}
+                                    onClick={() => router.get(`/usuarios?page=${users.current_page + 1}`)}
                                 >
                                     Próximo
                                 </Button>

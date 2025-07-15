@@ -155,7 +155,7 @@ export default function RecursosIndex({ auth, recursos }: RecursosIndexProps) {
                         asChild
                          className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black"
                     >
-                        <Link href={`/recursos/${recurso.id}/edit`}>
+                        <Link href={`/recursos/${recurso.id}/editar`}>
                             <Pencil className="h-4 w-4" />
                         </Link>
                     </Button>
@@ -212,7 +212,7 @@ export default function RecursosIndex({ auth, recursos }: RecursosIndexProps) {
                     </div>
                     <div className="flex-shrink-0 mr-6">
                        <Button asChild className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black ">
-                            <Link href="/recursos/create">
+                            <Link href="/recursos/criar">
                                 <Plus className="mr-2 h-4 w-4" />
                                 Novo Recurso
                             </Link>

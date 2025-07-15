@@ -58,7 +58,7 @@ export default function LocalizacoesIndex({ auth, localizacoes }: LocalizacoesIn
                         className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black"
 
                     >
-                        <Link href={`/localizacoes/${localizacao.id}/edit`}>
+                        <Link href={`/localizacoes/${localizacao.id}/editar`}>
                             <Pencil className="h-4 w-4" />
                         </Link>
                     </Button>
@@ -116,7 +116,7 @@ export default function LocalizacoesIndex({ auth, localizacoes }: LocalizacoesIn
                     </div>
                     <div className="flex-shrink-0 mr-6">
                         <Button asChild className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black ">
-                            <Link href="/localizacoes/create">
+                            <Link href="/localizacoes/criar">
                                 <Plus className="mr-2 h-4 w-4" />
                                 Nova Localização
                             </Link>
