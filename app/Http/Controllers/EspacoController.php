@@ -145,4 +145,8 @@ class EspacoController extends Controller
         $espaco->delete();
         return redirect()->route('espacos.index')->with('success', 'Espaço removido com sucesso!');
     }
+    // public function all()
+    // {
+    //     return response()->json(Espaco::select('id', 'nome')->get());
+    // }
 }
