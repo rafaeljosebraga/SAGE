@@ -14,12 +14,18 @@ class EspacoUserController extends Controller
      */
     public function index()
     {
-        $users = User::select('id', 'name')->get();
-        $espacos = Espaco::select('id', 'nome')->get();
+        $users = User::with('espacos:id,nome')->select('id', 'name')->get();
+        $espacos = Espaco::with('users:id,name')->select('id', 'nome')->get();
 
         return Inertia::render('AtribuirPermissoes/Index', [
             'users' => $users,
             'espacos' => $espacos,
+            'userEspacoConnections' => $users->map(function ($user) {
+                return [
+                    'user' => $user,
+                    'espacos' => $user->espacos
+                ];
+            })
         ]);
     }
 
@@ -28,7 +34,7 @@ class EspacoUserController extends Controller
         $users = User::select('id', 'name')->get();
         $espacos = Espaco::select('id', 'nome')->get();
 
-        return Inertia::render('EspacoUser/Create', [
+        return Inertia::render('AtribuirPermissoes/Create', [
             'users' => $users,
             'espacos' => $espacos,
         ]);
@@ -41,16 +47,18 @@ class EspacoUserController extends Controller
     {
         $validatedData = $request->validate([
             'user_id' => 'required|exists:users,id',
-            'espaco_id' => 'required|exists:espacos,id',
+            'espaco_ids' => 'required|array',
+            'espaco_ids.*' => 'exists:espacos,id',
         ]);
 
         $user = User::find($validatedData['user_id']);
-        $user->espacos()->attach($validatedData['espaco_id']);
+
+        // Usamos sync sem detach para adicionar sem remover os existentes
+        $user->espacos()->syncWithoutDetaching($validatedData['espaco_ids']);
 
         return redirect()->route('espaco-users.index')
-            ->with('success', 'Espaço atribuído ao usuário com sucesso!');
+            ->with('success', 'Permissões atribuídas com sucesso!');
     }
-
     /**
      * Display the specified resource.
      */
@@ -150,6 +158,14 @@ class EspacoUserController extends Controller
         $user->espacos()->detach($request->espaco_id);
 
         return response()->json(['message' => 'Espaco removed from user']);
+    }
+
+    public function listUsers()
+    {
+        $users = User::select('id', 'name')->get();
+        return Inertia::render('Users/List', [
+            'users' => $users
+        ]);
     }
 
     public function getEspacosForUser($userId)

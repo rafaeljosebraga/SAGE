@@ -28,6 +28,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('localizacoes', LocalizacaoController::class);
         Route::resource('recursos', RecursoController::class);
         Route::resource('espaco-users', EspacoUserController::class);
+        Route::get('atribuir-permissoes', [EspacoUserController::class, 'index'])->name('atribuir-permissoes.index');
     });
 });
 
