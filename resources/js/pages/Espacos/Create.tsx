@@ -232,6 +232,15 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                         </Button>
                     </div>
                 </form>
+
+                {/* Nota sobre fotos */}
+                <Card>
+                    <CardContent className="p-4">
+                        <p className="text-sm text-gray-600">
+                            💡 <strong>Dica:</strong> Após criar o espaço, você poderá adicionar fotos na página de edição.
+                        </p>
+                    </CardContent>
+                </Card>
             </div>
         </AppLayout>
     );

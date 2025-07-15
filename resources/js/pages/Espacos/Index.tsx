@@ -2,7 +2,7 @@ import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Head, Link, router } from '@inertiajs/react';
-import { Plus, Pencil, Trash2, MapPin, Users, Eye, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, MapPin, Users, Eye, X, Image as ImageIcon, ZoomIn } from 'lucide-react';
 import { type User, type Espaco, type BreadcrumbItem } from '@/types';
 import { FilterableTable, type ColumnConfig } from '@/components/ui/filterable-table';
 import {
@@ -25,9 +25,19 @@ interface EspacosIndexProps {
     espacos: Espaco[];
 }
 
+interface Foto {
+    id: number;
+    url: string;
+    nome_original: string;
+    descricao?: string;
+    ordem: number;
+}
+
 export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
     const [selectedEspaco, setSelectedEspaco] = useState<Espaco | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedFoto, setSelectedFoto] = useState<Foto | null>(null);
+    const [isFotoModalOpen, setIsFotoModalOpen] = useState(false);
 
     const handleDelete = (id: number) => {
         router.delete(`/espacos/${id}`);
@@ -41,6 +51,16 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
     const closeModal = () => {
         setIsModalOpen(false);
         setSelectedEspaco(null);
+    };
+
+    const handleViewFoto = (foto: Foto) => {
+        setSelectedFoto(foto);
+        setIsFotoModalOpen(true);
+    };
+
+    const closeFotoModal = () => {
+        setIsFotoModalOpen(false);
+        setSelectedFoto(null);
     };
 
     const formatDate = (dateString: string) => {
@@ -266,7 +286,7 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                     onClick={closeModal}
                 >
                     <div 
-                        className="bg-card border border-border rounded-xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col"
+                        className="bg-card border border-border rounded-xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Header do Modal */}
@@ -390,6 +410,49 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                                 </div>
                             )}
 
+                            {/* Fotos do Espaço */}
+                            <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                                    <label className="text-sm font-medium text-muted-foreground">
+                                        Fotos do Espaço
+                                        {selectedEspaco.fotos && selectedEspaco.fotos.length > 0 && (
+                                            <span className="ml-1">({selectedEspaco.fotos.length})</span>
+                                        )}
+                                    </label>
+                                </div>
+                                
+                                {selectedEspaco.fotos && selectedEspaco.fotos.length > 0 ? (
+                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                                        {selectedEspaco.fotos.map((foto) => (
+                                            <div 
+                                                key={foto.id} 
+                                                className="relative group cursor-pointer rounded-lg overflow-hidden border border-border hover:border-primary/50 transition-colors"
+                                                onClick={() => handleViewFoto(foto)}
+                                            >
+                                                <img
+                                                    src={foto.url}
+                                                    alt={foto.nome_original}
+                                                    className="w-full h-24 object-cover group-hover:scale-105 transition-transform duration-200"
+                                                />
+                                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                    <ZoomIn className="h-6 w-6 text-white" />
+                                                </div>
+                                                {/* Descrição sempre visível na parte inferior */}
+                                                <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-xs p-1 truncate">
+                                                    {foto.descricao ? foto.descricao : 'Sem descrição'}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-8 text-muted-foreground">
+                                        <ImageIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                                        <p className="text-sm">Nenhuma foto cadastrada para este espaço</p>
+                                    </div>
+                                )}
+                            </div>
+
                             {/* Informações de Auditoria */}
                             <div className="bg-muted/30 p-4 rounded-lg border border-border border-t">
                                 <h3 className="text-lg font-medium text-card-foreground mb-3">Informações de Auditoria</h3>
@@ -430,6 +493,43 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                                 <Pencil className="mr-2 h-4 w-4" />
                                 Editar
                             </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal de Visualização de Foto - APENAS IMAGEM */}
+            {isFotoModalOpen && selectedFoto && (
+                <div 
+                    className="fixed inset-0 bg-black/80 flex items-center justify-center z-60"
+                    onClick={closeFotoModal}
+                >
+                    <div 
+                        className="bg-card border border-border rounded-xl shadow-2xl max-w-5xl max-h-[95vh] w-full mx-4 overflow-hidden flex flex-col"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Header do Modal de Foto */}
+                        <div className="flex items-center justify-between p-4 border-b border-border bg-card flex-shrink-0">
+                            <h3 className="text-lg font-semibold text-card-foreground">
+                                {selectedFoto.nome_original}
+                            </h3>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={closeFotoModal}
+                                className="text-muted-foreground hover:text-card-foreground rounded-lg"
+                            >
+                                <X className="h-5 w-5" />
+                            </Button>
+                        </div>
+
+                        {/* Imagem - Ocupa todo o espaço disponível */}
+                        <div className="flex-1 flex items-center justify-center p-6 bg-muted/10">
+                            <img
+                                src={selectedFoto.url}
+                                alt={selectedFoto.nome_original}
+                                className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
+                            />
                         </div>
                     </div>
                 </div>

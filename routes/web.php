@@ -4,6 +4,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\EspacoController;
 use App\Http\Controllers\LocalizacaoController;
 use App\Http\Controllers\RecursoController;
+use App\Http\Controllers\FotoController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -26,6 +27,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('espacos', EspacoController::class);
         Route::resource('localizacoes', LocalizacaoController::class);
         Route::resource('recursos', RecursoController::class);
+        
+        // Rotas para fotos dos espaços
+        Route::resource('fotos', FotoController::class);
+        Route::post('fotos/reorder', [FotoController::class, 'reorder'])->name('fotos.reorder');
     });
 });
 

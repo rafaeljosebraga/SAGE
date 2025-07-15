@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use App\Models\Espaco;
 use App\Models\Localizacao;
 use App\Models\Recurso;
@@ -16,7 +16,7 @@ class EspacoController extends Controller
      */
     public function index()
     {
-        $espacos = Espaco::with(['localizacao', 'responsavel', 'recursos'])->get();
+        $espacos = Espaco::with(['localizacao', 'responsavel', 'recursos', 'fotos'])->get();
         return inertia('Espacos/Index', ['espacos' => $espacos]);
     }
 
@@ -28,12 +28,10 @@ class EspacoController extends Controller
         // Retorna dados necessários para formulário de criação
         $localizacoes = Localizacao::all();
         $recursos = Recurso::all();
-        $users = \App\Models\User::all();
         
         return inertia('Espacos/Create', [
             'localizacoes' => $localizacoes,
             'recursos' => $recursos,
-            'users' => $users,
         ]);
     }
 
@@ -78,7 +76,7 @@ class EspacoController extends Controller
      */
     public function show($id)
     {
-        $espaco = Espaco::with(['localizacao', 'responsavel', 'recursos'])->findOrFail($id);
+        $espaco = Espaco::with(['localizacao', 'responsavel', 'recursos', 'fotos'])->findOrFail($id);
         return response()->json($espaco);
     }
 
@@ -87,22 +85,15 @@ class EspacoController extends Controller
      */
     public function edit($id)
     {
-        try {
-            $espaco = Espaco::with(['recursos'])->findOrFail($id);
-            $localizacoes = Localizacao::all();
-            $recursos = Recurso::all();
-            $users = \App\Models\User::all();
-            
-            return inertia('Espacos/Edit', [
-                'espaco' => $espaco,
-                'localizacoes' => $localizacoes,
-                'recursos' => $recursos,
-                'users' => $users,
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Erro no edit de espaços: ' . $e->getMessage());
-            return redirect()->route('espacos.index')->with('error', 'Erro ao carregar espaço para edição.');
-        }
+        $espaco = Espaco::with(['recursos', 'fotos'])->findOrFail($id);
+        $localizacoes = Localizacao::all();
+        $recursos = Recurso::all();
+        
+        return inertia('Espacos/Edit', [
+            'espaco' => $espaco,
+            'localizacoes' => $localizacoes,
+            'recursos' => $recursos,
+        ]);
     }
 
     /**
@@ -118,7 +109,6 @@ class EspacoController extends Controller
             'localizacao_id' => 'nullable|exists:localizacoes,id',
             'recursos_fixos' => 'nullable|array',
             'status' => 'required|in:ativo,inativo,manutencao',
-            'responsavel_id' => 'nullable|exists:users,id',
             'disponivel_reserva' => 'sometimes|boolean',
             'observacoes' => 'nullable|string',
         ]);
@@ -141,8 +131,25 @@ class EspacoController extends Controller
      */
     public function destroy($id)
     {
-        $espaco = Espaco::findOrFail($id);
+        $espaco = Espaco::with('fotos')->findOrFail($id);
+        
+        // Remover todas as fotos do storage individualmente (para garantia)
+        foreach ($espaco->fotos as $foto) {
+            $caminhoArquivo = str_replace('/storage/', '', $foto->url);
+            if (Storage::disk('public')->exists($caminhoArquivo)) {
+                Storage::disk('public')->delete($caminhoArquivo);
+            }
+        }
+        
+        // Remover a pasta completa do espaço
+        $pastaEspaco = 'espacos/' . $id;
+        if (Storage::disk('public')->exists($pastaEspaco)) {
+            Storage::disk('public')->deleteDirectory($pastaEspaco);
+        }
+        
+        // Deletar o espaço (as fotos serão deletadas automaticamente pelo cascade)
         $espaco->delete();
-        return redirect()->route('espacos.index')->with('success', 'Espaço removido com sucesso!');
+        
+        return redirect()->route('espacos.index')->with('success', 'Espaço, suas fotos e pasta removidos com sucesso!');
     }
 }

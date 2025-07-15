@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PhotoUpload } from '@/components/ui/photo-upload';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Save } from 'lucide-react';
 import { type User, type Localizacao, type Recurso, type Espaco, type BreadcrumbItem } from '@/types';
@@ -216,23 +217,40 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                             </CardContent>
                         </Card>
                     )}
-
-                    <div className="flex items-center gap-4">
-                        <Button
-                            type="submit"
-                            disabled={processing}
-                            className="bg-[#D2CBB9] hover:bg-[#EF7D4C] text-black"
-                        >
-                            <Save className="mr-2 h-4 w-4" />
-                            {processing ? 'Salvando...' : 'Salvar Alterações'}
-                        </Button>
-                        <Button variant="outline" asChild>
-                            <Link href={route('espacos.index')}>
-                                Cancelar
-                            </Link>
-                        </Button>
-                    </div>
                 </form>
+
+                {/* Seção de Fotos */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Fotos do Espaço</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <PhotoUpload
+                            espacoId={espaco.id}
+                            fotos={espaco.fotos || []}
+                            maxFiles={10}
+                            maxFileSize={5}
+                        />
+                    </CardContent>
+                </Card>
+
+                {/* Botões de Ação - Movidos para baixo das fotos */}
+                <div className="flex items-center gap-4">
+                    <Button
+                        type="submit"
+                        disabled={processing}
+                        className="bg-[#D2CBB9] hover:bg-[#EF7D4C] text-black"
+                        onClick={submit}
+                    >
+                        <Save className="mr-2 h-4 w-4" />
+                        {processing ? 'Salvando...' : 'Salvar Alterações'}
+                    </Button>
+                    <Button variant="outline" asChild>
+                        <Link href={route('espacos.index')}>
+                            Cancelar
+                        </Link>
+                    </Button>
+                </div>
             </div>
         </AppLayout>
     );
