@@ -39,7 +39,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get("espacos/{espaco}/editar", [EspacoController::class, "edit"])->name("espacos.edit");
         Route::put("espacos/{espaco}", [EspacoController::class, "update"])->name("espacos.update");
         Route::delete("espacos/{espaco}", [EspacoController::class, "destroy"])->name("espacos.destroy");
-        Route::resource('localizacoes', LocalizacaoController::class);
+        
         // Rotas de Localizações em português
         Route::get("localizacoes", [LocalizacaoController::class, "index"])->name("localizacoes.index");
         Route::get("localizacoes/criar", [LocalizacaoController::class, "create"])->name("localizacoes.create");
