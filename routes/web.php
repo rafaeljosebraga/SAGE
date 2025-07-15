@@ -27,20 +27,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('espacos', EspacoController::class);
         Route::resource('localizacoes', LocalizacaoController::class);
         Route::resource('recursos', RecursoController::class);
+        Route::resource('espaco-users', EspacoUserController::class);
     });
-
-    Route::post('/espaco/assign', [EspacoUserController::class, 'assignEspacoToUser']);
-    Route::post('/espaco/remove', [EspacoUserController::class, 'removeEspacoFromUser']);
-    Route::post('/espaco/sync', [EspacoUserController::class, 'syncEspacos']);
-    Route::get('/user/{id}/espacos', [EspacoUserController::class, 'getEspacosForUser']);
-    Route::get('/espaco/{id}/users', [EspacoUserController::class, 'getUsersForEspaco']);
 });
 
-require __DIR__ . '/settings.p
-
-
-
-
-
-hp';
+require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
