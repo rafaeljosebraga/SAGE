@@ -45,10 +45,18 @@ class FotoController extends Controller
         $fotos = $request->file('fotos');
         $descricoes = $request->input('descricoes', []);
         
-        // Verificar se a pasta existe
+        // Verificar se a pasta existe e criar se necessário
         $pastaDestino = 'espacos/' . $espacoId;
-        if (!Storage::disk('public')->exists($pastaDestino)) {
-            Storage::disk('public')->makeDirectory($pastaDestino);
+        try {
+            if (!Storage::disk('public')->exists($pastaDestino)) {
+                Storage::disk('public')->makeDirectory($pastaDestino);
+            }
+        } catch (Exception $e) {
+            // Fallback para mkdir nativo
+            $caminhoCompleto = storage_path('app/public/' . $pastaDestino);
+            if (!file_exists($caminhoCompleto)) {
+                @mkdir($caminhoCompleto, 0777, true);
+            }
         }
         
         // Buscar a próxima ordem disponível

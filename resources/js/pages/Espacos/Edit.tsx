@@ -18,6 +18,17 @@ import { ArrowLeft, Save } from 'lucide-react';
 import { type User, type Localizacao, type Recurso, type Espaco, type BreadcrumbItem } from '@/types';
 import { FormEventHandler, ChangeEvent } from 'react';
 
+// Tipo para o formulário de edição
+type EspacoEditFormData = {
+    nome: string;
+    descricao: string;
+    capacidade: string;
+    localizacao_id: string;
+    status: 'ativo' | 'inativo' | 'manutencao';
+    disponivel_reserva: boolean;
+    recursos: number[];
+};
+
 interface EspacosEditProps {
     auth: {
         user: User;
@@ -50,19 +61,19 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
         }
     };
 
-    const { data, setData, put, processing, errors } = useForm({
+    const { data, setData, put, processing, errors } = useForm<Required<EspacoEditFormData>>({
         nome: espaco.nome || '',
         descricao: espaco.descricao || '',
         capacidade: espaco.capacidade?.toString() || '',
         localizacao_id: espaco.localizacao_id?.toString() || '',
         status: espaco.status || 'ativo',
         disponivel_reserva: espaco.disponivel_reserva || false,
-        recursos: espaco.recursos?.map(r => r.id) || [] as number[],
+        recursos: espaco.recursos?.map(r => r.id) || [],
     });
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        put(route('espacos.update', espaco.id));
+        put(`/espacos/${espaco.id}`);
     };
 
     const handleRecursoChange = (recursoId: number, checked: boolean) => {
@@ -74,8 +85,8 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
     };
 
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Espaços', href: route('espacos.index') },
-        { title: 'Editar Espaço', href: route('espacos.edit', espaco.id) }
+        { title: 'Espaços', href: '/espacos' },
+        { title: 'Editar Espaço', href: `/espacos/${espaco.id}/editar` }
     ];
 
     return (
@@ -85,12 +96,12 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
             <div className="space-y-6">
                 <div className="flex items-center gap-4">
                     <Button variant="outline" asChild>
-                        <Link href={route('espacos.index')}>
+                        <Link href="/espacos">
                             <ArrowLeft className="mr-2 h-4 w-4" />
                             Voltar
                         </Link>
                     </Button>
-                            <h1 className="text-3xl font-bold text-black dark:text-white">Editar espaço</h1>
+                    <h1 className="text-3xl font-bold text-black dark:text-white">Editar espaço</h1>
                 </div>
 
                 <form onSubmit={submit} className="space-y-6">
@@ -178,7 +189,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="status">Status *</Label>
+                                    <Label htmlFor="status">Status</Label>
                                     <Select
                                         value={data.status}
                                         onValueChange={(value) => setData('status', value as 'ativo' | 'inativo' | 'manutencao')}
@@ -202,7 +213,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                                 <Checkbox
                                     id="disponivel_reserva"
                                     checked={data.disponivel_reserva}
-                                    onCheckedChange={(checked) => setData('disponivel_reserva', !!checked)}
+                                    onCheckedChange={(checked) => setData('disponivel_reserva', Boolean(checked))}
                                 />
                                 <Label htmlFor="disponivel_reserva">
                                     Disponível para reserva
@@ -211,43 +222,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                         </CardContent>
                     </Card>
 
-                {/* Painel do Responsável */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Responsável pelo Espaço</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {(espaco.createdBy || espaco.responsavel) ? (
-                            <div className="bg-muted/30 p-4 rounded-lg border border-border">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                                        <span className="text-lg font-medium text-primary">
-                                            {(espaco.createdBy?.name || espaco.responsavel?.name || "").charAt(0).toUpperCase()}
-                                        </span>
-                                    </div>
-                                    <div className="flex-1">
-                                        <h3 className="text-lg font-semibold text-card-foreground">
-                                            {espaco.createdBy?.name || espaco.responsavel?.name}
-                                        </h3>
-                                        <p className="text-sm text-muted-foreground">
-                                            {espaco.createdBy?.email || espaco.responsavel?.email}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getPerfilColor(espaco.createdBy?.perfil_acesso || espaco.responsavel?.perfil_acesso)}`}>
-                                            {formatPerfil(espaco.createdBy?.perfil_acesso || espaco.responsavel?.perfil_acesso)}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="bg-muted/30 p-4 rounded-lg border border-border text-center">
-                                <p className="text-muted-foreground">Responsável não definido</p>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-
+                    {/* Recursos Disponíveis - PRIMEIRO */}
                     {recursos.length > 0 && (
                         <Card>
                             <CardHeader>
@@ -261,7 +236,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                                                 id={`recurso-${recurso.id}`}
                                                 checked={data.recursos.includes(recurso.id)}
                                                 onCheckedChange={(checked) => 
-                                                    handleRecursoChange(recurso.id, checked as boolean)
+                                                    handleRecursoChange(recurso.id, Boolean(checked))
                                                 }
                                             />
                                             <Label htmlFor={`recurso-${recurso.id}`}>
@@ -276,9 +251,46 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                             </CardContent>
                         </Card>
                     )}
+
+                    {/* Responsável pelo Espaço - SEGUNDO */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Responsável pelo Espaço</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            {(espaco.createdBy || espaco.responsavel) ? (
+                                <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                                            <span className="text-lg font-medium text-primary">
+                                                {(espaco.createdBy?.name || espaco.responsavel?.name || "").charAt(0).toUpperCase()}
+                                            </span>
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="text-lg font-semibold text-card-foreground">
+                                                {espaco.createdBy?.name || espaco.responsavel?.name}
+                                            </h3>
+                                            <p className="text-sm text-muted-foreground">
+                                                {espaco.createdBy?.email || espaco.responsavel?.email}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getPerfilColor(espaco.createdBy?.perfil_acesso || espaco.responsavel?.perfil_acesso)}`}>
+                                                {formatPerfil(espaco.createdBy?.perfil_acesso || espaco.responsavel?.perfil_acesso)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="bg-muted/30 p-4 rounded-lg border border-border text-center">
+                                    <p className="text-muted-foreground">Responsável não definido</p>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
                 </form>
 
-                {/* Seção de Fotos */}
+                {/* Seção de Fotos - Separada do formulário */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Fotos do Espaço</CardTitle>
@@ -293,19 +305,23 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                     </CardContent>
                 </Card>
 
-                {/* Botões de Ação - Movidos para baixo das fotos */}
+                {/* Botões de Ação - No final, igual ao Create */}
                 <div className="flex items-center gap-4">
                     <Button
-                        type="submit"
+                        type="button"
                         disabled={processing}
-                        className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black"
                         onClick={submit}
+                        className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black"
                     >
                         <Save className="mr-2 h-4 w-4" />
                         {processing ? 'Salvando...' : 'Salvar Alterações'}
                     </Button>
-                    <Button variant="outline" asChild>
-                        <Link href={route('espacos.index')}>
+                    <Button 
+                        type="button" 
+                        variant="outline"
+                        asChild
+                    >
+                        <Link href="/espacos">
                             Cancelar
                         </Link>
                     </Button>

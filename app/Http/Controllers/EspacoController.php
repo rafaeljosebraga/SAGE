@@ -46,9 +46,14 @@ class EspacoController extends Controller
             'descricao' => 'nullable|string',
             'localizacao_id' => 'required|exists:localizacoes,id',
             'recursos_fixos' => 'nullable|array',
+            'recursos' => 'nullable|array',
             'status' => 'required|in:ativo,inativo,manutencao',
             'disponivel_reserva' => 'sometimes|boolean',
             'observacoes' => 'nullable|string',
+            'fotos' => 'nullable|array',
+            'fotos.*' => 'image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB max
+            'descricoes' => 'nullable|array',
+            'descricoes.*' => 'nullable|string|max:255',
         ]);
 
         // Adiciona campos de auditoria
@@ -58,19 +63,77 @@ class EspacoController extends Controller
         // Define o responsável como o usuário logado que está criando o espaço
         $data['responsavel_id'] = Auth::id();
         
-        // Define valor padrão para disponivel_reserva se não foi enviado
-        if (!isset($data['disponivel_reserva'])) {
+        // Converter disponivel_reserva de string para boolean se necessário
+        if (isset($data['disponivel_reserva'])) {
+            $data['disponivel_reserva'] = filter_var($data['disponivel_reserva'], FILTER_VALIDATE_BOOLEAN);
+        } else {
             $data['disponivel_reserva'] = true;
         }
 
-        $espaco = Espaco::create($data);
-
-        // Sincroniza recursos se enviados
-        if ($request->has('recursos')) {
-            $espaco->recursos()->sync($request->input('recursos'));
+        // Remover campos que não pertencem à tabela espacos
+        $espacoData = collect($data)->except(['recursos', 'fotos', 'descricoes'])->toArray();
+        
+        $espaco = Espaco::create($espacoData);
+        
+        // Criar diretório para fotos do espaço
+        $diretorioEspaco = 'espacos/' . $espaco->id;
+        try {
+            if (!Storage::disk('public')->exists($diretorioEspaco)) {
+                Storage::disk('public')->makeDirectory($diretorioEspaco);
+            }
+        } catch (\Exception $e) {
+            // Fallback para mkdir nativo
+            $caminhoCompleto = storage_path('app/public/' . $diretorioEspaco);
+            if (!file_exists($caminhoCompleto)) {
+                @mkdir($caminhoCompleto, 0777, true);
+            }
         }
 
-        return redirect()->route('espacos.index')->with('success', 'Espaço criado com sucesso!');
+        // Sincroniza recursos se enviados
+        if (isset($data['recursos']) && is_array($data['recursos'])) {
+            $espaco->recursos()->sync($data['recursos']);
+        }
+
+        // Processar fotos se foram enviadas
+        if ($request->hasFile('fotos')) {
+            $fotos = $request->file('fotos');
+            $descricoes = $data['descricoes'] ?? [];
+            
+            // Se for um único arquivo, transformar em array
+            if (!is_array($fotos)) {
+                $fotos = [$fotos];
+            }
+            
+            foreach ($fotos as $index => $foto) {
+                if ($foto && $foto->isValid()) {
+                    $diretorio = 'espacos/' . $espaco->id;
+                    $nomeArquivo = time() . '_' . $index . '_' . $foto->getClientOriginalName();
+                    
+                    // Salvar arquivo
+                    $caminhoArquivo = $foto->storeAs($diretorio, $nomeArquivo, 'public');
+                    
+                    if ($caminhoArquivo) {
+                        // Gerar URL pública para a foto
+                        $urlFoto = '/storage/' . $caminhoArquivo;
+                        
+                        $espaco->fotos()->create([
+                            'url' => $urlFoto,
+                            'nome_original' => $foto->getClientOriginalName(),
+                            'nome_arquivo' => $nomeArquivo,
+                            'caminho' => $caminhoArquivo,
+                            'tamanho' => $foto->getSize(),
+                            'tipo_mime' => $foto->getMimeType(),
+                            'ordem' => $index,
+                            'descricao' => $descricoes[$index] ?? null,
+                            'created_by' => Auth::id(),
+                            'updated_by' => Auth::id(),
+                        ]);
+                    }
+                }
+            }
+        }
+
+        return redirect('/espacos')->with('success', 'Espaço criado com sucesso!');
     }
 
     /**
@@ -79,7 +142,7 @@ class EspacoController extends Controller
     public function show($id)
     {
         // Redirect to index instead of showing individual space
-        return redirect()->route('espacos.index');
+        return redirect('/espacos');
     }
 
     /**
@@ -110,6 +173,7 @@ class EspacoController extends Controller
             'descricao' => 'nullable|string',
             'localizacao_id' => 'required|exists:localizacoes,id',
             'recursos_fixos' => 'nullable|array',
+            'recursos' => 'nullable|array',
             'status' => 'required|in:ativo,inativo,manutencao',
             'disponivel_reserva' => 'sometimes|boolean',
             'observacoes' => 'nullable|string',
@@ -118,14 +182,22 @@ class EspacoController extends Controller
         // Adiciona campo de auditoria para atualização
         $data['updated_by'] = Auth::id();
 
-        $espaco->update($data);
-
-        // Sincroniza recursos se enviados
-        if ($request->has('recursos')) {
-            $espaco->recursos()->sync($request->input('recursos'));
+        // Converter disponivel_reserva se necessário
+        if (isset($data['disponivel_reserva'])) {
+            $data['disponivel_reserva'] = filter_var($data['disponivel_reserva'], FILTER_VALIDATE_BOOLEAN);
         }
 
-        return redirect()->route('espacos.index')->with('success', 'Espaço atualizado com sucesso!');
+        // Remover campos que não pertencem à tabela espacos
+        $espacoData = collect($data)->except(['recursos'])->toArray();
+        
+        $espaco->update($espacoData);
+
+        // Sincroniza recursos se enviados
+        if (isset($data['recursos']) && is_array($data['recursos'])) {
+            $espaco->recursos()->sync($data['recursos']);
+        }
+
+        return redirect('/espacos')->with('success', 'Espaço atualizado com sucesso!');
     }
 
     /**
@@ -152,6 +224,6 @@ class EspacoController extends Controller
         // Deletar o espaço (as fotos serão deletadas automaticamente pelo cascade)
         $espaco->delete();
         
-        return redirect()->route('espacos.index')->with('success', 'Espaço, suas fotos e pasta removidos com sucesso!');
+        return redirect('/espacos')->with('success', 'Espaço, suas fotos e pasta removidos com sucesso!');
     }
 }

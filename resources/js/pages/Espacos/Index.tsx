@@ -469,7 +469,7 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                                 
                                 {selectedEspaco.fotos && selectedEspaco.fotos.length > 0 ? (
                                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                                        {selectedEspaco.fotos.map((foto) => (
+                                        {selectedEspaco.fotos.filter(foto => foto.url && foto.url !== '/storage/' && foto.url.length > 10).map((foto) => (
                                             <div 
                                                 key={foto.id} 
                                                 className="relative group cursor-pointer rounded-lg overflow-hidden border border-border hover:border-primary/50 transition-colors"
