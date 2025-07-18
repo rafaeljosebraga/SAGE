@@ -317,7 +317,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="status">Status *</Label>
+                                    <Label htmlFor="status">Status</Label>
                                     <Select
                                         value={data.status}
                                         onValueChange={handleStatusChange}

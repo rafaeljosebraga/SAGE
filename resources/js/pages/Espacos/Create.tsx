@@ -358,7 +358,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="status">Status *</Label>
+                                    <Label htmlFor="status">Status</Label>
                                     <Select
                                         value={data.status}
                                         onValueChange={handleStatusChange}
