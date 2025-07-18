@@ -50,10 +50,17 @@ class EspacoController extends Controller
             'status' => 'required|in:ativo,inativo,manutencao',
             'disponivel_reserva' => 'sometimes|boolean',
             'observacoes' => 'nullable|string',
-            'fotos' => 'nullable|array',
-            'fotos.*' => 'image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB max
+            'fotos' => 'required|array|min:1',
+            'fotos.*' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB max
             'descricoes' => 'nullable|array',
             'descricoes.*' => 'nullable|string|max:255',
+        ], [
+            'fotos.required' => 'É obrigatório adicionar pelo menos 1 foto do espaço.',
+            'fotos.min' => 'É obrigatório adicionar pelo menos 1 foto do espaço.',
+            'fotos.*.required' => 'Todas as fotos são obrigatórias.',
+            'fotos.*.image' => 'O arquivo deve ser uma imagem.',
+            'fotos.*.mimes' => 'A foto deve ser do tipo: jpeg, png, jpg ou gif.',
+            'fotos.*.max' => 'A foto não pode ser maior que 5MB.',
         ]);
 
         // Adiciona campos de auditoria
@@ -167,6 +174,10 @@ class EspacoController extends Controller
     public function update(Request $request, $id)
     {
         $espaco = Espaco::findOrFail($id);
+        
+        // Verificar se o espaço tem pelo menos 1 foto
+        $totalFotosAtuais = $espaco->fotos()->count();
+        
         $data = $request->validate([
             'nome' => 'required|string|max:100',
             'capacidade' => 'required|integer|min:1',
@@ -178,6 +189,13 @@ class EspacoController extends Controller
             'disponivel_reserva' => 'sometimes|boolean',
             'observacoes' => 'nullable|string',
         ]);
+
+        // Validação customizada para garantir que sempre tenha pelo menos 1 foto
+        if ($totalFotosAtuais == 0) {
+            return back()->withErrors([
+                'fotos' => 'É obrigatório ter pelo menos 1 foto do espaço. Adicione fotos na seção!'
+            ]);
+        }
 
         // Adiciona campo de auditoria para atualização
         $data['updated_by'] = Auth::id();

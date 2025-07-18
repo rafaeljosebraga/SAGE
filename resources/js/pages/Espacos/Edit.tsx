@@ -15,8 +15,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PhotoUpload } from '@/components/ui/photo-upload';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Save } from 'lucide-react';
-import { type User, type Localizacao, type Recurso, type Espaco, type BreadcrumbItem } from '@/types';
-import { FormEventHandler, ChangeEvent } from 'react';
+import { type User, type Localizacao, type Recurso, type Espaco, type Foto, type BreadcrumbItem } from '@/types';
+import { FormEventHandler, ChangeEvent, useState, useEffect } from 'react';
 
 // Tipo para o formulário de edição
 type EspacoEditFormData = {
@@ -27,6 +27,7 @@ type EspacoEditFormData = {
     status: 'ativo' | 'inativo' | 'manutencao';
     disponivel_reserva: boolean;
     recursos: number[];
+    fotos?: string; // Campo opcional para capturar erros de validação de fotos
 };
 
 interface EspacosEditProps {
@@ -39,6 +40,9 @@ interface EspacosEditProps {
 }
 
 export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: EspacosEditProps) {
+    const [fotosAtuais, setFotosAtuais] = useState<Foto[]>(espaco.fotos || []);
+    const [deveScrollParaErro, setDeveScrollParaErro] = useState(false);
+
     const formatPerfil = (perfil: string | undefined) => {
         if (!perfil) return "Não definido";
         return perfil.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
@@ -61,7 +65,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
         }
     };
 
-    const { data, setData, put, processing, errors } = useForm<Required<EspacoEditFormData>>({
+    const { data, setData, put, processing, errors, clearErrors } = useForm<Required<EspacoEditFormData>>({
         nome: espaco.nome || '',
         descricao: espaco.descricao || '',
         capacidade: espaco.capacidade?.toString() || '',
@@ -69,18 +73,139 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
         status: espaco.status || 'ativo',
         disponivel_reserva: espaco.disponivel_reserva || false,
         recursos: espaco.recursos?.map(r => r.id) || [],
+        fotos: '', // Campo vazio para capturar erros
     });
+
+    // Scroll automático para o painel com erro APENAS quando deve fazer scroll
+    useEffect(() => {
+        if (deveScrollParaErro && Object.keys(errors).length > 0) {
+            // Mapeamento de campos para painéis
+            const mapeamentoCampoParaPainel = {
+                'nome': 'painel-informacoes-basicas',
+                'capacidade': 'painel-informacoes-basicas', 
+                'descricao': 'painel-informacoes-basicas',
+                'localizacao_id': 'painel-configuracoes',
+                'status': 'painel-configuracoes',
+                'recursos': 'painel-recursos',
+                'fotos': 'painel-fotos'
+            };
+
+            // Ordem de prioridade dos campos para scroll
+            const camposOrdem = ['nome', 'capacidade', 'descricao', 'localizacao_id', 'status', 'recursos', 'fotos'];
+            
+            // Encontrar o primeiro campo com erro
+            const primeiroErro = camposOrdem.find(campo => errors[campo as keyof typeof errors]);
+            
+            if (primeiroErro) {
+                const painelId = mapeamentoCampoParaPainel[primeiroErro as keyof typeof mapeamentoCampoParaPainel];
+                const painel = document.getElementById(painelId);
+                
+                if (painel) {
+                    // Verificar se o painel cabe inteiro na tela
+                    const painelRect = painel.getBoundingClientRect();
+                    const viewportHeight = window.innerHeight;
+                    const painelHeight = painelRect.height;
+                    
+                    // Se o painel cabe na tela, centralizar; senão, mostrar o topo
+                    const scrollBehavior = painelHeight <= viewportHeight * 0.8 ? 'center' : 'start';
+                    
+                    painel.scrollIntoView({
+                        behavior: 'smooth',
+                        block: scrollBehavior as ScrollLogicalPosition,
+                        inline: 'nearest'
+                    });
+                    
+                    console.log(`Scroll para painel: ${painelId} (campo: ${primeiroErro})`);
+                } else {
+                    console.log(`Painel não encontrado: ${painelId}`);
+                }
+            }
+            
+            // Resetar o flag após fazer o scroll
+            setDeveScrollParaErro(false);
+        }
+    }, [errors, deveScrollParaErro]);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
+        
+        // Ativar o flag para fazer scroll em caso de erro
+        setDeveScrollParaErro(true);
+        
         put(`/espacos/${espaco.id}`);
     };
 
+    // Handlers que limpam erros automaticamente
+    const handleNomeChange = (value: string) => {
+        setData('nome', value);
+        if (errors.nome && value.trim()) {
+            clearErrors('nome');
+        }
+    };
+
+    const handleCapacidadeChange = (value: string) => {
+        setData('capacidade', value);
+        if (errors.capacidade && value.trim() && parseInt(value) > 0) {
+            clearErrors('capacidade');
+        }
+    };
+
+    const handleDescricaoChange = (value: string) => {
+        setData('descricao', value);
+        if (errors.descricao) {
+            clearErrors('descricao');
+        }
+    };
+
+    const handleLocalizacaoChange = (value: string) => {
+        setData('localizacao_id', value);
+        if (errors.localizacao_id && value) {
+            clearErrors('localizacao_id');
+        }
+    };
+
+    const handleStatusChange = (value: 'ativo' | 'inativo' | 'manutencao') => {
+        setData('status', value);
+        if (errors.status && value) {
+            clearErrors('status');
+        }
+    };
+
     const handleRecursoChange = (recursoId: number, checked: boolean) => {
+        let novosRecursos: number[];
         if (checked) {
-            setData('recursos', [...data.recursos, recursoId]);
+            novosRecursos = [...data.recursos, recursoId];
         } else {
-            setData('recursos', data.recursos.filter(id => id !== recursoId));
+            novosRecursos = data.recursos.filter(id => id !== recursoId);
+        }
+        
+        setData('recursos', novosRecursos);
+        if (errors.recursos) {
+            clearErrors('recursos');
+        }
+    };
+
+    // Função para converter fotos do PhotoUpload para o tipo global
+    const handleFotosChange = (fotosPhotoUpload: any[]) => {
+        // Converter para o tipo Foto global, mantendo apenas as propriedades necessárias
+        const fotosConvertidas: Foto[] = fotosPhotoUpload.map(foto => ({
+            id: foto.id || 0,
+            espaco_id: espaco.id,
+            url: foto.url,
+            nome_original: foto.nome_original,
+            tamanho: foto.tamanho || 0,
+            tipo_mime: foto.tipo_mime || '',
+            ordem: foto.ordem,
+            descricao: foto.descricao,
+            created_at: foto.created_at || '',
+            updated_at: foto.updated_at || '',
+        }));
+        
+        setFotosAtuais(fotosConvertidas);
+        
+        // Limpar erro de fotos se houver pelo menos 1 foto
+        if (fotosConvertidas.length > 0 && errors.fotos) {
+            clearErrors('fotos');
         }
     };
 
@@ -105,7 +230,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                 </div>
 
                 <form onSubmit={submit} className="space-y-6">
-                    <Card>
+                    <Card id="painel-informacoes-basicas">
                         <CardHeader>
                             <CardTitle>Informações Básicas</CardTitle>
                         </CardHeader>
@@ -117,7 +242,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                                         id="nome"
                                         type="text"
                                         value={data.nome}
-                                        onChange={(e) => setData('nome', e.target.value)}
+                                        onChange={(e) => handleNomeChange(e.target.value)}
                                         placeholder="Nome do espaço"
                                         className={errors.nome ? 'border-red-500' : ''}
                                     />
@@ -133,7 +258,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                                         type="number"
                                         min="1"
                                         value={data.capacidade}
-                                        onChange={(e) => setData('capacidade', e.target.value)}
+                                        onChange={(e) => handleCapacidadeChange(e.target.value)}
                                         placeholder="Número de pessoas"
                                         className={errors.capacidade ? 'border-red-500' : ''}
                                     />
@@ -148,7 +273,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                                 <Textarea
                                     id="descricao"
                                     value={data.descricao}
-                                    onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setData('descricao', e.target.value)}
+                                    onChange={(e: ChangeEvent<HTMLTextAreaElement>) => handleDescricaoChange(e.target.value)}
                                     placeholder="Descrição do espaço"
                                     rows={3}
                                     className={errors.descricao ? 'border-red-500' : ''}
@@ -160,7 +285,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card id="painel-configuracoes">
                         <CardHeader>
                             <CardTitle>Configurações</CardTitle>
                         </CardHeader>
@@ -170,9 +295,12 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                                     <Label htmlFor="localizacao_id">Localização *</Label>
                                     <Select
                                         value={data.localizacao_id}
-                                        onValueChange={(value) => setData('localizacao_id', value)}
+                                        onValueChange={handleLocalizacaoChange}
                                     >
-                                        <SelectTrigger className={errors.localizacao_id ? 'border-red-500' : ''}>
+                                        <SelectTrigger 
+                                            id="localizacao_id"
+                                            className={errors.localizacao_id ? 'border-red-500' : ''}
+                                        >
                                             <SelectValue placeholder="Selecione uma localização" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -189,12 +317,15 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="status">Status</Label>
+                                    <Label htmlFor="status">Status *</Label>
                                     <Select
                                         value={data.status}
-                                        onValueChange={(value) => setData('status', value as 'ativo' | 'inativo' | 'manutencao')}
+                                        onValueChange={handleStatusChange}
                                     >
-                                        <SelectTrigger className={errors.status ? 'border-red-500' : ''}>
+                                        <SelectTrigger 
+                                            id="status"
+                                            className={errors.status ? 'border-red-500' : ''}
+                                        >
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -224,7 +355,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
 
                     {/* Recursos Disponíveis - PRIMEIRO */}
                     {recursos.length > 0 && (
-                        <Card>
+                        <Card id="painel-recursos">
                             <CardHeader>
                                 <CardTitle>Recursos Disponíveis</CardTitle>
                             </CardHeader>
@@ -253,7 +384,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                     )}
 
                     {/* Responsável pelo Espaço - SEGUNDO */}
-                    <Card>
+                    <Card id="painel-responsavel">
                         <CardHeader>
                             <CardTitle>Responsável pelo Espaço</CardTitle>
                         </CardHeader>
@@ -290,10 +421,21 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                     </Card>
                 </form>
 
-                {/* Seção de Fotos - Separada do formulário */}
-                <Card>
+                {/* Seção de Fotos - Separada do formulário - OBRIGATÓRIA */}
+                <Card 
+                    id="painel-fotos"
+                    className={errors.fotos ? 'border-red-500' : ''}
+                    data-testid="fotos-card"
+                >
                     <CardHeader>
-                        <CardTitle>Fotos do Espaço</CardTitle>
+                        <CardTitle className="flex items-center gap-2">
+                            Fotos do Espaço *
+                            {(!fotosAtuais || fotosAtuais.length === 0) && (
+                                <span className="text-sm font-normal text-red-500">
+                                    (Obrigatório - mínimo 1 foto)
+                                </span>
+                            )}
+                        </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <PhotoUpload
@@ -301,7 +443,11 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                             fotos={espaco.fotos || []}
                             maxFiles={10}
                             maxFileSize={5}
+                            onFotosChange={handleFotosChange}
                         />
+                        {errors.fotos && (
+                            <p className="text-sm text-red-500 mt-2">{errors.fotos}</p>
+                        )}
                     </CardContent>
                 </Card>
 

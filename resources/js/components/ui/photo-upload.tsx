@@ -3,6 +3,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Upload, X, Image as ImageIcon, Edit2, Trash2, Save, XCircle } from 'lucide-react';
 
 interface Foto {
@@ -38,11 +49,22 @@ export function PhotoUpload({
     const [editingFoto, setEditingFoto] = useState<number | null>(null);
     const [editDescricao, setEditDescricao] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const editDescricaoRef = useRef<HTMLInputElement>(null);
 
     // Sincronizar fotos quando props mudam
     useEffect(() => {
         setFotosLocal(fotos);
     }, [fotos]);
+
+    // Focar no campo de descrição quando entrar em modo de edição
+    useEffect(() => {
+        if (editingFoto !== null && editDescricaoRef.current) {
+            // Usar setTimeout para garantir que o DOM foi atualizado
+            setTimeout(() => {
+                editDescricaoRef.current?.focus();
+            }, 100);
+        }
+    }, [editingFoto]);
 
     const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(event.target.files || []);
@@ -370,15 +392,40 @@ export function PhotoUpload({
                                                 >
                                                     <Edit2 className="h-4 w-4" />
                                                 </Button>
-                                                <Button
-                                                    type="button"
-                                                    size="sm"
-                                                    variant="destructive"
-                                                    onClick={() => removerFoto(index)}
-                                                    className="shadow-lg"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button
+                                                            type="button"
+                                                            size="sm"
+                                                            variant="destructive"
+                                                            className="shadow-lg"
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>
+                                                                Confirmar exclusão
+                                                            </AlertDialogTitle>
+                                                            <AlertDialogDescription>
+                                                                Tem certeza que deseja excluir a foto "{foto.nome_original}"?
+                                                                Esta ação não pode ser desfeita.
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel>
+                                                                Cancelar
+                                                            </AlertDialogCancel>
+                                                            <AlertDialogAction
+                                                                onClick={() => removerFoto(index)}
+                                                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                                            >
+                                                                Excluir
+                                                            </AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
                                             </div>
                                         </div>
                                     </div>
@@ -391,9 +438,20 @@ export function PhotoUpload({
                                                         Descrição da foto
                                                     </Label>
                                                     <Input
+                                                        ref={editDescricaoRef}
                                                         id={`desc-${index}`}
                                                         value={editDescricao}
                                                         onChange={(e) => setEditDescricao(e.target.value)}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter') {
+                                                                e.preventDefault();
+                                                                editarDescricao(foto, editDescricao);
+                                                            }
+                                                            if (e.key === 'Escape') {
+                                                                e.preventDefault();
+                                                                cancelarEdicao();
+                                                            }
+                                                        }}
                                                         placeholder="Digite uma descrição..."
                                                         className="mt-1"
                                                     />
