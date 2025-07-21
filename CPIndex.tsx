@@ -2,9 +2,8 @@ import { useState } from 'react';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Head, Link } from '@inertiajs/react';
-import { Plus,UserIcon } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { type User, type Espaco } from '@/types';
-import { FilterableTable, type ColumnConfig } from '@/components/ui/filterable-table';
 import {
     Select,
     SelectContent,
@@ -18,7 +17,6 @@ interface AtribuirPermissoesIndexProps {
     espacos: Espaco[];
 }
 
-
 export default function AtribuirPermissoesIndex({ users, espacos }: AtribuirPermissoesIndexProps) {
     const [selectedUserId, setSelectedUserId] = useState<string>('');
     const [selectedEspacos, setSelectedEspacos] = useState<Espaco[]>([]);
@@ -27,52 +25,16 @@ export default function AtribuirPermissoesIndex({ users, espacos }: AtribuirPerm
         setSelectedUserId(userId);
 
         if (userId) {
-            setSelectedEspacos(users.find(u => u.id.toString() === userId)?.espacos || []);
+            const user = users.find(u => u.id.toString() === userId);
+            setSelectedEspacos(user?.espacos || []);
         } else {
             setSelectedEspacos([]);
         }
     };
 
-    const columns: ColumnConfig[] = [
-        {
-            key: 'name',
-            label: 'Nome',
-            render: (value) => (
-                <div className="flex items-center gap-2 font-medium">
-                    <UserIcon className="h-4 w-4 text-gray-500" />
-                    {value}
-                </div>
-            )
-        },
-        {
-            key: 'email',
-            label: 'Email',
-            render: (value) => <span>{value}</span>
-        },
-        {
-            key: 'perfil_acesso',
-            label: 'Perfil de Acesso',
-            render: (value) => <span>{value || 'N/A'}</span>
-        },
-        {
-            key: 'email_verified_at',
-            label: 'Email Verificado',
-            render: (value) => (
-                <span>{value ? 'Verificado' : 'Não Verificado'}</span>
-            )
-        },
-    ];
-
     return (
         <AppLayout>
             <Head title="Atribuir Permissões" />
-            <div>
-                <FilterableTable
-                    data={users}
-                    columns={columns}
-                    emptyMessage="Nenhum usuário encontrado."
-                />
-            </div>
 
             <div className="space-y-6">
                 <div className="flex justify-between items-center">
