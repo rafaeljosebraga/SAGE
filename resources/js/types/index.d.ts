@@ -31,6 +31,10 @@ export interface SharedData {
     [key: string]: unknown;
 }
 
+export interface PageProps extends SharedData {
+    [key: string]: unknown;
+}
+
 export interface User {
     id: number;
     name: string;

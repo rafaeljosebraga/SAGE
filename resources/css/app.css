@@ -156,4 +156,28 @@
     body {
         @apply bg-background text-foreground;
     }
+
+    /* Ocultar mensagens de validação HTML5 nativas do navegador */
+    input:invalid {
+        box-shadow: none;
+    }
+
+    /* Ocultar tooltips de validação do navegador */
+    input::-webkit-validation-bubble,
+    input::-webkit-validation-bubble-message,
+    input::-webkit-validation-bubble-arrow,
+    input::-webkit-validation-bubble-top-outer-arrow,
+    input::-webkit-validation-bubble-top-inner-arrow {
+        display: none !important;
+    }
+
+    /* Para Firefox */
+    input::-moz-error-text {
+        display: none !important;
+    }
+
+    /* Remover outline padrão de validação */
+    input:user-invalid {
+        outline: none;
+    }
 }

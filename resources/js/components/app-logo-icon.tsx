@@ -1,6 +1,12 @@
-export default function AppLogoIcon() {
+import { cn } from '@/lib/utils';
+
+interface AppLogoIconProps {
+    className?: string;
+}
+
+export default function AppLogoIcon({ className }: AppLogoIconProps) {
     return (
-        <div className="flex items-center">
+        <div className={cn("flex items-center", className)}>
             <img 
                 src="/logo_coruja_texto.png"
                 alt="Logo SAGE claro"
