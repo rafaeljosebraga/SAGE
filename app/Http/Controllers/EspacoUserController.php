@@ -53,8 +53,17 @@ class EspacoUserController extends Controller
 
         $user = User::find($validatedData['user_id']);
 
+        // Preparar dados com auditoria para cada espaço
+        $espacosData = [];
+        foreach ($validatedData['espaco_ids'] as $espacoId) {
+            $espacosData[$espacoId] = [
+                'created_by' => auth()->id(),
+                'updated_by' => auth()->id(),
+            ];
+        }
+
         // Usamos sync sem detach para adicionar sem remover os existentes
-        $user->espacos()->syncWithoutDetaching($validatedData['espaco_ids']);
+        $user->espacos()->syncWithoutDetaching($espacosData);
 
         return redirect()->route('espaco-users.index')
             ->with('success', 'Permissões atribuídas com sucesso!');
@@ -107,7 +116,17 @@ class EspacoUserController extends Controller
         ]);
 
         $user = User::findOrFail($id);
-        $user->espacos()->sync($validatedData['espaco_ids']);
+
+        // Preparar dados com auditoria para cada espaço
+        $espacosData = [];
+        foreach ($validatedData['espaco_ids'] as $espacoId) {
+            $espacosData[$espacoId] = [
+                'created_by' => auth()->id(),
+                'updated_by' => auth()->id(),
+            ];
+        }
+
+        $user->espacos()->sync($espacosData);
 
         return redirect()->route('espaco-users.index')
             ->with('success', 'Espaços do usuário atualizados com sucesso!');
@@ -142,7 +161,10 @@ class EspacoUserController extends Controller
         ]);
 
         $user = User::find($request->user_id);
-        $user->espacos()->attach($request->espaco_id);
+        $user->espacos()->attach($request->espaco_id, [
+            'created_by' => auth()->id(),
+            'updated_by' => auth()->id(),
+        ]);
 
         return response()->json(['message' => 'Espaco assigned to user']);
     }
@@ -189,7 +211,17 @@ class EspacoUserController extends Controller
         ]);
 
         $user = User::find($request->user_id);
-        $user->espacos()->sync($request->espaco_ids);
+
+        // Preparar dados com auditoria para cada espaço
+        $espacosData = [];
+        foreach ($request->espaco_ids as $espacoId) {
+            $espacosData[$espacoId] = [
+                'created_by' => auth()->id(),
+                'updated_by' => auth()->id(),
+            ];
+        }
+
+        $user->espacos()->sync($espacosData);
 
         return response()->json(['message' => 'Espacos synced for user']);
     }
