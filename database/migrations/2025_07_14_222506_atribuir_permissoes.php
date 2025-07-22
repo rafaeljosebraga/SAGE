@@ -19,6 +19,16 @@ return new class extends Migration
                 ->constrained("users")
                 ->onDelete("cascade");
             $table->primary(['espaco_id', 'user_id']); // composite key
+            
+            // Campos para auditoria
+            $table->foreignId('created_by')->nullable()
+                  ->constrained('users')
+                  ->onDelete('set null');
+            $table->foreignId('updated_by')->nullable()
+                  ->constrained('users')
+                  ->onDelete('set null');
+            
+            $table->timestamps();
         });
     }
 
@@ -27,6 +37,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('espaco_permissao');
+        Schema::dropIfExists('espaco_user');
     }
 };
