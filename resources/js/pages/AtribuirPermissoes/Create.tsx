@@ -21,10 +21,11 @@ import { type User, type Espaco } from '@/types';
 interface AtribuirPermissoesCreateProps {
     users: User[];
     espacos: Espaco[];
+    usID: User['id'];
 }
 
-export default function Create({ users, espacos }: AtribuirPermissoesCreateProps) {
-    const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+export default function Create({ users, espacos,usID }: AtribuirPermissoesCreateProps) {
+    const [selectedUserId, setSelectedUserId] = useState<number | null>(usID);
     const [selectedEspacos, setSelectedEspacos] = useState<number[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
 
