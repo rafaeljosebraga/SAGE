@@ -32,12 +32,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Rotas para gerenciamento de espaços, localizações e recursos (APENAS Diretor Geral)
     Route::middleware(['diretor-geral'])->group(function () {
-        Route::resource('espacos', EspacoController::class);
-        Route::resource('localizacoes', LocalizacaoController::class);
-        Route::resource('recursos', RecursoController::class);
-        Route::resource('espaco-users', EspacoUserController::class);
-        // Route::get('espaco-users/create', EspacoUserController::class);
-        // Route::get('atribuir-permissoes', EspacoUserController::class);
         // Rotas de Espaços em português
         Route::get("espacos", [EspacoController::class, "index"])->name("espacos.index");
         Route::get("espacos/criar", [EspacoController::class, "create"])->name("espacos.create");
@@ -64,6 +58,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get("recursos/{recurso}/editar", [RecursoController::class, "edit"])->name("recursos.edit");
         Route::put("recursos/{recurso}", [RecursoController::class, "update"])->name("recursos.update");
         Route::delete("recursos/{recurso}", [RecursoController::class, "destroy"])->name("recursos.destroy");
+
+        // Rotas de Atribuir Permissões em português
+        Route::get("atribuir-permissoes", [EspacoUserController::class, "index"])->name("espaco-users.index");
+        Route::get("atribuir-permissoes/criar", [EspacoUserController::class, "create"])->name("espaco-users.create");
+        Route::post("atribuir-permissoes", [EspacoUserController::class, "store"])->name("espaco-users.store");
+        Route::get("atribuir-permissoes/{espacoUser}", [EspacoUserController::class, "show"])->name("espaco-users.show");
+        Route::get("atribuir-permissoes/{espacoUser}/editar", [EspacoUserController::class, "edit"])->name("espaco-users.edit");
+        Route::put("atribuir-permissoes/{espacoUser}", [EspacoUserController::class, "update"])->name("espaco-users.update");
+        Route::delete("atribuir-permissoes/{espacoUser}", [EspacoUserController::class, "destroy"])->name("espaco-users.destroy");
+
+        // Rotas de Fotos
         Route::resource('fotos', FotoController::class);
         Route::post('fotos/reorder', [FotoController::class, 'reorder'])->name('fotos.reorder');
     });

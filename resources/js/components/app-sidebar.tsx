@@ -46,7 +46,7 @@ export function AppSidebar() {
                   },
                   {
                       title: 'Atribuir Permissões',
-                      href: '/espaco-users',
+                      href: '/atribuir-permissoes',
                       icon: BookUser,
                   },
               ]
