@@ -44,8 +44,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Rotas de Localizações em português
         Route::get("localizacoes", [LocalizacaoController::class, "index"])->name("localizacoes.index");
         Route::get("localizacoes/criar", [LocalizacaoController::class, "create"])->name("localizacoes.create");
-        Route::post("localizacoes", [LocalizacaoController::class, "store"])->name("localizacoes.store");
         Route::get("localizacoes/{localizacao}", [LocalizacaoController::class, "show"])->name("localizacoes.show");
+        Route::post("localizacoes", [LocalizacaoController::class, "store"])->name("localizacoes.store");
         Route::get("localizacoes/{localizacao}/editar", [LocalizacaoController::class, "edit"])->name("localizacoes.edit");
         Route::put("localizacoes/{localizacao}", [LocalizacaoController::class, "update"])->name("localizacoes.update");
         Route::delete("localizacoes/{localizacao}", [LocalizacaoController::class, "destroy"])->name("localizacoes.destroy");
@@ -64,7 +64,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get("atribuir-permissoes/criar", [EspacoUserController::class, "create"])->name("espaco-users.create");
         Route::post("atribuir-permissoes", [EspacoUserController::class, "store"])->name("espaco-users.store");
         Route::get("atribuir-permissoes/{espacoUser}", [EspacoUserController::class, "show"])->name("espaco-users.show");
-        Route::get("atribuir-permissoes/{espacoUser}/editar", [EspacoUserController::class, "edit"])->name("espaco-users.edit");
+        Route::get("atribuir-permissoes/{id}/criar", [EspacoUserController::class, "create"])->name("espaco-users.atribuir");
         Route::put("atribuir-permissoes/{espacoUser}", [EspacoUserController::class, "update"])->name("espaco-users.update");
         Route::delete("atribuir-permissoes/{espacoUser}", [EspacoUserController::class, "destroy"])->name("espaco-users.destroy");
 

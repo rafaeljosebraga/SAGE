@@ -29,7 +29,7 @@ class EspacoUserController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(string $userID)
     {
         $users = User::select('id', 'name')->get();
         $espacos = Espaco::select('id', 'nome')->get();
@@ -37,6 +37,7 @@ class EspacoUserController extends Controller
         return Inertia::render('AtribuirPermissoes/Create', [
             'users' => $users,
             'espacos' => $espacos,
+            'usID' => $userID
         ]);
     }
     /**
