@@ -98,6 +98,10 @@ class UserController extends Controller
             ],
         ]);
     }
+    public function all()
+    {
+        return response()->json(User::select('id', 'name')->get());
+    }
 
     /**
      * Update the specified resource in storage.

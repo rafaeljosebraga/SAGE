@@ -16,15 +16,15 @@ class FotoController extends Controller
     public function index(Request $request)
     {
         $espacoId = $request->get('espaco_id');
-        
+
         if ($espacoId) {
             $fotos = Foto::where('espaco_id', $espacoId)
-                         ->orderBy('ordem')
-                         ->get();
+                ->orderBy('ordem')
+                ->get();
         } else {
             $fotos = Foto::with('espaco')->orderBy('created_at', 'desc')->get();
         }
-        
+
         return response()->json($fotos);
     }
 
@@ -58,20 +58,20 @@ class FotoController extends Controller
                 @mkdir($caminhoCompleto, 0777, true);
             }
         }
-        
+
         // Buscar a próxima ordem disponível
         $proximaOrdem = Foto::where('espaco_id', $espacoId)->max('ordem') ?? 0;
         $proximaOrdem = $proximaOrdem + 1;
-        
+
         $fotosUpload = [];
-        
+
         foreach ($fotos as $index => $foto) {
             // Gerar nome único para o arquivo
             $nomeArquivo = time() . '_' . $index . '.' . $foto->getClientOriginalExtension();
-            
+
             // Salvar arquivo no storage
             $caminhoArquivo = $foto->storeAs($pastaDestino, $nomeArquivo, 'public');
-            
+
             // Criar registro no banco
             $fotoModel = Foto::create([
                 'espaco_id' => $espacoId,
@@ -86,10 +86,10 @@ class FotoController extends Controller
                 'created_by' => Auth::id(),
                 'updated_by' => Auth::id(),
             ]);
-            
+
             $fotosUpload[] = $fotoModel;
         }
-        
+
         return response()->json([
             'message' => 'Fotos enviadas com sucesso!',
             'fotos' => $fotosUpload
@@ -174,3 +174,4 @@ class FotoController extends Controller
         ]);
     }
 }
+

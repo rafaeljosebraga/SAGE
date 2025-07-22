@@ -63,6 +63,12 @@ class Espaco extends Model
         return $this->belongsTo(User::class, 'updated_by');
     }
 
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'espaco_user');
+    }
+
     // Relacionamento com fotos
     public function fotos(): HasMany
     {

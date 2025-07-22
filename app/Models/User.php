@@ -76,12 +76,17 @@ class User extends Authenticatable
      */
     public function getPerfilAcessoNameAttribute(): string
     {
-        return match($this->perfil_acesso) {
+        return match ($this->perfil_acesso) {
             'administrador' => 'Administrador',
             'diretor_geral' => 'Diretor Geral',
             'coordenador' => 'Coordenador',
             'servidores' => 'Servidores',
             default => 'Servidores'
         };
+    }
+
+    public function espacos()
+    {
+        return $this->belongsToMany(Espaco::class, 'espaco_user');
     }
 }

@@ -5,7 +5,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { useCanManageUsers, useIsDiretorGeral } from '@/hooks/use-auth';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Users, Building, MapPin, Package } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, Users, Building, MapPin, Package, BookUser } from 'lucide-react';
 import AppLogo from './app-logo';
 
 export function AppSidebar() {
@@ -43,6 +43,11 @@ export function AppSidebar() {
                       title: 'Recursos',
                       href: '/recursos',
                       icon: Package,
+                  },
+                  {
+                      title: 'Atribuir Permissões',
+                      href: '/espaco-users',
+                      icon: BookUser,
                   },
               ]
             : []),
