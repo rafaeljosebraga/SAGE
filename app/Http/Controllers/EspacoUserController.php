@@ -15,7 +15,7 @@ class EspacoUserController extends Controller
     public function index()
     {
         $users = User::with('espacos:id,nome')->get();
-        $espacos = Espaco::with('users:id,name')->select('id', 'nome')->get();
+        $espacos = Espaco::with('users:id,name')->get();
 
         return Inertia::render('AtribuirPermissoes/Index', [
             'users' => $users,
@@ -31,13 +31,14 @@ class EspacoUserController extends Controller
 
     public function create(string $userID)
     {
-        $users = User::select('id', 'name')->get();
-        $espacos = Espaco::select('id', 'nome')->get();
-
+        $users = User::select()->get();
+        $espacos = Espaco::select()->get();
+        $espacosAtribuidos = (User::select(id: $userID)->espacos();
         return Inertia::render('AtribuirPermissoes/Create', [
             'users' => $users,
             'espacos' => $espacos,
-            'usID' => $userID
+            'usID' => $userID,
+            'espacosAtribuidos' => $espacosAtribuidos->pluck('id')->toArray(),
         ]);
     }
     /**

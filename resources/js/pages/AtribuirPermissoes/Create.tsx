@@ -6,60 +6,48 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Users, MapPin, Eye, Pencil } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-
+import { FilterableTable, type ColumnConfig } from '@/components/ui/filterable-table';
 import { type User, type Espaco } from '@/types';
 
 interface AtribuirPermissoesCreateProps {
-    users: User[];
+    Users: User[];
     espacos: Espaco[];
     usID: User['id'];
+    espacosAtribuidos: number[];
 }
 
-export default function Create({ users, espacos,usID }: AtribuirPermissoesCreateProps) {
+export default function Create({espacos,usID }: AtribuirPermissoesCreateProps) {
     const [selectedUserId, setSelectedUserId] = useState<number | null>(usID);
-    const [selectedEspacos, setSelectedEspacos] = useState<number[]>([]);
+    const [selectedEspacos, setSelectedEspacos] = useState<number[]>(espacosAtribuidos);
     const [searchTerm, setSearchTerm] = useState('');
 
-    const { data, setData, post, processing, errors } = useForm({
-        user_id: null as number | null,
-        espaco_ids: [] as number[],
+    const {setData, processing, errors } = useForm({
+        user_id: usID,
+        espaco_ids: espacosAtribuidos,
     });
+
+    // Atualiza automaticamente quando os IDs mudam
+    useEffect(() => {
+        setSelectedEspacos(espacosAtribuidos);
+        setData('espaco_ids', espacosAtribuidos);
+    }, [espacosAtribuidos]);
 
     // Filtrar espaços baseado no termo de busca
     const filteredEspacos = espacos.filter(espaco =>
         espaco.nome.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Quando seleciona um usuário
-    const handleUserSelect = (userId: number) => {
-        setSelectedUserId(userId);
-        setData('user_id', userId);
-
-        // Preencher com espaços já associados ao usuário
-        const user = users.find(u => u.id === userId);
-        const espacoIds = user?.espacos?.map(e => e.id) || [];
-        setSelectedEspacos(espacoIds);
-        setData('espaco_ids', espacoIds);
-    };
-
     // Alternar seleção de espaço
     const toggleEspaco = (espacoId: number) => {
         const newSelected = selectedEspacos.includes(espacoId)
             ? selectedEspacos.filter(id => id !== espacoId)
             : [...selectedEspacos, espacoId];
-
         setSelectedEspacos(newSelected);
         setData('espaco_ids', newSelected);
     };
+
 
     // Enviar os dados para o controller
     const handleSubmit = (e: React.FormEvent) => {
@@ -86,12 +74,220 @@ export default function Create({ users, espacos,usID }: AtribuirPermissoesCreate
         });
     };
 
-    const selectedUser = users.find(u => u.id === selectedUserId);
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
+
+    const getStatusVariant = (status: string) => {
+        switch (status.toLowerCase()) {
+            case 'ativo':
+                return 'default';
+            case 'inativo':
+                return 'secondary';
+            case 'manutencao':
+                return 'destructive';
+            default:
+                return 'secondary';
+        }
+    };
+
+    const getStatusColor = (status: string) => {
+        switch (status.toLowerCase()) {
+            case 'ativo':
+                return 'bg-green-100 text-green-800 border-green-200';
+            case 'inativo':
+                return 'bg-gray-100 text-gray-800 border-gray-200';
+            case 'manutencao':
+                return 'bg-red-100 text-red-800 border-red-200';
+            default:
+                return 'bg-gray-100 text-gray-800 border-gray-200';
+        }
+    };
+    const columns: ColumnConfig[] = [
+        {
+            key: 'acoes',
+            label: 'Atribuir',
+            searchable: false,
+            sortable: false,
+            render: (value, espaco) => (
+                <Checkbox
+                    id={`espaco-${espaco.id}`}
+                    checked={selectedEspacos.includes(espaco.id)}
+                    onCheckedChange={() => toggleEspaco(espaco.id)}
+                    className={jaAtribuido ? 'border-2 border-primary' : ''}
+                    className="mr-3"
+                />
+            ),
+        },
+        {
+            key: 'nome',
+            label: 'Nome',
+            render: (value) => (
+                <span className="font-medium">{value}</span>
+            )
+        },
+        {
+            key: 'capacidade',
+            label: 'Capacidade',
+            type: 'number',
+            render: (value) => (
+                <div className="flex items-center gap-1">
+                    <Users className="h-4 w-4 text-gray-500" />
+                    {value}
+                </div>
+            )
+        },
+        {
+            key: 'localizacao.nome',
+            label: 'Localização',
+            getValue: (espaco) => espaco.localizacao?.nome || 'Não definida',
+            render: (value) => (
+                <div className="flex items-center gap-1">
+                    <MapPin className="h-4 w-4 text-gray-500" />
+                    {value}
+                </div>
+            )
+        },
+        {
+            key: 'responsaveis',
+            label: 'Responsáveis',
+            searchable: true,
+            sortable: true,
+            getValue: (espaco) => {
+                const responsaveis: string[] = [];
+
+                // Adicionar o criador do espaço
+                if (espaco.createdBy) {
+                    responsaveis.push(espaco.createdBy.name);
+                }
+
+                // Adicionar usuários com permissão (excluindo o criador se já estiver na lista)
+                if (espaco.users && espaco.users.length > 0) {
+                    espaco.users.forEach((user: User) => {
+                        if (!responsaveis.includes(user.name)) {
+                            responsaveis.push(user.name);
+                        }
+                    });
+                }
+
+                // Para ordenação, retornar o primeiro responsável (principal)
+                return responsaveis.length > 0 ? responsaveis[0] : 'Não definido';
+            },
+            getSearchValue: (espaco) => {
+                const responsaveis: string[] = [];
+
+                // Adicionar o criador do espaço
+                if (espaco.createdBy) {
+                    responsaveis.push(espaco.createdBy.name);
+                }
+
+                // Adicionar usuários com permissão (excluindo o criador se já estiver na lista)
+                if (espaco.users && espaco.users.length > 0) {
+                    espaco.users.forEach((user: User) => {
+                        if (!responsaveis.includes(user.name)) {
+                            responsaveis.push(user.name);
+                        }
+                    });
+                }
+
+                // Para busca, retornar todos os nomes concatenados
+                return responsaveis.join(' ');
+            },
+            render: (value, espaco) => {
+                const responsaveis: string[] = [];
+
+                // Adicionar o criador do espaço
+                if (espaco.createdBy) {
+                    responsaveis.push(espaco.createdBy.name);
+                }
+
+                // Adicionar usuários com permissão (excluindo o criador se já estiver na lista)
+                if (espaco.users && espaco.users.length > 0) {
+                    espaco.users.forEach((user: User) => {
+                        if (!responsaveis.includes(user.name)) {
+                            responsaveis.push(user.name);
+                        }
+                    });
+                }
+
+                if (responsaveis.length === 0) {
+                    return <span className="text-muted-foreground px-3 py-1.5 font-medium">Não definido</span>;
+                }
+
+                if (responsaveis.length === 1) {
+                    return (
+                        <button
+                            onClick={() => handleViewDetailsFromResponsavel(espaco)}
+                            className="text-left text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:bg-gradient-to-r dark:hover:from-blue-900/20 dark:hover:to-indigo-900/20 px-3 py-1.5 rounded-lg transition-all duration-300 hover:shadow-md hover:scale-[1.02] font-medium"
+                        >
+                            {responsaveis[0]}
+                        </button>
+                    );
+                }
+
+                return (
+                    <button
+                        onClick={() => handleViewDetailsFromResponsavel(espaco)}
+                        className="text-left text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:bg-gradient-to-r dark:hover:from-blue-900/20 dark:hover:to-indigo-900/20 px-3 py-1.5 rounded-lg transition-all duration-300 hover:shadow-md hover:scale-[1.02] font-medium"
+                    >
+                        {responsaveis[0]}, ...
+                    </button>
+                );
+            }
+        },
+        // {
+        //     key: 'status',
+        //     label: 'Status',
+        //     type: 'select',
+        //     options: [
+        //         { value: 'ativo', label: 'Ativo' },
+        //         { value: 'inativo', label: 'Inativo' },
+        //         { value: 'manutencao', label: 'Manutenção' }
+        //     ],
+        //     render: (value, espaco) => (
+        //         <Badge
+        //             variant={getStatusVariant(espaco.status)}
+        //             className={getStatusColor(espaco.status)}
+        //         >
+        //             {formatStatus(espaco.status)}
+        //         </Badge>
+        //     )
+        // },
+        {
+            key: 'disponivel_reserva',
+            label: 'Disponível para Reserva',
+            type: 'select',
+            options: [
+                { value: 'true', label: 'Sim' },
+                { value: 'false', label: 'Não' }
+            ],
+            getValue: (espaco) => espaco.disponivel_reserva ? 'true' : 'false',
+            render: (value, espaco) => (
+                <Badge
+                    variant={espaco.disponivel_reserva ? 'default' : 'secondary'}
+                    className={
+                        espaco.disponivel_reserva
+                            ? 'bg-blue-100 text-blue-800 border-blue-200'
+                            : 'bg-gray-100 text-gray-800 border-gray-200'
+                    }
+                >
+                    {espaco.disponivel_reserva ? 'Sim' : 'Não'}
+                </Badge>
+            )
+        },
+    ];
+
+
 
     return (
         <AppLayout>
             <Head title="Atribuir Permissões" />
-
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
                     <div>
@@ -106,57 +302,7 @@ export default function Create({ users, espacos,usID }: AtribuirPermissoesCreate
                 </div>
 
                 <form onSubmit={handleSubmit}>
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {/* Painel de seleção de usuário */}
-                        <div className="lg:col-span-1">
-                            <Card className="h-full">
-                                <CardHeader>
-                                    <CardTitle className="text-lg">Selecionar Usuário</CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="user" className="text-muted-foreground">
-                                            Usuário
-                                        </Label>
-                                        <Select
-                                            onValueChange={(value) => handleUserSelect(Number(value))}
-                                            value={selectedUserId?.toString() || ''}
-                                        >
-                                            <SelectTrigger className="w-full">
-                                                <SelectValue placeholder="Selecione um usuário" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {users.map(user => (
-                                                    <SelectItem
-                                                        key={user.id}
-                                                        value={user.id.toString()}
-                                                    >
-                                                        {user.name}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        {errors.user_id && (
-                                            <p className="text-destructive text-sm mt-1">{errors.user_id}</p>
-                                        )}
-                                    </div>
-
-                                    {selectedUser && (
-                                        <div className="border rounded-lg p-4 bg-muted">
-                                            <h3 className="font-semibold text-foreground">{selectedUser.name}</h3>
-                                            <div className="mt-2 flex items-center">
-                                                <span className="text-sm text-muted-foreground">
-                                                    Espaços atribuídos:
-                                                </span>
-                                                <Badge variant="secondary" className="ml-2">
-                                                    {selectedUser.espacos?.length || 0}
-                                                </Badge>
-                                            </div>
-                                        </div>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        </div>
+                    <div>
 
                         {/* Painel de seleção de espaços */}
                         <div className="lg:col-span-2">
@@ -179,62 +325,42 @@ export default function Create({ users, espacos,usID }: AtribuirPermissoesCreate
                                         />
                                     </div>
 
+
+                                    {/* Lista de espaços */}
+                                    <div className="border rounded-lg divide-y bg-background flex-grow overflow-auto max-h-[300px]">
+                                        <FilterableTable
+                                            data={espacos}
+                                            columns={columns}
+                                            emptyMessage="Nenhum espaço encontrado."
+                                        />
+                                    </div>
                                     {/* Espaços selecionados */}
                                     <div className="mt-2">
                                         <Label className="text-muted-foreground">Espaços Selecionados</Label>
                                         <div className="flex flex-wrap gap-2 mt-2 min-h-[40px]">
                                             {selectedEspacos.length > 0 ? (
                                                 espacos
-                                                    .filter(e => selectedEspacos.includes(e.id))
-                                                    .map(espaco => (
-                                                        <Badge
-                                                            key={espaco.id}
-                                                            variant="secondary"
-                                                            className="px-3 py-1"
-                                                        >
-                                                            {espaco.nome}
-                                                        </Badge>
-                                                    ))
+                                                .filter(e => selectedEspacos.includes(e.id))
+                                                .map(espaco => (
+                                                    <Badge
+                                                        key={espaco.id}
+                                                        variant="secondary"
+                                                        className="px-3 py-1"
+                                                    >
+                                                        {espaco.nome}
+                                                    </Badge>
+                                                ))
                                             ) : (
-                                                <span className="text-muted-foreground text-sm">
-                                                    Nenhum espaço selecionado
-                                                </span>
-                                            )}
+                                                    <span className="text-muted-foreground text-sm">
+                                                        Nenhum espaço selecionado
+                                                    </span>
+                                                )}
                                         </div>
                                     </div>
 
                                     {errors.espaco_ids && (
                                         <p className="text-destructive text-sm">{errors.espaco_ids}</p>
                                     )}
-
-                                    {/* Lista de espaços */}
-                                    <div className="border rounded-lg divide-y bg-background flex-grow overflow-auto max-h-[300px]">
-                                        {filteredEspacos.length > 0 ? (
-                                            filteredEspacos.map(espaco => (
-                                                <div
-                                                    key={espaco.id}
-                                                    className="p-4 hover:bg-accent transition-colors flex items-center"
-                                                >
-                                                    <Checkbox
-                                                        id={`espaco-${espaco.id}`}
-                                                        checked={selectedEspacos.includes(espaco.id)}
-                                                        onCheckedChange={() => toggleEspaco(espaco.id)}
-                                                        className="mr-3"
-                                                    />
-                                                    <Label
-                                                        htmlFor={`espaco-${espaco.id}`}
-                                                        className="flex-grow cursor-pointer"
-                                                    >
-                                                        <p className="font-medium text-foreground">{espaco.nome}</p>
-                                                    </Label>
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <div className="p-8 text-center">
-                                                <p className="text-muted-foreground">Nenhum espaço encontrado</p>
-                                            </div>
-                                        )}
-                                    </div>
 
                                     {/* Botão de salvar */}
                                     <div className="flex justify-end pt-4 border-t mt-auto">
