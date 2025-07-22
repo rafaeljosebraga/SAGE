@@ -165,9 +165,51 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
             )
         },
         {
-            key: 'responsavel.name',
-            label: 'Responsável',
-            getValue: (espaco) => espaco.createdBy?.name || espaco.responsavel?.name || 'Não definido'
+            key: 'responsaveis',
+            label: 'Responsáveis',
+            searchable: false,
+            sortable: false,
+            render: (value, espaco) => {
+                const responsaveis: string[] = [];
+                
+                // Adicionar o criador do espaço
+                if (espaco.createdBy) {
+                    responsaveis.push(espaco.createdBy.name);
+                }
+                
+                // Adicionar usuários com permissão (excluindo o criador se já estiver na lista)
+                if (espaco.users && espaco.users.length > 0) {
+                    espaco.users.forEach((user: User) => {
+                        if (!responsaveis.includes(user.name)) {
+                            responsaveis.push(user.name);
+                        }
+                    });
+                }
+                
+                if (responsaveis.length === 0) {
+                    return <span className="text-muted-foreground">Não definido</span>;
+                }
+                
+                if (responsaveis.length === 1) {
+                    return (
+                        <button
+                            onClick={() => handleViewDetails(espaco)}
+                            className="text-left hover:text-primary hover:underline transition-colors"
+                        >
+                            {responsaveis[0]}
+                        </button>
+                    );
+                }
+                
+                return (
+                    <button
+                        onClick={() => handleViewDetails(espaco)}
+                        className="text-left hover:text-primary hover:underline transition-colors"
+                    >
+                        {responsaveis[0]}, ...
+                    </button>
+                );
+            }
         },
         {
             key: 'status',
@@ -372,35 +414,66 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                                     </div>
                                 </div>
                                 <div className="bg-muted/30 p-4 rounded-lg border border-border">
-                                    <label className="text-sm font-medium text-muted-foreground">Responsável</label>
-                                    {(selectedEspaco.createdBy || selectedEspaco.responsavel) ? (
-                                        <div className="mt-2 bg-background/50 p-3 rounded-md border border-border">
-                                            <div className="space-y-2">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                                                        <span className="text-sm font-medium text-primary">
-                                                            {(selectedEspaco.createdBy?.name || selectedEspaco.responsavel?.name || "").charAt(0).toUpperCase()}
-                                                        </span>
+                                    <label className="text-sm font-medium text-muted-foreground">Responsáveis</label>
+                                    {(() => {
+                                        const responsaveis: Array<User & { tipo: string }> = [];
+                                        
+                                        // Adicionar o criador do espaço
+                                        if (selectedEspaco.createdBy) {
+                                            responsaveis.push({
+                                                ...selectedEspaco.createdBy,
+                                                tipo: 'Criador'
+                                            });
+                                        }
+                                        
+                                        // Adicionar usuários com permissão (excluindo o criador se já estiver na lista)
+                                        if (selectedEspaco.users && selectedEspaco.users.length > 0) {
+                                            selectedEspaco.users.forEach((user: User) => {
+                                                if (!responsaveis.find(r => r.id === user.id)) {
+                                                    responsaveis.push({
+                                                        ...user,
+                                                        tipo: 'Com Permissão'
+                                                    });
+                                                }
+                                            });
+                                        }
+                                        
+                                        return responsaveis.length > 0 ? (
+                                            <div className="mt-2 space-y-3">
+                                                {responsaveis.map((responsavel, index) => (
+                                                    <div key={responsavel.id} className="bg-background/50 p-3 rounded-md border border-border">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                                                                <span className="text-sm font-medium text-primary">
+                                                                    {responsavel.name.charAt(0).toUpperCase()}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex-1">
+                                                                <div className="flex items-center gap-2">
+                                                                    <p className="text-sm font-medium text-card-foreground">
+                                                                        {responsavel.name}
+                                                                    </p>
+                                                                    <Badge variant="outline" className="text-xs">
+                                                                        {responsavel.tipo}
+                                                                    </Badge>
+                                                                </div>
+                                                                <p className="text-xs text-muted-foreground">
+                                                                    {responsavel.email}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="mt-2">
+                                                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPerfilColor(responsavel.perfil_acesso)}`}>
+                                                                {formatPerfil(responsavel.perfil_acesso)}
+                                                            </span>
+                                                        </div>
                                                     </div>
-                                                    <div className="flex-1">
-                                                        <p className="text-sm font-medium text-card-foreground">
-                                                            {selectedEspaco.createdBy?.name || selectedEspaco.responsavel?.name}
-                                                        </p>
-                                                        <p className="text-xs text-muted-foreground">
-                                                            {selectedEspaco.createdBy?.email || selectedEspaco.responsavel?.email}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <div className="pt-1">
-                                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPerfilColor(selectedEspaco.createdBy?.perfil_acesso || selectedEspaco.responsavel?.perfil_acesso)}`}>
-                                                        {formatPerfil(selectedEspaco.createdBy?.perfil_acesso || selectedEspaco.responsavel?.perfil_acesso)}
-                                                    </span>
-                                                </div>
+                                                ))}
                                             </div>
-                                        </div>
-                                    ) : (
-                                        <p className="text-lg text-card-foreground mt-1">Não definido</p>
-                                    )}
+                                        ) : (
+                                            <p className="text-lg text-card-foreground mt-1">Não definido</p>
+                                        );
+                                    })()}
                                 </div>
                             </div>
 
