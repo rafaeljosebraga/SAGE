@@ -1,5 +1,6 @@
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -383,40 +384,73 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                         </Card>
                     )}
 
-                    {/* Responsável pelo Espaço - SEGUNDO */}
+                    {/* Responsáveis pelo Espaço - SEGUNDO */}
                     <Card id="painel-responsavel">
                         <CardHeader>
-                            <CardTitle>Responsável pelo Espaço</CardTitle>
+                            <CardTitle>Responsáveis pelo Espaço</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            {(espaco.createdBy || espaco.responsavel) ? (
-                                <div className="bg-muted/30 p-4 rounded-lg border border-border">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                                            <span className="text-lg font-medium text-primary">
-                                                {(espaco.createdBy?.name || espaco.responsavel?.name || "").charAt(0).toUpperCase()}
-                                            </span>
-                                        </div>
-                                        <div className="flex-1">
-                                            <h3 className="text-lg font-semibold text-card-foreground">
-                                                {espaco.createdBy?.name || espaco.responsavel?.name}
-                                            </h3>
-                                            <p className="text-sm text-muted-foreground">
-                                                {espaco.createdBy?.email || espaco.responsavel?.email}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getPerfilColor(espaco.createdBy?.perfil_acesso || espaco.responsavel?.perfil_acesso)}`}>
-                                                {formatPerfil(espaco.createdBy?.perfil_acesso || espaco.responsavel?.perfil_acesso)}
-                                            </span>
-                                        </div>
+                            {(() => {
+                                const responsaveis: Array<User & { tipo: string }> = [];
+                                
+                                // Adicionar o criador do espaço
+                                if (espaco.createdBy) {
+                                    responsaveis.push({
+                                        ...espaco.createdBy,
+                                        tipo: 'Criador'
+                                    });
+                                }
+                                
+                                // Adicionar usuários com permissão (excluindo o criador se já estiver na lista)
+                                if (espaco.users && espaco.users.length > 0) {
+                                    espaco.users.forEach((user: User) => {
+                                        if (!responsaveis.find(r => r.id === user.id)) {
+                                            responsaveis.push({
+                                                ...user,
+                                                tipo: 'Com Permissão'
+                                            });
+                                        }
+                                    });
+                                }
+                                
+                                return responsaveis.length > 0 ? (
+                                    <div className="space-y-4">
+                                        {responsaveis.map((responsavel, index) => (
+                                            <div key={responsavel.id} className="bg-muted/30 p-4 rounded-lg border border-border">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                                                        <span className="text-lg font-medium text-primary">
+                                                            {responsavel.name.charAt(0).toUpperCase()}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center gap-2">
+                                                            <h3 className="text-lg font-semibold text-card-foreground">
+                                                                {responsavel.name}
+                                                            </h3>
+                                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                                                                {responsavel.tipo}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-sm text-muted-foreground">
+                                                            {responsavel.email}
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getPerfilColor(responsavel.perfil_acesso)}`}>
+                                                            {formatPerfil(responsavel.perfil_acesso)}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
-                                </div>
-                            ) : (
-                                <div className="bg-muted/30 p-4 rounded-lg border border-border text-center">
-                                    <p className="text-muted-foreground">Responsável não definido</p>
-                                </div>
-                            )}
+                                ) : (
+                                    <div className="bg-muted/30 p-4 rounded-lg border border-border text-center">
+                                        <p className="text-muted-foreground">Nenhum responsável definido</p>
+                                    </div>
+                                );
+                            })()}
                         </CardContent>
                     </Card>
                 </form>

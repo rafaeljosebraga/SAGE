@@ -16,7 +16,7 @@ class EspacoController extends Controller
      */
     public function index()
     {
-        $espacos = Espaco::with(['localizacao', 'responsavel', 'recursos', 'fotos', 'createdBy', 'updatedBy'])->get();
+        $espacos = Espaco::with(['localizacao', 'responsavel', 'recursos', 'fotos', 'createdBy', 'updatedBy', 'users'])->get();
         return inertia('Espacos/Index', ['espacos' => $espacos]);
     }
 
@@ -161,7 +161,7 @@ class EspacoController extends Controller
     public function edit($id)
     {
         try {
-            $espaco = Espaco::with(['recursos'])->findOrFail($id);
+            $espaco = Espaco::with(['recursos', 'fotos', 'createdBy', 'responsavel', 'users'])->findOrFail($id);
             $localizacoes = Localizacao::all();
             $recursos = Recurso::all();
             $users = \App\Models\User::all();
@@ -173,18 +173,9 @@ class EspacoController extends Controller
                 'users' => $users,
             ]);
         } catch (\Exception $e) {
-            Log::error('Erro no edit de espaços: ' . $e->getMessage());
+            \Log::error('Erro no edit de espaços: ' . $e->getMessage());
             return redirect()->route('espacos.index')->with('error', 'Erro ao carregar espaço para edição.');
         }
-        $espaco = Espaco::with(['recursos', 'fotos', 'createdBy', 'responsavel'])->findOrFail($id);
-        $localizacoes = Localizacao::all();
-        $recursos = Recurso::all();
-
-        return inertia('Espacos/Edit', [
-            'espaco' => $espaco,
-            'localizacoes' => $localizacoes,
-            'recursos' => $recursos,
-        ]);
     }
 
     /**

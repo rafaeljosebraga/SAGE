@@ -20,6 +20,7 @@ export interface ColumnConfig {
     searchable?: boolean;
     render?: (value: any, row: any) => React.ReactNode;
     getValue?: (row: any) => string;
+    getSearchValue?: (row: any) => string;
 }
 
 interface FilterableTableProps {
@@ -67,7 +68,10 @@ export function FilterableTable({
                 const column = columns.find(col => col.key === columnKey);
                 if (column) {
                     filtered = filtered.filter(item => {
-                        const value = getColumnValue(item, column).toLowerCase();
+                        // Usar getSearchValue se disponível, senão usar getValue
+                        const value = column.getSearchValue 
+                            ? column.getSearchValue(item).toLowerCase()
+                            : getColumnValue(item, column).toLowerCase();
                         return value.includes(filterValue.toLowerCase());
                     });
                 }
