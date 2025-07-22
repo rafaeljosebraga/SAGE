@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Head, Link } from '@inertiajs/react';
@@ -12,7 +11,7 @@ interface AtribuirPermissoesIndexProps {
 }
 
 
-export default function AtribuirPermissoesIndex({ users, espacos }: AtribuirPermissoesIndexProps) {
+export default function AtribuirPermissoesIndex({users}: AtribuirPermissoesIndexProps) {
     const columns: ColumnConfig[] = [
         {
             key: 'name',
