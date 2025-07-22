@@ -16,7 +16,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface EspacosIndexProps {
     auth: {
@@ -38,6 +38,7 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedFoto, setSelectedFoto] = useState<Foto | null>(null);
     const [isFotoModalOpen, setIsFotoModalOpen] = useState(false);
+    const [scrollToResponsaveis, setScrollToResponsaveis] = useState(false);
 
     const handleDelete = (id: number) => {
         router.delete(`/espacos/${id}`);
@@ -46,12 +47,37 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
     const handleViewDetails = (espaco: Espaco) => {
         setSelectedEspaco(espaco);
         setIsModalOpen(true);
+        setScrollToResponsaveis(false);
+    };
+
+    const handleViewDetailsFromResponsavel = (espaco: Espaco) => {
+        setSelectedEspaco(espaco);
+        setIsModalOpen(true);
+        setScrollToResponsaveis(true);
     };
 
     const closeModal = () => {
         setIsModalOpen(false);
         setSelectedEspaco(null);
+        setScrollToResponsaveis(false);
     };
+
+    // useEffect para fazer scroll para responsáveis quando necessário
+    useEffect(() => {
+        if (isModalOpen && scrollToResponsaveis) {
+            // Aguardar um pouco para o modal renderizar completamente
+            setTimeout(() => {
+                const responsaveisElement = document.getElementById('responsaveis-section');
+                if (responsaveisElement) {
+                    responsaveisElement.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start' 
+                    });
+                }
+                setScrollToResponsaveis(false);
+            }, 300);
+        }
+    }, [isModalOpen, scrollToResponsaveis]);
 
     const handleViewFoto = (foto: Foto) => {
         setSelectedFoto(foto);
@@ -167,8 +193,48 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
         {
             key: 'responsaveis',
             label: 'Responsáveis',
-            searchable: false,
-            sortable: false,
+            searchable: true,
+            sortable: true,
+            getValue: (espaco) => {
+                const responsaveis: string[] = [];
+                
+                // Adicionar o criador do espaço
+                if (espaco.createdBy) {
+                    responsaveis.push(espaco.createdBy.name);
+                }
+                
+                // Adicionar usuários com permissão (excluindo o criador se já estiver na lista)
+                if (espaco.users && espaco.users.length > 0) {
+                    espaco.users.forEach((user: User) => {
+                        if (!responsaveis.includes(user.name)) {
+                            responsaveis.push(user.name);
+                        }
+                    });
+                }
+                
+                // Para ordenação, retornar o primeiro responsável (principal)
+                return responsaveis.length > 0 ? responsaveis[0] : 'Não definido';
+            },
+            getSearchValue: (espaco) => {
+                const responsaveis: string[] = [];
+                
+                // Adicionar o criador do espaço
+                if (espaco.createdBy) {
+                    responsaveis.push(espaco.createdBy.name);
+                }
+                
+                // Adicionar usuários com permissão (excluindo o criador se já estiver na lista)
+                if (espaco.users && espaco.users.length > 0) {
+                    espaco.users.forEach((user: User) => {
+                        if (!responsaveis.includes(user.name)) {
+                            responsaveis.push(user.name);
+                        }
+                    });
+                }
+                
+                // Para busca, retornar todos os nomes concatenados
+                return responsaveis.join(' ');
+            },
             render: (value, espaco) => {
                 const responsaveis: string[] = [];
                 
@@ -187,14 +253,14 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                 }
                 
                 if (responsaveis.length === 0) {
-                    return <span className="text-muted-foreground">Não definido</span>;
+                    return <span className="text-muted-foreground px-3 py-1.5 font-medium">Não definido</span>;
                 }
                 
                 if (responsaveis.length === 1) {
                     return (
                         <button
-                            onClick={() => handleViewDetails(espaco)}
-                            className="text-left hover:text-primary hover:underline transition-colors"
+                            onClick={() => handleViewDetailsFromResponsavel(espaco)}
+                            className="text-left text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:bg-gradient-to-r dark:hover:from-blue-900/20 dark:hover:to-indigo-900/20 px-3 py-1.5 rounded-lg transition-all duration-300 hover:shadow-md hover:scale-[1.02] font-medium"
                         >
                             {responsaveis[0]}
                         </button>
@@ -203,8 +269,8 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                 
                 return (
                     <button
-                        onClick={() => handleViewDetails(espaco)}
-                        className="text-left hover:text-primary hover:underline transition-colors"
+                        onClick={() => handleViewDetailsFromResponsavel(espaco)}
+                        className="text-left text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:bg-gradient-to-r dark:hover:from-blue-900/20 dark:hover:to-indigo-900/20 px-3 py-1.5 rounded-lg transition-all duration-300 hover:shadow-md hover:scale-[1.02] font-medium"
                     >
                         {responsaveis[0]}, ...
                     </button>
@@ -402,79 +468,79 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                                 </div>
                             </div>
 
-                            {/* Localização e Responsável */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="bg-muted/30 p-4 rounded-lg border border-border">
-                                    <label className="text-sm font-medium text-muted-foreground">Localização</label>
-                                    <div className="flex items-center gap-2 mt-1">
-                                        <MapPin className="h-5 w-5 text-muted-foreground" />
-                                        <p className="text-lg text-card-foreground">
-                                            {selectedEspaco.localizacao?.nome || 'Não definida'}
-                                        </p>
-                                    </div>
+                            {/* Localização */}
+                            <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                                <label className="text-sm font-medium text-muted-foreground">Localização</label>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <MapPin className="h-5 w-5 text-muted-foreground" />
+                                    <p className="text-lg text-card-foreground">
+                                        {selectedEspaco.localizacao?.nome || 'Não definida'}
+                                    </p>
                                 </div>
-                                <div className="bg-muted/30 p-4 rounded-lg border border-border">
-                                    <label className="text-sm font-medium text-muted-foreground">Responsáveis</label>
-                                    {(() => {
-                                        const responsaveis: Array<User & { tipo: string }> = [];
-                                        
-                                        // Adicionar o criador do espaço
-                                        if (selectedEspaco.createdBy) {
-                                            responsaveis.push({
-                                                ...selectedEspaco.createdBy,
-                                                tipo: 'Criador'
-                                            });
-                                        }
-                                        
-                                        // Adicionar usuários com permissão (excluindo o criador se já estiver na lista)
-                                        if (selectedEspaco.users && selectedEspaco.users.length > 0) {
-                                            selectedEspaco.users.forEach((user: User) => {
-                                                if (!responsaveis.find(r => r.id === user.id)) {
-                                                    responsaveis.push({
-                                                        ...user,
-                                                        tipo: 'Com Permissão'
-                                                    });
-                                                }
-                                            });
-                                        }
-                                        
-                                        return responsaveis.length > 0 ? (
-                                            <div className="mt-2 space-y-3">
-                                                {responsaveis.map((responsavel, index) => (
-                                                    <div key={responsavel.id} className="bg-background/50 p-3 rounded-md border border-border">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                                                                <span className="text-sm font-medium text-primary">
-                                                                    {responsavel.name.charAt(0).toUpperCase()}
-                                                                </span>
-                                                            </div>
-                                                            <div className="flex-1">
-                                                                <div className="flex items-center gap-2">
-                                                                    <p className="text-sm font-medium text-card-foreground">
-                                                                        {responsavel.name}
-                                                                    </p>
-                                                                    <Badge variant="outline" className="text-xs">
-                                                                        {responsavel.tipo}
-                                                                    </Badge>
-                                                                </div>
-                                                                <p className="text-xs text-muted-foreground">
-                                                                    {responsavel.email}
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="mt-2">
-                                                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPerfilColor(responsavel.perfil_acesso)}`}>
-                                                                {formatPerfil(responsavel.perfil_acesso)}
+                            </div>
+
+                            {/* Responsáveis */}
+                            <div id="responsaveis-section" className="bg-muted/30 p-4 rounded-lg border border-border">
+                                <label className="text-sm font-medium text-muted-foreground">Responsáveis</label>
+                                {(() => {
+                                    const responsaveis: Array<User & { tipo: string }> = [];
+                                    
+                                    // Adicionar o criador do espaço
+                                    if (selectedEspaco.createdBy) {
+                                        responsaveis.push({
+                                            ...selectedEspaco.createdBy,
+                                            tipo: 'Criador'
+                                        });
+                                    }
+                                    
+                                    // Adicionar usuários com permissão (excluindo o criador se já estiver na lista)
+                                    if (selectedEspaco.users && selectedEspaco.users.length > 0) {
+                                        selectedEspaco.users.forEach((user: User) => {
+                                            if (!responsaveis.find(r => r.id === user.id)) {
+                                                responsaveis.push({
+                                                    ...user,
+                                                    tipo: 'Com Permissão'
+                                                });
+                                            }
+                                        });
+                                    }
+                                    
+                                    return responsaveis.length > 0 ? (
+                                        <div className="mt-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                            {responsaveis.map((responsavel, index) => (
+                                                <div key={responsavel.id} className="bg-background/50 p-3 rounded-md border border-border">
+                                                    <div className="flex items-start gap-2">
+                                                        <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                                                            <span className="text-sm font-medium text-primary">
+                                                                {responsavel.name.charAt(0).toUpperCase()}
                                                             </span>
                                                         </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex flex-col gap-1">
+                                                                <p className="text-sm font-medium text-card-foreground break-words">
+                                                                    {responsavel.name}
+                                                                </p>
+                                                                <Badge variant="outline" className="text-xs self-start">
+                                                                    {responsavel.tipo}
+                                                                </Badge>
+                                                            </div>
+                                                            <p className="text-xs text-muted-foreground break-words mt-1">
+                                                                {responsavel.email}
+                                                            </p>
+                                                        </div>
                                                     </div>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <p className="text-lg text-card-foreground mt-1">Não definido</p>
-                                        );
-                                    })()}
-                                </div>
+                                                    <div className="mt-2">
+                                                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPerfilColor(responsavel.perfil_acesso)}`}>
+                                                            {formatPerfil(responsavel.perfil_acesso)}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="text-lg text-card-foreground mt-1">Não definido</p>
+                                    );
+                                })()}
                             </div>
 
                             {/* Disponibilidade para Reserva */}
