@@ -87,6 +87,8 @@ class User extends Authenticatable
 
     public function espacos()
     {
-        return $this->belongsToMany(Espaco::class, 'espaco_user');
+        return $this->belongsToMany(Espaco::class, 'espaco_user')
+            ->withPivot('created_by', 'updated_by')
+            ->withTimestamps();
     }
 }

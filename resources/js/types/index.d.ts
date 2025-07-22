@@ -44,6 +44,7 @@ export interface User {
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
+    espacos?: EspacoWithPivot[];
     [key: string]: unknown; // This allows for additional properties...
 }
 
@@ -115,6 +116,27 @@ export interface Espaco {
     responsavel?: User;
     recursos?: Recurso[];
     fotos?: Foto[];
+    users?: UserWithPivot[];
     createdBy?: User;
     updatedBy?: User;
+}
+
+// Interface para dados da tabela pivot espaco_user
+export interface EspacoUserPivot {
+    created_by?: number;
+    updated_by?: number;
+    created_at: string;
+    updated_at: string;
+    createdBy?: User;
+    updatedBy?: User;
+}
+
+// Interface para Espaco com dados do pivot
+export interface EspacoWithPivot extends Espaco {
+    pivot: EspacoUserPivot;
+}
+
+// Interface para User com dados do pivot
+export interface UserWithPivot extends User {
+    pivot: EspacoUserPivot;
 }

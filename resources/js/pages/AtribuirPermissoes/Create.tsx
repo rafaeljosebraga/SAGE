@@ -16,16 +16,11 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 
+import { type User, type Espaco } from '@/types';
+
 interface AtribuirPermissoesCreateProps {
-    users: {
-        id: number;
-        name: string;
-        espacos?: Array<{ id: number; nome: string }>;
-    }[];
-    espacos: {
-        id: number;
-        nome: string;
-    }[];
+    users: User[];
+    espacos: Espaco[];
 }
 
 export default function Create({ users, espacos }: AtribuirPermissoesCreateProps) {

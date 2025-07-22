@@ -3,7 +3,7 @@ import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Head, Link } from '@inertiajs/react';
 import { Plus,UserIcon } from 'lucide-react';
-import { type User, type Espaco } from '@/types';
+import { type User, type Espaco, type EspacoWithPivot } from '@/types';
 import { FilterableTable, type ColumnConfig } from '@/components/ui/filterable-table';
 import {
     Select,
