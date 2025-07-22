@@ -14,7 +14,7 @@ class EspacoUserController extends Controller
      */
     public function index()
     {
-        $users = User::with('espacos:id,nome')->select('id', 'name')->get();
+        $users = User::with('espacos:id,nome')->get();
         $espacos = Espaco::with('users:id,name')->select('id', 'nome')->get();
 
         return Inertia::render('AtribuirPermissoes/Index', [

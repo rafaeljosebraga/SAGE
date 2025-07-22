@@ -55,12 +55,24 @@ export default function AtribuirPermissoesIndex({ users, espacos }: AtribuirPerm
             render: (value) => <span>{value || 'N/A'}</span>
         },
         {
-            key: 'email_verified_at',
-            label: 'Email Verificado',
-            render: (value) => (
-                <span>{value ? 'Verificado' : 'Não Verificado'}</span>
+            key: 'acoes',
+            label: 'Ações',
+            searchable: false,
+            sortable: false,
+            render: (value, user) => (
+                <div className="flex items-center justify-center gap-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        asChild
+                        className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black"
+                    >
+                        <Link href={`/usuarios/${user.id}/editar`}>
+                        </Link>
+                    </Button>
+                </div>
             )
-        },
+        }
     ];
 
     return (
