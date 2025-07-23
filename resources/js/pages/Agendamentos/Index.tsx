@@ -381,7 +381,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                     return (
                         <div
                             key={day.toISOString()}
-                            className={`min-h-[120px] p-2 border-2 border-border/30 hover:border-border/60 rounded-lg cursor-pointer transition-all duration-200 ${
+                            className={`min-h-[120px] p-2 border-2 border-border/100 hover:border-border/60 rounded-lg cursor-pointer transition-all duration-200 ${
                                 isCurrentMonth 
                                     ? 'bg-background hover:bg-muted/50' 
                                     : 'bg-muted/30 hover:bg-muted/40'
@@ -466,7 +466,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                             return (
                                 <div
                                     key={`${day.toISOString()}-${timeSlot}`}
-                                    className="min-h-[60px] p-1 border-2 border-border/30 hover:border-border/60 rounded cursor-pointer hover:bg-muted/30 transition-all duration-200"
+                                    className="min-h-[60px] p-1 border-2 border-border/100 hover:border-border/60 rounded cursor-pointer hover:bg-muted/30 transition-all duration-200"
                                     onClick={() => handleDateSelect(day, timeSlot)}
                                 >
                                     {events.map((event) => (
@@ -514,7 +514,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                         return (
                             <div
                                 key={timeSlot}
-                                className="flex items-start gap-4 p-3 border-2 border-border/30 hover:border-border/60 rounded-lg hover:bg-muted/30 transition-all duration-200 cursor-pointer"
+                                className="flex items-start gap-4 p-3 border-2 border-border/100 hover:border-border/60 rounded-lg hover:bg-muted/30 transition-all duration-200 cursor-pointer"
                                 onClick={() => handleDateSelect(currentDate, timeSlot)}
                             >
                                 <div className="w-16 text-sm font-medium text-muted-foreground">
@@ -602,7 +602,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                             return (
                                 <div
                                     key={`${espaco.id}-${day.toISOString()}`}
-                                    className="min-h-[80px] p-2 border-2 border-border/30 hover:border-border/60 rounded cursor-pointer hover:bg-muted/30 transition-all duration-200"
+                                    className="min-h-[80px] p-2 border-2 border-border/100 hover:border-border/60 rounded cursor-pointer hover:bg-muted/30 transition-all duration-200"
                                     onClick={() => {
                                         setFormData(prev => ({ ...prev, espaco_id: espaco.id.toString() }));
                                         handleDateSelect(day);
