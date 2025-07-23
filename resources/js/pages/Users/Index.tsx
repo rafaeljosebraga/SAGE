@@ -1,6 +1,7 @@
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
 import { Head, Link, router } from '@inertiajs/react';
 import { Plus, Pencil, Trash2, User as UserIcon } from 'lucide-react';
 import { type User, type BreadcrumbItem } from '@/types';
@@ -16,6 +17,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { useEffect } from 'react';
 
 interface UsersIndexProps {
     auth: {
@@ -27,11 +29,52 @@ interface UsersIndexProps {
         last_page: number;
         total: number;
     };
+    flash?: {
+        success?: string;
+        error?: string;
+    };
 }
+export default function UsersIndex({ auth, users, flash }: UsersIndexProps) {
+    const { toast } = useToast();
 
-export default function UsersIndex({ auth, users }: UsersIndexProps) {
+    // Mostrar toasts baseados nas flash messages
+    useEffect(() => {
+        if (flash?.success) {
+            toast({
+                title: "Sucesso!",
+                description: flash.success,
+                variant: "success",
+                duration: 5000, // 5 segundos
+            });
+        }
+        if (flash?.error) {
+            toast({
+                title: "Erro!",
+                description: flash.error,
+                variant: "destructive",
+            });
+        }
+    }, [flash, toast]);
+
     const handleDelete = (id: number) => {
-        router.delete(`/usuarios/${id}`);
+         router.delete(`/usuarios/${id}`, {
+            onSuccess: () => {
+                toast({
+                    title: "Usuário excluído",
+                    description: "O usuário foi excluído com sucesso.",
+                    variant: "success",
+                    duration: 5000, // 5 segundos
+                });
+            },
+            onError: (errors) => {
+                const errorMessage = Object.values(errors).flat()[0] as string || "Erro ao excluir usuário";
+                toast({
+                    title: "Erro ao excluir",
+                    description: errorMessage,
+                    variant: "destructive",
+                });
+            },
+        });
     };
 
     const formatPerfil = (perfil: string | undefined) => {
@@ -41,7 +84,7 @@ export default function UsersIndex({ auth, users }: UsersIndexProps) {
 
     const getPerfilVariant = (perfil: string | undefined) => {
         if (!perfil) return 'secondary';
-        
+
         switch (perfil.toLowerCase()) {
             case 'administrador':
                 return 'destructive';
@@ -58,7 +101,7 @@ export default function UsersIndex({ auth, users }: UsersIndexProps) {
 
     const getPerfilColor = (perfil: string | undefined) => {
         if (!perfil) return '';
-        
+
         switch (perfil.toLowerCase()) {
             case 'administrador':
                 return 'bg-[#EF7D4C] hover:bg-[#f0875d] text-white border-transparent';

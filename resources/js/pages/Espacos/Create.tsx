@@ -1,4 +1,17 @@
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import AppLayout from '@/layouts/app-layout';
+import { useToast } from '@/hooks/use-toast';
+import { useToastDismissOnClick } from '@/hooks/use-toast-dismiss-on-click';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -49,6 +62,8 @@ interface EspacosCreateProps {
 }
 
 export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosCreateProps) {
+    const { toast } = useToast();
+    useToastDismissOnClick(); // Hook para dismissar toast ao clicar em botões
     const [fotos, setFotos] = useState<FotoLocal[]>([]);
     const [arquivosOriginais, setArquivosOriginais] = useState<File[]>([]);
     const [deveScrollParaErro, setDeveScrollParaErro] = useState(false);
@@ -147,25 +162,42 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
         
         post('/espacos', {
             forceFormData: true,
-            onError: () => {
-                // O scroll será feito pelo useEffect quando os erros chegarem
-                setIsSubmitting(false);
-            },
+
             onSuccess: () => {
-                // Resetar o flag em caso de sucesso
-                setDeveScrollParaErro(false);
                 reset();
                 setFotos([]);
                 setArquivosOriginais([]);
+                setDeveScrollParaErro(false);
                 setIsSubmitting(false);
+
+                toast({
+                    title: "Espaço criado com sucesso!",
+                    description: `O espaço ${data.nome} foi criado e adicionado ao sistema.`,
+                    variant: "success",
+                    duration: 5000, // 5 segundos
+                });
             },
+
+            onError: (errors) => {
+                setIsSubmitting(false);
+
+                const errorMessages = Object.values(errors).flat();
+                if (errorMessages.length > 0) {
+                    toast({
+                        title: "Erro ao criar espaço",
+                        description: errorMessages[0] as string,
+                        variant: "destructive",
+                    });
+                }
+            },
+
             onFinish: () => {
-                // Garantir que o estado seja resetado após qualquer resultado
                 submitTimeoutRef.current = setTimeout(() => {
                     setIsSubmitting(false);
                 }, 1000);
             }
         });
+
     };
 
     const handleSubmitClick = (e: React.MouseEvent) => {
@@ -261,12 +293,37 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
 
             <div className="space-y-6">
                 <div className="flex items-center gap-4">
-                    <Button variant="outline" asChild>
-                        <Link href="/espacos">
-                            <ArrowLeft className="mr-2 h-4 w-4" />
-                            Voltar
-                        </Link>
-                    </Button>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button
+                                variant="outline"
+                                type="button"
+                                className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-[#F26326] hover:text-black dark:text-[#F26326] dark:hover:text-black"
+                            >
+                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                Voltar
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Tem certeza que deseja voltar?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    As informações preenchidas serão perdidas.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Não</AlertDialogCancel>
+                                <AlertDialogAction
+                                    onClick={() => {
+                                        window.location.href = '/espacos';
+                                    }}
+                                    className="bg-red-600 hover:bg-red-700"
+                                >
+                                    Sim, voltar
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                     <h1 className="text-3xl font-bold text-black dark:text-white">Criar espaço</h1>
                 </div>
 
@@ -425,7 +482,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                         </Card>
                     )}
 
-                    {/* Seção de Fotos - OBRIGATÓRIA */}
+                    {/* Seção de Fotos - é OBRIGATÓRIA!!! */}
                     <Card 
                         id="painel-fotos"
                         className={errors.fotos ? 'border-red-500' : ''}
@@ -467,16 +524,38 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                             <Save className="mr-2 h-4 w-4" />
                             {(isSubmitting || processing) ? 'Salvando...' : 'Salvar Espaço'}
                         </Button>
-                        <Button 
-                            type="button" 
-                            variant="outline"
-                            asChild
-                            disabled={isSubmitting || processing}
-                        >
-                            <Link href="/espacos">
-                                Cancelar
-                            </Link>
-                        </Button>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    disabled={isSubmitting || processing}
+                                >
+                                    Cancelar
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Tem certeza que deseja cancelar?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        Todas as informações preenchidas serão limpas.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Não</AlertDialogCancel>
+                                    <AlertDialogAction
+                                        onClick={() => {
+                                            reset();
+                                            setFotos([]);
+                                            setArquivosOriginais([]);
+                                        }}
+                                        className="bg-red-600 hover:bg-red-700"
+                                    >
+                                        Sim, cancelar
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                     </div>
                 </form>
             </div>
