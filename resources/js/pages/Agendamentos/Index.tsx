@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
-import { Calendar, Clock, MapPin, User, Filter, Plus, Eye, Edit, Trash2, Settings, AlertTriangle, ChevronLeft, ChevronRight, List, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, Filter, Plus, Eye, Edit, Trash2, Settings, AlertTriangle, ChevronLeft, ChevronRight, List, Search, ArrowUpDown, ArrowUp, ArrowDown, Clock3, CheckCircle, XCircle, Ban } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, addMonths, subMonths, startOfWeek, endOfWeek, addDays, isSameDay, parseISO, addHours, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -40,7 +40,8 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     const [selectedEspacos, setSelectedEspacos] = useState<number[]>(
         filters.espaco_id ? [parseInt(filters.espaco_id)] : espacos.map(e => e.id)
     );
-    const [searchEspacos, setSearchEspacos] = useState('');
+    const [searchEspacos, setSearchEspacos] = useState("");
+    const [searchAgendamentos, setSearchAgendamentos] = useState("");
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | 'none'>('none');
     
     // Estados para o modal de criação
@@ -122,6 +123,21 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                 return 'Cancelado';
             default:
                 return status;
+        }
+    };
+
+    const getStatusIcon = (status: string) => {
+        switch (status) {
+            case 'pendente':
+                return <Clock3 className="h-3 w-3 text-yellow-600 dark:text-yellow-400" />;
+            case 'aprovado':
+                return <CheckCircle className="h-3 w-3 text-green-600 dark:text-green-400" />;
+            case 'rejeitado':
+                return <XCircle className="h-3 w-3 text-red-600 dark:text-red-400" />;
+            case 'cancelado':
+                return <Ban className="h-3 w-3 text-gray-600 dark:text-gray-400" />;
+            default:
+                return <Clock3 className="h-3 w-3 text-gray-600 dark:text-gray-400" />;
         }
     };
 
@@ -380,6 +396,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                 setCurrentDate(direction === 'next' ? addMonths(currentDate, 1) : subMonths(currentDate, 1));
                 break;
             case 'week':
+            case 'timeline':
                 setCurrentDate(direction === 'next' ? addDays(currentDate, 7) : addDays(currentDate, -7));
                 break;
             case 'day':
@@ -393,6 +410,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
             case 'month':
                 return format(currentDate, 'MMMM yyyy', { locale: ptBR });
             case 'week':
+            case 'timeline':
                 const weekStart = startOfWeek(currentDate, { weekStartsOn: 0 });
                 const weekEnd = endOfWeek(currentDate, { weekStartsOn: 0 });
                 return `${format(weekStart, 'dd MMM', { locale: ptBR })} - ${format(weekEnd, 'dd MMM yyyy', { locale: ptBR })}`;
@@ -445,15 +463,27 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                 {dayEvents.slice(0, 3).map((event) => (
                                     <div
                                         key={event.id}
-                                        className={`text-xs p-1 rounded truncate cursor-pointer transition-opacity hover:opacity-80 ${getStatusBgColor(event.status)}`}
+                                        className={`text-xs p-1 rounded cursor-pointer transition-opacity hover:opacity-80 ${getStatusBgColor(event.status)}`}
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             handleEventClick(event);
                                         }}
-                                        title={`${event.titulo} - ${event.espaco?.nome || 'Espaço'}`}
+                                        title={`${event.titulo} - ${event.espaco?.nome || 'Espaço'} - ${event.hora_inicio.substring(0, 5)} às ${event.hora_fim.substring(0, 5)} - ${getStatusText(event.status)}`}
                                     >
-                                        <div className="font-medium">{event.hora_inicio} {event.titulo}</div>
-                                        <div className="text-xs opacity-75">{event.espaco?.nome}</div>
+                                        <div className="flex items-start justify-between gap-1">
+                                            <div className="flex-1 min-w-0">
+                                                <div className="font-medium truncate">
+                                                    <span className="text-xs font-normal opacity-75">
+                                                        {event.hora_inicio.substring(0, 5)}
+                                                    </span>
+                                                    <span className="ml-1">{event.titulo}</span>
+                                                </div>
+                                                <div className="text-xs opacity-75 truncate">{event.espaco?.nome}</div>
+                                            </div>
+                                            <div className="flex-shrink-0">
+                                                {getStatusIcon(event.status)}
+                                            </div>
+                                        </div>
                                     </div>
                                 ))}
                                 {dayEvents.length > 3 && (
@@ -515,14 +545,17 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                     {events.map((event) => (
                                         <div
                                             key={event.id}
-                                            className={`text-xs p-1 rounded mb-1 cursor-pointer transition-opacity hover:opacity-80 ${getStatusBgColor(event.status)}`}
+                                            className={`text-xs p-1 rounded mb-1 cursor-pointer transition-opacity hover:opacity-80 relative ${getStatusBgColor(event.status)}`}
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 handleEventClick(event);
                                             }}
-                                            title={`${event.titulo} - ${event.espaco?.nome || 'Espaço'}`}
+                                            title={`${event.titulo} - ${event.espaco?.nome || 'Espaço'} - ${getStatusText(event.status)}`}
                                         >
-                                            <div className="font-medium truncate">{event.titulo}</div>
+                                            <div className="absolute top-0.5 right-0.5">
+                                                {getStatusIcon(event.status)}
+                                            </div>
+                                            <div className="font-medium truncate pr-4">{event.titulo}</div>
                                             <div className="text-xs opacity-75 truncate">{event.espaco?.nome}</div>
                                         </div>
                                     ))}
@@ -595,88 +628,140 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         );
     };
 
-    const renderTimelineView = () => (
-        <div className="space-y-4">
-            {/* Cabeçalho com dias */}
-            <div className="grid gap-1" style={{ gridTemplateColumns: '200px repeat(7, 1fr)' }}>
-                <div className="p-3 text-center font-medium text-muted-foreground bg-muted/50 rounded-lg">
-                    Salas
-                </div>
-                {days.map((day) => {
-                    const isCurrentDay = isToday(day);
-                    return (
-                        <div 
-                            key={day.toISOString()} 
-                            className={`p-3 text-center font-medium rounded-lg ${
-                                isCurrentDay 
-                                    ? 'bg-primary text-primary-foreground' 
-                                    : 'bg-muted/50 text-muted-foreground'
-                            }`}
-                        >
-                            <div className="text-sm">{format(day, 'EEE', { locale: ptBR })}</div>
-                            <div className={`text-lg ${isCurrentDay ? 'font-bold' : ''}`}>
-                                {format(day, 'd')}
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
+    const renderTimelineView = () => {
+        // Filtrar e ordenar espaços para timeline
+        const timelineEspacos = (() => {
+            // Primeiro filtrar pelos espaços selecionados
+            let filtered = espacos.filter(espaco => selectedEspacos.includes(espaco.id));
+            
+            // Depois filtrar pela busca de agendamentos
+            if (searchAgendamentos) {
+                const espacosComAgendamentos = new Set();
+                filteredAgendamentos.forEach(agendamento => {
+                    if (agendamento.titulo.toLowerCase().includes(searchAgendamentos.toLowerCase()) ||
+                        agendamento.justificativa?.toLowerCase().includes(searchAgendamentos.toLowerCase()) ||
+                        agendamento.user?.name.toLowerCase().includes(searchAgendamentos.toLowerCase())) {
+                        espacosComAgendamentos.add(agendamento.espaco_id);
+                    }
+                });
+                filtered = filtered.filter(espaco => espacosComAgendamentos.has(espaco.id));
+            }
 
-            {/* Timeline por sala */}
-            <div className="space-y-2 max-h-[600px] overflow-y-auto scrollbar-thin scrollbar-track-muted/30 scrollbar-thumb-muted-foreground/20 hover:scrollbar-thumb-muted-foreground/40">
-                {espacos.filter(espaco => selectedEspacos.includes(espaco.id)).map((espaco) => (
-                    <div key={espaco.id} className="grid gap-1" style={{ gridTemplateColumns: '200px repeat(7, 1fr)' }}>
-                        {/* Informações da sala */}
-                        <div className="p-3 bg-muted/30 rounded-lg">
-                            <div className="font-medium text-sm">{espaco.nome}</div>
-                            <div className="text-xs text-muted-foreground">
-                                Cap: {espaco.capacidade}
-                            </div>
-                            {espaco.localizacao && (
-                                <div className="text-xs text-muted-foreground">
-                                    {espaco.localizacao.nome}
-                                </div>
-                            )}
-                        </div>
 
-                        {/* Dias da semana para esta sala */}
-                        {days.map((day) => {
-                            const dayEvents = getEventsForDay(day).filter(event => event.espaco_id === espaco.id);
-                            return (
-                                <div
-                                    key={`${espaco.id}-${day.toISOString()}`}
-                                    className="min-h-[80px] p-2 border-2 border-border/100 hover:border-border/60 rounded cursor-pointer hover:bg-muted/30 transition-all duration-200"
-                                    onClick={() => {
-                                        setFormData(prev => ({ ...prev, espaco_id: espaco.id.toString() }));
-                                        handleDateSelect(day);
-                                    }}
-                                >
-                                    <div className="space-y-1">
-                                        {dayEvents.map((event) => (
-                                            <div
-                                                key={event.id}
-                                                className={`text-xs p-1 rounded cursor-pointer transition-opacity hover:opacity-80 ${getStatusBgColor(event.status)}`}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleEventClick(event);
-                                                }}
-                                                title={`${event.titulo} - ${event.hora_inicio} às ${event.hora_fim}`}
-                                            >
-                                                <div className="font-medium truncate">{event.titulo}</div>
-                                                <div className="text-xs opacity-75">
-                                                    {event.hora_inicio} - {event.hora_fim}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            );
-                        })}
+            return filtered;
+        })();
+
+        return (
+            <div className="space-y-4">
+                {/* Controles de busca e ordenação para timeline */}
+                <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
+                    <div className="flex items-center gap-2">
+                        <Search className="h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Buscar agendamentos..."
+                            value={searchAgendamentos}
+                            onChange={(e) => setSearchAgendamentos(e.target.value)}
+                            className="h-8 text-sm w-64"
+                        />
                     </div>
-                ))}
+                    <div className="text-sm text-muted-foreground">
+                        {timelineEspacos.length} de {espacos.filter(e => selectedEspacos.includes(e.id)).length} espaços
+                    </div>
+                </div>
+
+                {/* Cabeçalho com dias */}
+                <div className="grid gap-1" style={{ gridTemplateColumns: "200px repeat(7, 1fr)" }}>
+                    <div className="p-3 text-center font-medium text-muted-foreground bg-muted/50 rounded-lg">
+                        Espaços
+                    </div>
+                    {days.map((day) => {
+                        const isCurrentDay = isToday(day);
+                        return (
+                            <div 
+                                key={day.toISOString()} 
+                                className={`p-3 text-center font-medium rounded-lg ${
+                                    isCurrentDay 
+                                        ? "bg-primary text-primary-foreground" 
+                                        : "bg-muted/50 text-muted-foreground"
+                                }`}
+                            >
+                                <div className="text-sm">{format(day, "EEE", { locale: ptBR })}</div>
+                                <div className={`text-lg ${isCurrentDay ? "font-bold" : ""}`}>
+                                    {format(day, "d")}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {/* Timeline por sala */}
+                <div className="space-y-2 max-h-[600px] overflow-y-auto scrollbar-thin scrollbar-track-muted/30 scrollbar-thumb-muted-foreground/20 hover:scrollbar-thumb-muted-foreground/40">
+                    {timelineEspacos.length === 0 ? (
+                        <div className="text-center py-8 text-muted-foreground">
+                            <Search className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                            <p className="text-sm">
+                                {searchAgendamentos ? "Nenhum agendamento encontrado com o termo pesquisado" : "Nenhum espaço selecionado"}
+                            </p>
+                        </div>
+                    ) : (
+                        timelineEspacos.map((espaco) => (
+                            <div key={espaco.id} className="grid gap-1" style={{ gridTemplateColumns: "200px repeat(7, 1fr)" }}>
+                                {/* Informações da sala */}
+                                <div className="p-3 bg-muted/30 rounded-lg">
+                                    <div className="font-medium text-sm">{espaco.nome}</div>
+                                    <div className="text-xs text-muted-foreground">
+                                        Cap: {espaco.capacidade}
+                                    </div>
+                                    {espaco.localizacao && (
+                                        <div className="text-xs text-muted-foreground">
+                                            {espaco.localizacao.nome}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Dias da semana para esta sala */}
+                                {days.map((day) => {
+                                    const dayEvents = getEventsForDay(day).filter(event => event.espaco_id === espaco.id);
+                                    return (
+                                        <div
+                                            key={`${espaco.id}-${day.toISOString()}`}
+                                            className="min-h-[80px] p-2 border-2 border-border/100 hover:border-border/60 rounded cursor-pointer hover:bg-muted/30 transition-all duration-200"
+                                            onClick={() => {
+                                                setFormData(prev => ({ ...prev, espaco_id: espaco.id.toString() }));
+                                                handleDateSelect(day);
+                                            }}
+                                        >
+                                            <div className="space-y-1">
+                                                {dayEvents.map((event) => (
+                                                    <div
+                                                        key={event.id}
+                                                        className={`text-xs p-1 rounded cursor-pointer transition-opacity hover:opacity-80 relative ${getStatusBgColor(event.status)}`}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleEventClick(event);
+                                                        }}
+                                                        title={`${event.titulo} - ${event.hora_inicio.substring(0, 5)} às ${event.hora_fim.substring(0, 5)} - ${getStatusText(event.status)}`}
+                                                    >
+                                                        <div className="absolute top-0.5 right-0.5">
+                                                            {getStatusIcon(event.status)}
+                                                        </div>
+                                                        <div className="font-medium truncate pr-4">{event.titulo}</div>
+                                                        <div className="text-xs opacity-75">
+                                                            {event.hora_inicio.substring(0, 5)} - {event.hora_fim.substring(0, 5)}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ))
+                    )}
+                </div>
             </div>
-        </div>
-    );
+        );
+    };
 
     const renderListView = () => (
         <div className="space-y-6">
@@ -783,7 +868,10 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                         <div className="flex items-center gap-2">
                                             <h3 className="font-semibold text-lg">{agendamento.titulo}</h3>
                                             <Badge className={getStatusColor(agendamento.status)}>
-                                                {getStatusText(agendamento.status)}
+                                                <span className="flex items-center gap-1">
+                                                    {getStatusIcon(agendamento.status)}
+                                                    {getStatusText(agendamento.status)}
+                                                </span>
                                             </Badge>
                                         </div>
 
@@ -1021,31 +1109,32 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                     <Label>Legenda</Label>
                                     <div className="space-y-2 mt-2">
                                         <div className="flex items-center gap-2">
-                                            <div className="w-4 h-4 rounded bg-yellow-300 dark:bg-yellow-600/80 border border-yellow-400 dark:border-yellow-500"></div>
+                                            <div className="w-4 h-4 rounded bg-yellow-300 dark:bg-yellow-600/80 border border-yellow-400 dark:border-yellow-500 flex items-center justify-center">
+                                                <Clock3 className="h-2.5 w-2.5 text-yellow-700 dark:text-yellow-300" />
+                                            </div>
                                             <span className="text-sm">Pendente</span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <div className="w-4 h-4 rounded bg-green-300 dark:bg-green-600/80 border border-green-400 dark:border-green-500"></div>
+                                            <div className="w-4 h-4 rounded bg-green-300 dark:bg-green-600/80 border border-green-400 dark:border-green-500 flex items-center justify-center">
+                                                <CheckCircle className="h-2.5 w-2.5 text-green-700 dark:text-green-300" />
+                                            </div>
                                             <span className="text-sm">Aprovado</span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <div className="w-4 h-4 rounded bg-red-300 dark:bg-red-600/80 border border-red-400 dark:border-red-500"></div>
+                                            <div className="w-4 h-4 rounded bg-red-300 dark:bg-red-600/80 border border-red-400 dark:border-red-500 flex items-center justify-center">
+                                                <XCircle className="h-2.5 w-2.5 text-red-700 dark:text-red-300" />
+                                            </div>
                                             <span className="text-sm">Rejeitado</span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <div className="w-4 h-4 rounded bg-gray-300 dark:bg-gray-600/80 border border-gray-400 dark:border-gray-500"></div>
+                                            <div className="w-4 h-4 rounded bg-gray-300 dark:bg-gray-600/80 border border-gray-400 dark:border-gray-500 flex items-center justify-center">
+                                                <Ban className="h-2.5 w-2.5 text-gray-700 dark:text-gray-300" />
+                                            </div>
                                             <span className="text-sm">Cancelado</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Dicas */}
-                                <div className="text-xs text-muted-foreground space-y-1">
-                                    <p><strong>Dicas:</strong></p>
-                                    <p>• Clique em um horário vazio para criar agendamento</p>
-                                    <p>• Clique em um evento para ver detalhes</p>
-                                    <p>• Use os filtros para visualizar salas específicas</p>
-                                </div>
                             </CardContent>
                         </Card>
 

@@ -250,7 +250,16 @@ class AgendamentoController extends Controller
      */
     public function show(Agendamento $agendamento)
     {
-        $agendamento->load(['espaco.localizacao', 'user', 'aprovadoPor']);
+        $agendamento->load([
+            'espaco.localizacao', 
+            'espaco.fotos', 
+            'espaco.recursos',
+            'espaco.users',
+            'espaco.createdBy',
+            'espaco.updatedBy',
+            'user', 
+            'aprovadoPor'
+        ]);
 
         // Verificar permissão
         if (auth()->user()->perfil_acesso !== 'diretor_geral' && 
