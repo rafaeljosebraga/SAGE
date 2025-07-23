@@ -57,7 +57,7 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                             Voltar
                         </Link>
                     </Button>
-                      <h1 className="text-3xl font-bold text-black dark:text-white">Nova Localização</h1>
+                      <h1 className="text-3xl font-bold text-black dark:text-white">Novo Recurso</h1>
                 </div>
 
                 <form onSubmit={submit} className="space-y-6">
