@@ -69,9 +69,9 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
             setTimeout(() => {
                 const responsaveisElement = document.getElementById('responsaveis-section');
                 if (responsaveisElement) {
-                    responsaveisElement.scrollIntoView({ 
-                        behavior: 'smooth', 
-                        block: 'start' 
+                    responsaveisElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
                     });
                 }
                 setScrollToResponsaveis(false);
@@ -145,7 +145,7 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
 
     const getPerfilColor = (perfil: string | undefined) => {
         if (!perfil) return "bg-gray-100 text-gray-800 border-gray-200";
-        
+
         switch (perfil.toLowerCase()) {
             case "administrador":
                 return "bg-[#EF7D4C] text-white border-transparent";
@@ -197,12 +197,12 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
             sortable: true,
             getValue: (espaco) => {
                 const responsaveis: string[] = [];
-                
+
                 // Adicionar o criador do espaço
                 if (espaco.createdBy) {
                     responsaveis.push(espaco.createdBy.name);
                 }
-                
+
                 // Adicionar usuários com permissão (excluindo o criador se já estiver na lista)
                 if (espaco.users && espaco.users.length > 0) {
                     espaco.users.forEach((user: User) => {
@@ -211,18 +211,18 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                         }
                     });
                 }
-                
+
                 // Para ordenação, retornar o primeiro responsável (principal)
                 return responsaveis.length > 0 ? responsaveis[0] : 'Não definido';
             },
             getSearchValue: (espaco) => {
                 const responsaveis: string[] = [];
-                
+
                 // Adicionar o criador do espaço
                 if (espaco.createdBy) {
                     responsaveis.push(espaco.createdBy.name);
                 }
-                
+
                 // Adicionar usuários com permissão (excluindo o criador se já estiver na lista)
                 if (espaco.users && espaco.users.length > 0) {
                     espaco.users.forEach((user: User) => {
@@ -231,18 +231,18 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                         }
                     });
                 }
-                
+
                 // Para busca, retornar todos os nomes concatenados
                 return responsaveis.join(' ');
             },
             render: (value, espaco) => {
                 const responsaveis: string[] = [];
-                
+
                 // Adicionar o criador do espaço
                 if (espaco.createdBy) {
                     responsaveis.push(espaco.createdBy.name);
                 }
-                
+
                 // Adicionar usuários com permissão (excluindo o criador se já estiver na lista)
                 if (espaco.users && espaco.users.length > 0) {
                     espaco.users.forEach((user: User) => {
@@ -251,11 +251,11 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                         }
                     });
                 }
-                
+
                 if (responsaveis.length === 0) {
                     return <span className="text-muted-foreground px-3 py-1.5 font-medium">Não definido</span>;
                 }
-                
+
                 if (responsaveis.length === 1) {
                     return (
                         <button
@@ -266,7 +266,7 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                         </button>
                     );
                 }
-                
+
                 return (
                     <button
                         onClick={() => handleViewDetailsFromResponsavel(espaco)}
@@ -287,7 +287,7 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                 { value: 'manutencao', label: 'Manutenção' }
             ],
             render: (value, espaco) => (
-                <Badge 
+                <Badge
                     variant={getStatusVariant(espaco.status)}
                     className={getStatusColor(espaco.status)}
                 >
@@ -305,11 +305,11 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
             ],
             getValue: (espaco) => espaco.disponivel_reserva ? 'true' : 'false',
             render: (value, espaco) => (
-                <Badge 
+                <Badge
                     variant={espaco.disponivel_reserva ? 'default' : 'secondary'}
                     className={
-                        espaco.disponivel_reserva 
-                            ? 'bg-blue-100 text-blue-800 border-blue-200' 
+                        espaco.disponivel_reserva
+                            ? 'bg-blue-100 text-blue-800 border-blue-200'
                             : 'bg-gray-100 text-gray-800 border-gray-200'
                     }
                 >
@@ -359,7 +359,7 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                                     Confirmar exclusão
                                 </AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    Tem certeza que deseja excluir o espaço {espaco.nome}? 
+                                    Tem certeza que deseja excluir o espaço {espaco.nome}?
                                     Esta ação não pode ser desfeita.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
@@ -404,7 +404,7 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                     </div>
                 </div>
 
-                <FilterableTable 
+                <FilterableTable
                     data={espacos}
                     columns={columns}
                     emptyMessage="Nenhum espaço encontrado."
@@ -413,11 +413,11 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
 
             {/* Modal de Detalhes do Espaço */}
             {isModalOpen && selectedEspaco && (
-                <div 
+                <div
                     className="fixed inset-0 bg-black/30 dark:bg-black/50 flex items-center justify-center z-50"
                     onClick={closeModal}
                 >
-                    <div 
+                    <div
                         className="bg-card border border-border rounded-xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col"
                         onClick={(e) => e.stopPropagation()}
                     >
@@ -458,7 +458,7 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                                 <div className="bg-muted/30 p-4 rounded-lg border border-border">
                                     <label className="text-sm font-medium text-muted-foreground">Status</label>
                                     <div className="mt-1">
-                                        <Badge 
+                                        <Badge
                                             variant={getStatusVariant(selectedEspaco.status)}
                                             className={`${getStatusColor(selectedEspaco.status)} text-sm rounded-full`}
                                         >
@@ -484,7 +484,7 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                                 <label className="text-sm font-medium text-muted-foreground">Responsáveis</label>
                                 {(() => {
                                     const responsaveis: Array<User & { tipo: string }> = [];
-                                    
+
                                     // Adicionar o criador do espaço
                                     if (selectedEspaco.createdBy) {
                                         responsaveis.push({
@@ -492,7 +492,7 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                                             tipo: 'Criador'
                                         });
                                     }
-                                    
+
                                     // Adicionar usuários com permissão (excluindo o criador se já estiver na lista)
                                     if (selectedEspaco.users && selectedEspaco.users.length > 0) {
                                         selectedEspaco.users.forEach((user: User) => {
@@ -504,7 +504,7 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                                             }
                                         });
                                     }
-                                    
+
                                     return responsaveis.length > 0 ? (
                                         <div className="mt-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                             {responsaveis.map((responsavel, index) => (
@@ -547,11 +547,11 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                             <div className="bg-muted/30 p-4 rounded-lg border border-border">
                                 <label className="text-sm font-medium text-muted-foreground">Disponível para Reserva</label>
                                 <div className="mt-1">
-                                    <Badge 
+                                    <Badge
                                         variant={selectedEspaco.disponivel_reserva ? 'default' : 'secondary'}
                                         className={`text-sm rounded-full ${
-                                            selectedEspaco.disponivel_reserva 
-                                                ? 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800' 
+                                            selectedEspaco.disponivel_reserva
+                                                ? 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800'
                                                 : 'bg-muted text-muted-foreground border-border'
                                         }`}
                                     >
@@ -582,8 +582,8 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                                     <label className="text-sm font-medium text-muted-foreground">Recursos Disponíveis</label>
                                     <div className="mt-2 flex flex-wrap gap-2">
                                         {selectedEspaco.recursos.map((recurso) => (
-                                            <Badge 
-                                                key={recurso.id} 
+                                            <Badge
+                                                key={recurso.id}
                                                 variant="outline"
                                                 className="text-sm rounded-full border-border text-card-foreground"
                                             >
@@ -605,12 +605,12 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                                         )}
                                     </label>
                                 </div>
-                                
+
                                 {selectedEspaco.fotos && selectedEspaco.fotos.length > 0 ? (
                                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                                         {selectedEspaco.fotos.filter(foto => foto.url && foto.url !== '/storage/' && foto.url.length > 10).map((foto) => (
-                                            <div 
-                                                key={foto.id} 
+                                            <div
+                                                key={foto.id}
                                                 className="relative group cursor-pointer rounded-lg overflow-hidden border border-border hover:border-primary/50 transition-colors"
                                                 onClick={() => handleViewFoto(foto)}
                                             >
@@ -684,11 +684,11 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
 
             {/* Modal de Visualização de Foto - APENAS IMAGEM */}
             {isFotoModalOpen && selectedFoto && (
-                <div 
+                <div
                     className="fixed inset-0 bg-black/80 flex items-center justify-center z-60"
                     onClick={closeFotoModal}
                 >
-                    <div 
+                    <div
                         className="bg-card border border-border rounded-xl shadow-2xl max-w-5xl max-h-[95vh] w-full mx-4 overflow-hidden flex flex-col"
                         onClick={(e) => e.stopPropagation()}
                     >
