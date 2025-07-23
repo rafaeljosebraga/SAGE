@@ -1,3 +1,14 @@
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -221,12 +232,35 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
 
             <div className="space-y-6">
                 <div className="flex items-center gap-4">
-                    <Button variant="outline" asChild>
-                        <Link href="/espacos">
-                            <ArrowLeft className="mr-2 h-4 w-4" />
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button
+                            type="button"
+                            variant="outline"
+                            className="gap-2"
+                            >
+                            <ArrowLeft className="h-4 w-4" />
                             Voltar
-                        </Link>
-                    </Button>
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                            <AlertDialogTitle>Tem certeza que deseja voltar?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                As alterações feitas não foram salvas. Você perderá todas as modificações.
+                            </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                            <AlertDialogCancel>Não</AlertDialogCancel>
+                            <AlertDialogAction
+                                className="bg-red-600 hover:bg-red-700"
+                                asChild
+                            >
+                                <Link href="/espacos">Sim, voltar</Link>
+                            </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                        </AlertDialog>
                     <h1 className="text-3xl font-bold text-black dark:text-white">Editar espaço</h1>
                 </div>
 
@@ -496,15 +530,47 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                         <Save className="mr-2 h-4 w-4" />
                         {processing ? 'Salvando...' : 'Salvar Alterações'}
                     </Button>
-                    <Button 
-                        type="button" 
-                        variant="outline"
-                        asChild
-                    >
-                        <Link href="/espacos">
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button
+                            type="button"
+                            variant="outline"
+                            disabled={processing}
+                            >
                             Cancelar
-                        </Link>
-                    </Button>
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                            <AlertDialogTitle>Tem certeza que deseja cancelar?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Todas as alterações feitas serão descartadas. O formulário voltará ao estado original.
+                            </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                            <AlertDialogCancel>Não</AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={() => {
+                                setData({
+                                    nome: espaco.nome || '',
+                                    descricao: espaco.descricao || '',
+                                    capacidade: espaco.capacidade?.toString() || '',
+                                    localizacao_id: espaco.localizacao_id?.toString() || '',
+                                    status: espaco.status || 'ativo',
+                                    disponivel_reserva: espaco.disponivel_reserva || false,
+                                    recursos: espaco.recursos?.map(r => r.id) || [],
+                                    fotos: ''
+                                });
+                                setFotosAtuais(espaco.fotos || []);
+                                clearErrors();
+                                }}
+                                className="bg-red-600 hover:bg-red-700"
+                            >
+                                Sim, cancelar
+                            </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                        </AlertDialog>
                 </div>
             </div>
         </AppLayout>

@@ -15,7 +15,7 @@ class EspacoUserController extends Controller
     public function index()
     {
         $users = User::with('espacos:id,nome')->get();
-        $espacos = Espaco::with('users:id,name')->select('id', 'nome')->get();
+        $espacos = Espaco::with('users:id,name')->get();
 
         return Inertia::render('AtribuirPermissoes/Index', [
             'users' => $users,
@@ -31,30 +31,36 @@ class EspacoUserController extends Controller
 
     public function create(string $userID)
     {
-        $users = User::select('id', 'name')->get();
-        $espacos = Espaco::select('id', 'nome')->get();
+        $users = User::select()->get();
+        $user = User::findOrFail($userID);
+        $espacos = Espaco::with(['localizacao', 'responsavel', 'recursos', 'fotos', 'createdBy', 'updatedBy', 'users'])->get();
+        $espacosAtribuidos = $user->espacos();
 
         return Inertia::render('AtribuirPermissoes/Create', [
             'users' => $users,
             'espacos' => $espacos,
-            'usID' => $userID
+            'usID' => $userID,
+            'espacosAtribuidos' => $espacosAtribuidos->pluck('id')->toArray(),
         ]);
     }
-    /**
-
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $validatedData = $request->validate([
             'user_id' => 'required|exists:users,id',
             'espaco_ids' => 'required|array',
             'espaco_ids.*' => 'exists:espacos,id',
+            'espaco_ids_removidos' => 'array', // opcional, pode não vir
+            'espaco_ids_removidos.*' => 'exists:espacos,id',
         ]);
 
         $user = User::find($validatedData['user_id']);
 
-        // Preparar dados com auditoria para cada espaço
+        // Remover associações desmarcadas, se houver
+        if (!empty($validatedData['espaco_ids_removidos'])) {
+            $user->espacos()->detach($validatedData['espaco_ids_removidos']);
+        }
+
+        // Preparar dados com auditoria para cada espaço a adicionar
         $espacosData = [];
         foreach ($validatedData['espaco_ids'] as $espacoId) {
             $espacosData[$espacoId] = [
@@ -63,11 +69,11 @@ class EspacoUserController extends Controller
             ];
         }
 
-        // Usamos sync sem detach para adicionar sem remover os existentes
+        // Adicionar associações sem remover as já existentes
         $user->espacos()->syncWithoutDetaching($espacosData);
 
         return redirect()->route('espaco-users.index')
-            ->with('success', 'Permissões atribuídas com sucesso!');
+            ->with('success', 'Permissões atribuídas/removidas com sucesso!');
     }
     /**
      * Display the specified resource.

@@ -13,6 +13,7 @@ interface AtribuirPermissoesIndexProps {
 
 
 export default function AtribuirPermissoesIndex({ users, espacos }: AtribuirPermissoesIndexProps) {
+
     const columns: ColumnConfig[] = [
         {
             key: 'name',
