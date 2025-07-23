@@ -1,3 +1,14 @@
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,7 +28,7 @@ interface LocalizacoesEditProps {
 }
 
 export default function LocalizacoesEdit({ auth, localizacao }: LocalizacoesEditProps) {
-    const { data, setData, put, processing, errors } = useForm({
+    const { data, setData, reset, put, processing, errors } = useForm({
         nome: localizacao.nome || '',
         descricao: localizacao.descricao || '',
     });
@@ -38,12 +49,35 @@ export default function LocalizacoesEdit({ auth, localizacao }: LocalizacoesEdit
 
             <div className="space-y-6">
                 <div className="flex items-center gap-4">
-                    <Button variant="outline" asChild>
-                        <Link href={route('localizacoes.index')}>
-                            <ArrowLeft className="mr-2 h-4 w-4" />
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button
+                            type="button"
+                            variant="outline"
+                            className="gap-2"
+                            >
+                            <ArrowLeft className="h-4 w-4" />
                             Voltar
-                        </Link>
-                    </Button>
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                            <AlertDialogTitle>Tem certeza que deseja voltar?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                As alterações feitas não foram salvas. Você perderá todas as modificações.
+                            </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                            <AlertDialogCancel>Não</AlertDialogCancel>
+                            <AlertDialogAction
+                                className="bg-red-600 hover:bg-red-700"
+                                asChild
+                            >
+                                <Link href="/localizacoes">Sim, voltar</Link>
+                            </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                        </AlertDialog>
         <h1 className="text-3xl font-bold text-black dark:text-white">Editar Localização</h1>
                 </div>
 
@@ -94,11 +128,36 @@ export default function LocalizacoesEdit({ auth, localizacao }: LocalizacoesEdit
                             <Save className="mr-2 h-4 w-4" />
                             {processing ? 'Salvando...' : 'Salvar Alterações'}
                         </Button>
-                        <Button variant="outline" asChild>
-                            <Link href={route('localizacoes.index')}>
-                                Cancelar
-                            </Link>
-                        </Button>
+                        <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button
+                            type="button"
+                            variant="outline"
+                            disabled={processing}
+                            >
+                            Cancelar
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                            <AlertDialogTitle>Tem certeza que deseja cancelar?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Todas as alterações feitas serão descartadas. O formulário voltará ao estado original.
+                            </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                            <AlertDialogCancel>Não</AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={() => {
+                                    reset();
+                                }}
+                                className="bg-red-600 hover:bg-red-700"
+                            >
+                                Sim, cancelar
+                            </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                        </AlertDialog>
                     </div>
                 </form>
             </div>
