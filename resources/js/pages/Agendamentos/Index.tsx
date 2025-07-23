@@ -968,9 +968,6 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight">Agendamentos</h1>
-                        <p className="text-muted-foreground">
-                            Sistema de booking intuitivo para gerenciamento de espaços
-                        </p>
                     </div>
 
                     <div className="flex items-center gap-4">
@@ -1176,9 +1173,9 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                     <DialogContent className="max-w-2xl max-h-[90vh] rounded-2xl flex flex-col">
                         <DialogHeader className="flex-shrink-0 pb-4">
                             <DialogTitle>Novo Agendamento</DialogTitle>
-                            <DialogDescription>
+                            {/* <DialogDescription>
                                 Preencha os dados para solicitar um novo agendamento de espaço.
-                            </DialogDescription>
+                            </DialogDescription> */}
                         </DialogHeader>
 
                         <div className="flex-1 overflow-y-auto px-1 min-h-0">
