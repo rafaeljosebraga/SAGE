@@ -5,7 +5,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { useCanManageUsers, useIsDiretorGeral } from '@/hooks/use-auth';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Users, Building, MapPin, Package, BookUser } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, Users, Building, MapPin, Package, BookUser, Calendar, Settings } from 'lucide-react';
 import AppLogo from './app-logo';
 
 export function AppSidebar() {
@@ -18,6 +18,11 @@ export function AppSidebar() {
             href: '/dashboard',
             icon: LayoutGrid,
         },
+        {
+            title: 'Agendamentos',
+            href: '/agendamentos',
+            icon: Calendar,
+        },
         ...(canManageUsers
             ? [
                   {
@@ -29,6 +34,11 @@ export function AppSidebar() {
             : []),
         ...(isDiretorGeral
             ? [
+                  {
+                      title: 'Gerenciar Agendamentos',
+                      href: '/gerenciar-agendamentos',
+                      icon: Settings,
+                  },
                   {
                       title: 'Espaços',
                       href: '/espacos',

@@ -76,4 +76,44 @@ class Espaco extends Model
     {
         return $this->hasMany(Foto::class, 'espaco_id')->orderBy('ordem');
     }
+
+    // Relacionamento com agendamentos
+    public function agendamentos(): HasMany
+    {
+        return $this->hasMany(Agendamento::class, 'espaco_id');
+    }
+
+    // Método para verificar disponibilidade em um período
+    public function estaDisponivel($dataInicio, $horaInicio, $dataFim, $horaFim, $excludeAgendamentoId = null)
+    {
+        if (!$this->disponivel_reserva) {
+            return false;
+        }
+
+        $query = $this->agendamentos()
+            ->whereIn('status', ['pendente', 'aprovado'])
+            ->where(function ($q) use ($dataInicio, $horaInicio, $dataFim, $horaFim) {
+                $q->where('data_inicio', '<=', $dataFim)
+                  ->where('data_fim', '>=', $dataInicio);
+            });
+
+        if ($excludeAgendamentoId) {
+            $query->where('id', '!=', $excludeAgendamentoId);
+        }
+
+        return !$query->exists();
+    }
+
+    // Método para obter agendamentos de um dia específico
+    public function agendamentosDoDia($data)
+    {
+        return $this->agendamentos()
+            ->whereIn('status', ['pendente', 'aprovado'])
+            ->where(function ($q) use ($data) {
+                $q->where('data_inicio', '<=', $data)
+                  ->where('data_fim', '>=', $data);
+            })
+            ->orderBy('hora_inicio')
+            ->get();
+    }
 }
