@@ -1,3 +1,14 @@
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,7 +35,7 @@ interface RecursosCreateProps {
 }
 
 export default function RecursosCreate({ auth }: RecursosCreateProps) {
-    const { data, setData, post, processing, errors } = useForm({
+    const { data, setData, reset, post, processing, errors } = useForm({
         nome: '',
         descricao: '',
         status: 'disponivel' as 'disponivel' | 'manutencao' | 'indisponivel',
@@ -50,15 +61,37 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
 
             <div className="space-y-6">
                 <div className="flex items-center gap-4">
-                    <Button variant="outline" asChild>
-                        <Link
-                            href={route('recursos.index')}
-                            className="flex items-center bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black"
-                        >
-                            <ArrowLeft className="mr-2 h-4 w-4" />
-                            Voltar
-                        </Link>
-                    </Button>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button
+                                variant="outline"
+                                type="button"
+                                className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-[#F26326] hover:text-black dark:text-[#F26326] dark:hover:text-black"
+                            >
+                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                Voltar
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Tem certeza que deseja voltar?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    As informações preenchidas serão perdidas.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Não</AlertDialogCancel>
+                                <AlertDialogAction
+                                    onClick={() => {
+                                        window.location.href = '/recursos';
+                                    }}
+                                    className="bg-red-600 hover:bg-red-700"
+                                >
+                                    Sim, voltar
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                      <h1 className="text-3xl font-bold text-black dark:text-white">Novo Recurso</h1>
                 </div>
 
@@ -197,11 +230,33 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                             <Save className="mr-2 h-4 w-4" />
                             {processing ? 'Salvando...' : 'Salvar Recurso'}
                         </Button>
-                        <Button variant="outline" asChild>
-                            <Link href={route('recursos.index')}>
-                                Cancelar
-                            </Link>
-                        </Button>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button>
+                                    Cancelar
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Tem certeza que deseja cancelar?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        Todas as informações preenchidas serão limpas.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Não</AlertDialogCancel>
+                                    <AlertDialogAction
+                                        onClick={() => {
+                                            reset();
+                                        }}
+                                        className="bg-red-600 hover:bg-red-700"
+                                    >
+                                        Sim, cancelar
+                                    </AlertDialogAction>
+
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>                        
                     </div>
                 </form>
             </div>
