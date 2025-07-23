@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
-import { Calendar, Clock, MapPin, User, Filter, Plus, Eye, Edit, Trash2, Settings, AlertTriangle, ChevronLeft, ChevronRight, List } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, Filter, Plus, Eye, Edit, Trash2, Settings, AlertTriangle, ChevronLeft, ChevronRight, List, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, addMonths, subMonths, startOfWeek, endOfWeek, addDays, isSameDay, parseISO, addHours, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -40,6 +40,8 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     const [selectedEspacos, setSelectedEspacos] = useState<number[]>(
         filters.espaco_id ? [parseInt(filters.espaco_id)] : espacos.map(e => e.id)
     );
+    const [searchEspacos, setSearchEspacos] = useState('');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | 'none'>('none');
     
     // Estados para o modal de criação
     const [createModal, setCreateModal] = useState<{
@@ -120,6 +122,47 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                 return 'Cancelado';
             default:
                 return status;
+        }
+    };
+
+    // Filtrar e ordenar espaços
+    const filteredAndSortedEspacos = (() => {
+        // Primeiro filtrar pela busca
+        let filtered = espacos.filter(espaco => 
+            espaco.nome.toLowerCase().includes(searchEspacos.toLowerCase()) ||
+            espaco.localizacao?.nome.toLowerCase().includes(searchEspacos.toLowerCase())
+        );
+
+        // Depois ordenar
+        if (sortOrder === 'asc') {
+            filtered = filtered.sort((a, b) => a.nome.localeCompare(b.nome));
+        } else if (sortOrder === 'desc') {
+            filtered = filtered.sort((a, b) => b.nome.localeCompare(a.nome));
+        }
+
+        return filtered;
+    })();
+
+    // Função para alternar ordenação
+    const toggleSort = () => {
+        if (sortOrder === 'none') {
+            setSortOrder('asc');
+        } else if (sortOrder === 'asc') {
+            setSortOrder('desc');
+        } else {
+            setSortOrder('none');
+        }
+    };
+
+    // Função para obter ícone de ordenação
+    const getSortIcon = () => {
+        switch (sortOrder) {
+            case 'asc':
+                return <ArrowUp className="h-3 w-3" />;
+            case 'desc':
+                return <ArrowDown className="h-3 w-3" />;
+            default:
+                return <ArrowUpDown className="h-3 w-3" />;
         }
     };
 
@@ -908,25 +951,46 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                         <Label>Espaços</Label>
                                         <div className="flex gap-1">
                                             <Button 
-                                                variant="ghost" 
+                                                variant="outline" 
+                                                size="sm" 
+                                                onClick={toggleSort}
+                                                className="text-xs h-6 px-1 bg-muted/50 hover:bg-muted border-border/50"
+                                                title={`Ordenar ${sortOrder === 'none' ? 'A-Z' : sortOrder === 'asc' ? 'Z-A' : 'padrão'}`}
+                                            >
+                                                {getSortIcon()}
+                                            </Button>
+                                            <Button 
+                                                variant="outline" 
                                                 size="sm" 
                                                 onClick={selectAllEspacos}
-                                                className="text-xs h-6 px-2"
+                                                className="text-xs h-6 px-2 bg-muted/50 hover:bg-muted border-border/50"
                                             >
                                                 Todos
                                             </Button>
                                             <Button 
-                                                variant="ghost" 
+                                                variant="outline" 
                                                 size="sm" 
                                                 onClick={deselectAllEspacos}
-                                                className="text-xs h-6 px-2"
+                                                className="text-xs h-6 px-2 bg-muted/50 hover:bg-muted border-border/50"
                                             >
                                                 Nenhum
                                             </Button>
                                         </div>
                                     </div>
+                                    
+                                    {/* Campo de busca */}
+                                    <div className="relative mb-3">
+                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <Input
+                                            placeholder="Buscar espaços..."
+                                            value={searchEspacos}
+                                            onChange={(e) => setSearchEspacos(e.target.value)}
+                                            className="pl-10 h-8 text-sm"
+                                        />
+                                    </div>
+                                    
                                     <div className="space-y-2 max-h-48 overflow-y-auto scrollbar-thin scrollbar-track-muted/30 scrollbar-thumb-muted-foreground/20 hover:scrollbar-thumb-muted-foreground/40">
-                                        {espacos.map((espaco) => (
+                                        {filteredAndSortedEspacos.map((espaco) => (
                                             <div key={espaco.id} className="flex items-center space-x-2">
                                                 <Checkbox
                                                     id={`espaco-${espaco.id}`}
@@ -944,6 +1008,11 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                                 </Label>
                                             </div>
                                         ))}
+                                        {filteredAndSortedEspacos.length === 0 && searchEspacos && (
+                                            <div className="text-sm text-muted-foreground italic text-center py-2">
+                                                Nenhum espaço encontrado
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 

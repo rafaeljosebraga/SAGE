@@ -140,71 +140,74 @@ class AgendamentoController extends Controller
             return back()->withErrors(['hora_fim' => 'A hora de fim deve ser posterior à hora de início.']);
         }
 
-        // Verificar conflitos de horário
-        $conflitos = Agendamento::where('espaco_id', $validated['espaco_id'])
-            ->whereIn('status', ['pendente', 'aprovado'])
-            ->where(function ($query) use ($validated) {
-                $query->where(function ($q) use ($validated) {
-                    // Início do novo agendamento está dentro de um agendamento existente
-                    $q->where('data_inicio', '<=', $validated['data_inicio'])
-                      ->where('data_fim', '>=', $validated['data_inicio'])
-                      ->where(function ($timeQuery) use ($validated) {
-                          $timeQuery->where(function ($tq) use ($validated) {
-                              $tq->where('data_inicio', '<', $validated['data_inicio'])
-                                 ->orWhere(function ($innerTq) use ($validated) {
-                                     $innerTq->where('data_inicio', '=', $validated['data_inicio'])
-                                            ->where('hora_inicio', '<=', $validated['hora_inicio']);
-                                 });
-                          })->where(function ($tq) use ($validated) {
-                              $tq->where('data_fim', '>', $validated['data_inicio'])
-                                 ->orWhere(function ($innerTq) use ($validated) {
-                                     $innerTq->where('data_fim', '=', $validated['data_inicio'])
-                                            ->where('hora_fim', '>', $validated['hora_inicio']);
-                                 });
+        // Verificar conflitos de horário usando o método do modelo
+        $temConflito = (new Agendamento())->temConflito(
+            $validated['espaco_id'],
+            $validated['data_inicio'],
+            $validated['hora_inicio'],
+            $validated['data_fim'],
+            $validated['hora_fim']
+        );
+
+        $conflitos = collect();
+        if ($temConflito) {
+            // Buscar os agendamentos conflitantes para mostrar ao usuário
+            $conflitos = Agendamento::where('espaco_id', $validated['espaco_id'])
+                ->whereIn('status', ['pendente', 'aprovado'])
+                ->where(function ($query) use ($validated) {
+                    // Verificar sobreposição de períodos
+                    $query->where(function ($q) use ($validated) {
+                        // Caso 1: Agendamento existente começa antes e termina depois do início do novo
+                        $q->where('data_inicio', '<=', $validated['data_inicio'])
+                          ->where('data_fim', '>=', $validated['data_inicio'])
+                          ->where(function ($timeQ) use ($validated) {
+                              $timeQ->where('data_inicio', '<', $validated['data_inicio'])
+                                   ->orWhere(function ($innerQ) use ($validated) {
+                                       $innerQ->where('data_inicio', '=', $validated['data_inicio'])
+                                              ->where('hora_inicio', '<', $validated['hora_fim']);
+                                   });
+                          })
+                          ->where(function ($timeQ) use ($validated) {
+                              $timeQ->where('data_fim', '>', $validated['data_inicio'])
+                                   ->orWhere(function ($innerQ) use ($validated) {
+                                       $innerQ->where('data_fim', '=', $validated['data_inicio'])
+                                              ->where('hora_fim', '>', $validated['hora_inicio']);
+                                   });
                           });
-                      });
-                })->orWhere(function ($q) use ($validated) {
-                    // Fim do novo agendamento está dentro de um agendamento existente
-                    $q->where('data_inicio', '<=', $validated['data_fim'])
-                      ->where('data_fim', '>=', $validated['data_fim'])
-                      ->where(function ($timeQuery) use ($validated) {
-                          $timeQuery->where(function ($tq) use ($validated) {
-                              $tq->where('data_inicio', '<', $validated['data_fim'])
-                                 ->orWhere(function ($innerTq) use ($validated) {
-                                     $innerTq->where('data_inicio', '=', $validated['data_fim'])
-                                            ->where('hora_inicio', '<', $validated['hora_fim']);
-                                 });
-                          })->where(function ($tq) use ($validated) {
-                              $tq->where('data_fim', '>', $validated['data_fim'])
-                                 ->orWhere(function ($innerTq) use ($validated) {
-                                     $innerTq->where('data_fim', '=', $validated['data_fim'])
-                                            ->where('hora_fim', '>=', $validated['hora_fim']);
-                                 });
+                    })->orWhere(function ($q) use ($validated) {
+                        // Caso 2: Agendamento existente começa antes do fim do novo e termina depois
+                        $q->where('data_inicio', '<=', $validated['data_fim'])
+                          ->where('data_fim', '>=', $validated['data_fim'])
+                          ->where(function ($timeQ) use ($validated) {
+                              $timeQ->where('data_inicio', '<', $validated['data_fim'])
+                                   ->orWhere(function ($innerQ) use ($validated) {
+                                       $innerQ->where('data_inicio', '=', $validated['data_fim'])
+                                              ->where('hora_inicio', '<', $validated['hora_fim']);
+                                   });
                           });
-                      });
-                })->orWhere(function ($q) use ($validated) {
-                    // Novo agendamento engloba um agendamento existente
-                    $q->where('data_inicio', '>=', $validated['data_inicio'])
-                      ->where('data_fim', '<=', $validated['data_fim'])
-                      ->where(function ($timeQuery) use ($validated) {
-                          $timeQuery->where(function ($tq) use ($validated) {
-                              $tq->where('data_inicio', '>', $validated['data_inicio'])
-                                 ->orWhere(function ($innerTq) use ($validated) {
-                                     $innerTq->where('data_inicio', '=', $validated['data_inicio'])
-                                            ->where('hora_inicio', '>=', $validated['hora_inicio']);
-                                 });
-                          })->where(function ($tq) use ($validated) {
-                              $tq->where('data_fim', '<', $validated['data_fim'])
-                                 ->orWhere(function ($innerTq) use ($validated) {
-                                     $innerTq->where('data_fim', '=', $validated['data_fim'])
-                                            ->where('hora_fim', '<=', $validated['hora_fim']);
-                                 });
+                    })->orWhere(function ($q) use ($validated) {
+                        // Caso 3: Agendamento existente está completamente dentro do novo período
+                        $q->where('data_inicio', '>=', $validated['data_inicio'])
+                          ->where('data_fim', '<=', $validated['data_fim'])
+                          ->where(function ($timeQ) use ($validated) {
+                              $timeQ->where('data_inicio', '>', $validated['data_inicio'])
+                                   ->orWhere(function ($innerQ) use ($validated) {
+                                       $innerQ->where('data_inicio', '=', $validated['data_inicio'])
+                                              ->where('hora_inicio', '>=', $validated['hora_inicio']);
+                                   });
+                          })
+                          ->where(function ($timeQ) use ($validated) {
+                              $timeQ->where('data_fim', '<', $validated['data_fim'])
+                                   ->orWhere(function ($innerQ) use ($validated) {
+                                       $innerQ->where('data_fim', '=', $validated['data_fim'])
+                                              ->where('hora_fim', '<=', $validated['hora_fim']);
+                                   });
                           });
-                      });
-                });
-            })
-            ->with(['user', 'espaco'])
-            ->get();
+                    });
+                })
+                ->with(['user', 'espaco'])
+                ->get();
+        }
 
         // Se há conflitos e não foi forçado, retornar erro com os conflitos
         if ($conflitos->isNotEmpty() && !($validated['force_create'] ?? false)) {

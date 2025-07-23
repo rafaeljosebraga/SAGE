@@ -96,9 +96,53 @@ class Agendamento extends Model
         $query = self::where('espaco_id', $espacoId)
             ->whereIn('status', ['pendente', 'aprovado'])
             ->where(function ($q) use ($dataInicio, $horaInicio, $dataFim, $horaFim) {
-                // Verifica sobreposição de datas e horários
-                $q->where('data_inicio', '<=', $dataFim)
-                  ->where('data_fim', '>=', $dataInicio);
+                // Verifica sobreposição de períodos (data + hora)
+                $q->where(function ($dateQuery) use ($dataInicio, $horaInicio, $dataFim, $horaFim) {
+                    // Caso 1: O início do novo agendamento está dentro de um período existente
+                    $dateQuery->where(function ($subQuery) use ($dataInicio, $horaInicio) {
+                        $subQuery->where('data_inicio', '<', $dataInicio)
+                                ->orWhere(function ($timeQuery) use ($dataInicio, $horaInicio) {
+                                    $timeQuery->where('data_inicio', '=', $dataInicio)
+                                             ->where('hora_inicio', '<=', $horaInicio);
+                                });
+                    })->where(function ($subQuery) use ($dataInicio, $horaInicio) {
+                        $subQuery->where('data_fim', '>', $dataInicio)
+                                ->orWhere(function ($timeQuery) use ($dataInicio, $horaInicio) {
+                                    $timeQuery->where('data_fim', '=', $dataInicio)
+                                             ->where('hora_fim', '>', $horaInicio);
+                                });
+                    });
+                })->orWhere(function ($dateQuery) use ($dataInicio, $horaInicio, $dataFim, $horaFim) {
+                    // Caso 2: O fim do novo agendamento está dentro de um período existente
+                    $dateQuery->where(function ($subQuery) use ($dataFim, $horaFim) {
+                        $subQuery->where('data_inicio', '<', $dataFim)
+                                ->orWhere(function ($timeQuery) use ($dataFim, $horaFim) {
+                                    $timeQuery->where('data_inicio', '=', $dataFim)
+                                             ->where('hora_inicio', '<', $horaFim);
+                                });
+                    })->where(function ($subQuery) use ($dataFim, $horaFim) {
+                        $subQuery->where('data_fim', '>', $dataFim)
+                                ->orWhere(function ($timeQuery) use ($dataFim, $horaFim) {
+                                    $timeQuery->where('data_fim', '=', $dataFim)
+                                             ->where('hora_fim', '>=', $horaFim);
+                                });
+                    });
+                })->orWhere(function ($dateQuery) use ($dataInicio, $horaInicio, $dataFim, $horaFim) {
+                    // Caso 3: O novo agendamento engloba completamente um período existente
+                    $dateQuery->where(function ($subQuery) use ($dataInicio, $horaInicio) {
+                        $subQuery->where('data_inicio', '>', $dataInicio)
+                                ->orWhere(function ($timeQuery) use ($dataInicio, $horaInicio) {
+                                    $timeQuery->where('data_inicio', '=', $dataInicio)
+                                             ->where('hora_inicio', '>=', $horaInicio);
+                                });
+                    })->where(function ($subQuery) use ($dataFim, $horaFim) {
+                        $subQuery->where('data_fim', '<', $dataFim)
+                                ->orWhere(function ($timeQuery) use ($dataFim, $horaFim) {
+                                    $timeQuery->where('data_fim', '=', $dataFim)
+                                             ->where('hora_fim', '<=', $horaFim);
+                                });
+                    });
+                });
             });
 
         if ($excludeId) {
