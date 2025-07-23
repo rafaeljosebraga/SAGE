@@ -14,9 +14,14 @@ import type { PageProps, Agendamento, Foto } from '@/types';
 
 interface Props extends PageProps {
     agendamento: Agendamento;
+    recursosSolicitados?: Array<{
+        id: number;
+        nome: string;
+        descricao?: string;
+    }>;
 }
 
-export default function AgendamentosShow({ agendamento, auth }: Props) {
+export default function AgendamentosShow({ agendamento, auth, recursosSolicitados }: Props) {
     const [isEspacoModalOpen, setIsEspacoModalOpen] = useState(false);
     const [selectedFoto, setSelectedFoto] = useState<Foto | null>(null);
     const [isFotoModalOpen, setIsFotoModalOpen] = useState(false);
@@ -298,13 +303,13 @@ export default function AgendamentosShow({ agendamento, auth }: Props) {
                                     </div>
                                 )}
 
-                                {agendamento.recursos_solicitados && agendamento.recursos_solicitados.length > 0 && (
+                                {recursosSolicitados && recursosSolicitados.length > 0 && (
                                     <div>
                                         <p className="text-sm font-medium mb-2">Recursos Solicitados</p>
                                         <div className="flex flex-wrap gap-1">
-                                            {agendamento.recursos_solicitados.map((recursoId, index) => (
-                                                <Badge key={index} variant="outline">
-                                                    Recurso #{recursoId}
+                                            {recursosSolicitados.map((recurso) => (
+                                                <Badge key={recurso.id} variant="outline">
+                                                    {recurso.nome}
                                                 </Badge>
                                             ))}
                                         </div>
@@ -330,7 +335,7 @@ export default function AgendamentosShow({ agendamento, auth }: Props) {
                                                 {agendamento.status === 'aprovado' ? 'Aprovado por' : 'Rejeitado por'}
                                             </p>
                                             <p className="text-sm text-muted-foreground">
-                                                {agendamento.aprovadoPor?.name || 'Sistema'}
+                                                {(agendamento.aprovadoPor?.name || (agendamento as any).aprovado_por?.name) || 'Não informado'}
                                             </p>
                                         </div>
                                     </div>
@@ -431,8 +436,11 @@ export default function AgendamentosShow({ agendamento, auth }: Props) {
                                             {agendamento.user.email}
                                         </p>
                                         {agendamento.user.perfil_acesso && (
-                                            <Badge variant="outline" className="mt-2">
-                                                {agendamento.user.perfil_acesso.replace('_', ' ')}
+                                            <Badge 
+                                                variant="outline" 
+                                                className={`mt-2 ${getPerfilColor(agendamento.user.perfil_acesso)}`}
+                                            >
+                                                {formatPerfil(agendamento.user.perfil_acesso)}
                                             </Badge>
                                         )}
                                     </div>

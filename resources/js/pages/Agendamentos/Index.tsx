@@ -19,7 +19,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import type { PageProps, Agendamento, Espaco } from '@/types';
 
 interface Props extends PageProps {
-    agendamentos: Agendamento[];
+    agendamentos: Agendamento[] | {
+        data: Agendamento[];
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+        links: any[];
+    };
     espacos: Espaco[];
     filters: {
         espaco_id?: string;
@@ -182,8 +189,11 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         }
     };
 
+    // Extrair dados dos agendamentos (pode ser array ou objeto paginado)
+    const agendamentosData = Array.isArray(agendamentos) ? agendamentos : agendamentos.data;
+    
     // Filtrar agendamentos pelos espaços selecionados
-    const filteredAgendamentos = agendamentos.filter(agendamento => 
+    const filteredAgendamentos = agendamentosData.filter(agendamento => 
         selectedEspacos.includes(agendamento.espaco_id)
     );
 
@@ -781,7 +791,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                 value={filters.espaco_id || 'all'}
                                 onValueChange={(value) => {
                                     const espacoId = value === 'all' ? undefined : value;
-                                    router.get('/agendamentos', { ...filters, espaco_id: espacoId });
+                                    router.get('/agendamentos', { ...filters, espaco_id: espacoId, view: 'list' });
                                 }}
                             >
                                 <SelectTrigger>
@@ -804,7 +814,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                 value={filters.status || 'all'}
                                 onValueChange={(value) => {
                                     const status = value === 'all' ? undefined : value;
-                                    router.get('/agendamentos', { ...filters, status });
+                                    router.get('/agendamentos', { ...filters, status, view: 'list' });
                                 }}
                             >
                                 <SelectTrigger>
@@ -826,7 +836,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                 type="date"
                                 value={filters.data_inicio || ''}
                                 onChange={(e) => {
-                                    router.get('/agendamentos', { ...filters, data_inicio: e.target.value || undefined });
+                                    router.get('/agendamentos', { ...filters, data_inicio: e.target.value || undefined, view: 'list' });
                                 }}
                             />
                         </div>
@@ -837,7 +847,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                 type="date"
                                 value={filters.data_fim || ''}
                                 onChange={(e) => {
-                                    router.get('/agendamentos', { ...filters, data_fim: e.target.value || undefined });
+                                    router.get('/agendamentos', { ...filters, data_fim: e.target.value || undefined, view: 'list' });
                                 }}
                             />
                         </div>
@@ -847,7 +857,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
 
             {/* Lista de Agendamentos */}
             <div className="space-y-4">
-                {agendamentos.length === 0 ? (
+                {agendamentosData.length === 0 ? (
                     <Card>
                         <CardContent className="p-6 text-center">
                             <p className="text-muted-foreground">Nenhum agendamento encontrado.</p>
@@ -860,7 +870,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                         </CardContent>
                     </Card>
                 ) : (
-                    agendamentos.map((agendamento) => (
+                    agendamentosData.map((agendamento) => (
                         <Card key={agendamento.id}>
                             <CardContent className="p-6">
                                 <div className="flex items-start justify-between">

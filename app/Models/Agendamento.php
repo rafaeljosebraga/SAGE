@@ -57,6 +57,16 @@ class Agendamento extends Model
         return $this->belongsTo(User::class, 'aprovado_por');
     }
 
+    // Relacionamento com Recursos (através dos IDs no array recursos_solicitados)
+    public function recursosSolicitados()
+    {
+        if (!$this->recursos_solicitados || !is_array($this->recursos_solicitados)) {
+            return collect();
+        }
+        
+        return \App\Models\Recurso::whereIn('id', $this->recursos_solicitados)->get();
+    }
+
     // Scopes para consultas comuns
     public function scopePendentes($query)
     {

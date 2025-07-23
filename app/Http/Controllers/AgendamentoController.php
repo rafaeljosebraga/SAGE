@@ -261,6 +261,9 @@ class AgendamentoController extends Controller
             'aprovadoPor'
         ]);
 
+        // Carregar recursos solicitados
+        $recursosSolicitados = $agendamento->recursosSolicitados();
+
         // Verificar permissão
         if (auth()->user()->perfil_acesso !== 'diretor_geral' && 
             $agendamento->user_id !== auth()->id() &&
@@ -270,6 +273,7 @@ class AgendamentoController extends Controller
 
         return Inertia::render('Agendamentos/Show', [
             'agendamento' => $agendamento,
+            'recursosSolicitados' => $recursosSolicitados,
         ]);
     }
 
