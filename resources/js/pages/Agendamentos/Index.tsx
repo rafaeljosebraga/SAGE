@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
-import { Calendar, Clock, MapPin, User, Filter, Plus, Eye, Edit, Trash2, Settings, AlertTriangle, ChevronLeft, ChevronRight, List, Search, ArrowUpDown, ArrowUp, ArrowDown, Clock3, CheckCircle, XCircle, Ban } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, Filter, Plus, Eye, Edit, Trash2, Settings, AlertTriangle, ChevronLeft, ChevronRight, List, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, addMonths, subMonths, startOfWeek, endOfWeek, addDays, isSameDay, parseISO, addHours, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -15,6 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useAgendamentoColors, StatusLegend, StatusBadge } from '@/components/ui/agend-colors';
 
 import type { PageProps, Agendamento, Espaco, BreadcrumbItem } from '@/types';
 
@@ -40,6 +41,15 @@ interface Props extends PageProps {
 type ViewMode = 'month' | 'week' | 'day' | 'timeline' | 'list';
 
 export default function AgendamentosIndex({ agendamentos, espacos, filters, auth }: Props) {
+    // Usar o hook de cores
+    const {
+        getStatusColor,
+        getEventBackgroundColor,
+        getEventBorderColor,
+        getStatusText,
+        getStatusIcon
+    } = useAgendamentoColors();
+
     // Detectar se deve iniciar no modo calendário baseado na URL
     const initialView = filters.view === 'list' ? 'list' : 'week';
     const [viewMode, setViewMode] = useState<ViewMode>(initialView);
@@ -50,6 +60,10 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     const [searchEspacos, setSearchEspacos] = useState("");
     const [searchAgendamentos, setSearchAgendamentos] = useState("");
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | 'none'>('none');
+    const [dateSortOrder, setDateSortOrder] = useState<{
+        inicio: 'asc' | 'desc' | 'none';
+        fim: 'asc' | 'desc' | 'none';
+    }>({ inicio: 'none', fim: 'none' });
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Agendamentos', href: '/agendamentos' }
@@ -99,229 +113,6 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         }
     }, [filters.view]);
 
-    
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'pendente':
-                return 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 border-orange-200 dark:border-orange-700';
-            case 'aprovado':
-                return 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-700';
-            case 'rejeitado':
-                return 'bg-rose-100 dark:bg-rose-900/30 text-rose-800 dark:text-rose-200 border-rose-200 dark:border-rose-700';
-            case 'cancelado':
-                return 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600';
-            default:
-                return 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600';
-        }
-    };
-
-    // Função para gerar hash simples de uma string
-    const generateHash = (str: string) => {
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) {
-            const char = str.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash = hash & hash; // Convert to 32bit integer
-        }
-        return Math.abs(hash);
-    };
-
-    // Paleta de cores - MESMA DO SHOW.TSX
-    const colorPalette = [
-        // Blues 
-        { bg: 'bg-blue-100 dark:bg-blue-600', text: 'text-blue-900 dark:text-blue-50', border: 'border-l-blue-400' },
-        { bg: 'bg-blue-200 dark:bg-blue-700', text: 'text-blue-900 dark:text-blue-50', border: 'border-l-blue-500' },
-        { bg: 'bg-blue-300 dark:bg-blue-800', text: 'text-blue-900 dark:text-blue-100', border: 'border-l-blue-600' },
-        { bg: 'bg-sky-100 dark:bg-sky-600', text: 'text-sky-900 dark:text-sky-50', border: 'border-l-sky-400' },
-        { bg: 'bg-sky-200 dark:bg-sky-700', text: 'text-sky-900 dark:text-sky-50', border: 'border-l-sky-500' },
-        { bg: 'bg-sky-300 dark:bg-sky-800', text: 'text-sky-900 dark:text-sky-100', border: 'border-l-sky-600' },
-        { bg: 'bg-cyan-100 dark:bg-cyan-600', text: 'text-cyan-900 dark:text-cyan-50', border: 'border-l-cyan-400' },
-        { bg: 'bg-cyan-200 dark:bg-cyan-700', text: 'text-cyan-900 dark:text-cyan-50', border: 'border-l-cyan-500' },
-        { bg: 'bg-cyan-300 dark:bg-cyan-800', text: 'text-cyan-900 dark:text-cyan-100', border: 'border-l-cyan-600' },
-        
-        // Purples 
-        { bg: 'bg-purple-100 dark:bg-purple-600', text: 'text-purple-900 dark:text-purple-50', border: 'border-l-purple-400' },
-        { bg: 'bg-purple-200 dark:bg-purple-700', text: 'text-purple-900 dark:text-purple-50', border: 'border-l-purple-500' },
-        { bg: 'bg-purple-300 dark:bg-purple-800', text: 'text-purple-900 dark:text-purple-100', border: 'border-l-purple-600' },
-        { bg: 'bg-violet-100 dark:bg-violet-600', text: 'text-violet-900 dark:text-violet-50', border: 'border-l-violet-400' },
-        { bg: 'bg-violet-200 dark:bg-violet-700', text: 'text-violet-900 dark:text-violet-50', border: 'border-l-violet-500' },
-        { bg: 'bg-violet-300 dark:bg-violet-800', text: 'text-violet-900 dark:text-violet-100', border: 'border-l-violet-600' },
-        { bg: 'bg-indigo-100 dark:bg-indigo-600', text: 'text-indigo-900 dark:text-indigo-50', border: 'border-l-indigo-400' },
-        { bg: 'bg-indigo-200 dark:bg-indigo-700', text: 'text-indigo-900 dark:text-indigo-50', border: 'border-l-indigo-500' },
-        { bg: 'bg-indigo-300 dark:bg-indigo-800', text: 'text-indigo-900 dark:text-indigo-100', border: 'border-l-indigo-600' },
-        
-        // Pinks
-        { bg: 'bg-pink-100 dark:bg-pink-600', text: 'text-pink-900 dark:text-pink-50', border: 'border-l-pink-400' },
-        { bg: 'bg-pink-200 dark:bg-pink-700', text: 'text-pink-900 dark:text-pink-50', border: 'border-l-pink-500' },
-        { bg: 'bg-pink-300 dark:bg-pink-800', text: 'text-pink-900 dark:text-pink-100', border: 'border-l-pink-600' },
-        { bg: 'bg-rose-100 dark:bg-rose-600', text: 'text-rose-900 dark:text-rose-50', border: 'border-l-rose-400' },
-        { bg: 'bg-rose-200 dark:bg-rose-700', text: 'text-rose-900 dark:text-rose-50', border: 'border-l-rose-500' },
-        { bg: 'bg-rose-300 dark:bg-rose-800', text: 'text-rose-900 dark:text-rose-100', border: 'border-l-rose-600' },
-        { bg: 'bg-fuchsia-100 dark:bg-fuchsia-600', text: 'text-fuchsia-900 dark:text-fuchsia-50', border: 'border-l-fuchsia-400' },
-        { bg: 'bg-fuchsia-200 dark:bg-fuchsia-700', text: 'text-fuchsia-900 dark:text-fuchsia-50', border: 'border-l-fuchsia-500' },
-        { bg: 'bg-fuchsia-300 dark:bg-fuchsia-800', text: 'text-fuchsia-900 dark:text-fuchsia-100', border: 'border-l-fuchsia-600' },
-        
-        // Greens
-        { bg: 'bg-green-100 dark:bg-green-600', text: 'text-green-900 dark:text-green-50', border: 'border-l-green-400' },
-        { bg: 'bg-green-200 dark:bg-green-700', text: 'text-green-900 dark:text-green-50', border: 'border-l-green-500' },
-        { bg: 'bg-green-300 dark:bg-green-800', text: 'text-green-900 dark:text-green-100', border: 'border-l-green-600' },
-        { bg: 'bg-emerald-100 dark:bg-emerald-600', text: 'text-emerald-900 dark:text-emerald-50', border: 'border-l-emerald-400' },
-        { bg: 'bg-emerald-200 dark:bg-emerald-700', text: 'text-emerald-900 dark:text-emerald-50', border: 'border-l-emerald-500' },
-        { bg: 'bg-emerald-300 dark:bg-emerald-800', text: 'text-emerald-900 dark:text-emerald-100', border: 'border-l-emerald-600' },
-        { bg: 'bg-teal-100 dark:bg-teal-600', text: 'text-teal-900 dark:text-teal-50', border: 'border-l-teal-400' },
-        { bg: 'bg-teal-200 dark:bg-teal-700', text: 'text-teal-900 dark:text-teal-50', border: 'border-l-teal-500' },
-        { bg: 'bg-teal-300 dark:bg-teal-800', text: 'text-teal-900 dark:text-teal-100', border: 'border-l-teal-600' },
-        
-        // Yellows
-        { bg: 'bg-yellow-100 dark:bg-yellow-600', text: 'text-yellow-900 dark:text-yellow-50', border: 'border-l-yellow-400' },
-        { bg: 'bg-yellow-200 dark:bg-yellow-700', text: 'text-yellow-900 dark:text-yellow-50', border: 'border-l-yellow-500' },
-        { bg: 'bg-yellow-300 dark:bg-yellow-800', text: 'text-yellow-900 dark:text-yellow-100', border: 'border-l-yellow-600' },
-        { bg: 'bg-amber-100 dark:bg-amber-600', text: 'text-amber-900 dark:text-amber-50', border: 'border-l-amber-400' },
-        { bg: 'bg-amber-200 dark:bg-amber-700', text: 'text-amber-900 dark:text-amber-50', border: 'border-l-amber-500' },
-        { bg: 'bg-amber-300 dark:bg-amber-800', text: 'text-amber-900 dark:text-amber-100', border: 'border-l-amber-600' },
-        { bg: 'bg-orange-100 dark:bg-orange-600', text: 'text-orange-900 dark:text-orange-50', border: 'border-l-orange-400' },
-        { bg: 'bg-orange-200 dark:bg-orange-700', text: 'text-orange-900 dark:text-orange-50', border: 'border-l-orange-500' },
-        { bg: 'bg-orange-300 dark:bg-orange-800', text: 'text-orange-900 dark:text-orange-100', border: 'border-l-orange-600' },
-        
-        // Reds 
-        { bg: 'bg-red-100 dark:bg-red-600', text: 'text-red-900 dark:text-red-50', border: 'border-l-red-400' },
-        { bg: 'bg-red-200 dark:bg-red-700', text: 'text-red-900 dark:text-red-50', border: 'border-l-red-500' },
-        { bg: 'bg-red-300 dark:bg-red-800', text: 'text-red-900 dark:text-red-100', border: 'border-l-red-600' },
-        
-        // Limes 
-        { bg: 'bg-lime-100 dark:bg-lime-600', text: 'text-lime-900 dark:text-lime-50', border: 'border-l-lime-400' },
-        { bg: 'bg-lime-200 dark:bg-lime-700', text: 'text-lime-900 dark:text-lime-50', border: 'border-l-lime-500' },
-        { bg: 'bg-lime-300 dark:bg-lime-800', text: 'text-lime-900 dark:text-lime-100', border: 'border-l-lime-600' },
-        
-        // Tons neutros 
-        { bg: 'bg-slate-100 dark:bg-slate-600', text: 'text-slate-900 dark:text-slate-50', border: 'border-l-slate-400' },
-        { bg: 'bg-slate-200 dark:bg-slate-700', text: 'text-slate-900 dark:text-slate-50', border: 'border-l-slate-500' },
-        { bg: 'bg-stone-100 dark:bg-stone-600', text: 'text-stone-900 dark:text-stone-50', border: 'border-l-stone-400' },
-        { bg: 'bg-stone-200 dark:bg-stone-700', text: 'text-stone-900 dark:text-stone-50', border: 'border-l-stone-500' },
-        { bg: 'bg-zinc-100 dark:bg-zinc-600', text: 'text-zinc-900 dark:text-zinc-50', border: 'border-l-zinc-400' },
-        { bg: 'bg-zinc-200 dark:bg-zinc-700', text: 'text-zinc-900 dark:text-zinc-50', border: 'border-l-zinc-500' },
-        
-        // Tons vibrantes 
-        { bg: 'bg-blue-400 dark:bg-blue-500', text: 'text-blue-900 dark:text-blue-50', border: 'border-l-blue-600' },
-        { bg: 'bg-purple-400 dark:bg-purple-500', text: 'text-purple-900 dark:text-purple-50', border: 'border-l-purple-600' },
-        { bg: 'bg-pink-400 dark:bg-pink-500', text: 'text-pink-900 dark:text-pink-50', border: 'border-l-pink-600' },
-        { bg: 'bg-green-400 dark:bg-green-500', text: 'text-green-900 dark:text-green-50', border: 'border-l-green-600' },
-        { bg: 'bg-yellow-400 dark:bg-yellow-500', text: 'text-yellow-900 dark:text-yellow-50', border: 'border-l-yellow-600' },
-        { bg: 'bg-red-400 dark:bg-red-500', text: 'text-red-900 dark:text-red-50', border: 'border-l-red-600' },
-        { bg: 'bg-indigo-400 dark:bg-indigo-500', text: 'text-indigo-900 dark:text-indigo-50', border: 'border-l-indigo-600' },
-        { bg: 'bg-teal-400 dark:bg-teal-500', text: 'text-teal-900 dark:text-teal-50', border: 'border-l-teal-600' },
-        { bg: 'bg-cyan-400 dark:bg-cyan-500', text: 'text-cyan-900 dark:text-cyan-50', border: 'border-l-cyan-600' },
-        { bg: 'bg-emerald-400 dark:bg-emerald-500', text: 'text-emerald-900 dark:text-emerald-50', border: 'border-l-emerald-600' },
-    ];
-
-    // Função para verificar se um agendamento já passou
-    const isEventPast = (agendamento: Agendamento) => {
-        try {
-            const eventDateTime = new Date(`${agendamento.data_fim}T${agendamento.hora_fim}`);
-            return eventDateTime < new Date();
-        } catch {
-            return false;
-        }
-    };
-
-    
-    // Função para obter cor da borda do agendamento (para cards) - MESMA LÓGICA DO SHOW.TSX
-    const getEventBorderColor = (agendamento: Agendamento) => {
-        // Se o evento já passou, usar cinza
-        if (isEventPast(agendamento)) {
-            return 'border-l-gray-500';
-        }
-
-        // Gerar hash baseado na data e hora do agendamento (MESMA LÓGICA DO SHOW.TSX)
-        const hashString = `${agendamento.data_inicio}-${agendamento.hora_inicio}`;
-        const hash = generateHash(hashString);
-        const colorIndex = hash % colorPalette.length;
-        const color = colorPalette[colorIndex];
-        
-        return color.border;
-    };
-
-    // Função para obter cor de fundo do evento (para calendário) - SINCRONIZADA COM SHOW.TSX
-    const getEventBackgroundColor = (agendamento: Agendamento) => {
-        // Se o evento já passou, usar cinza
-        if (isEventPast(agendamento)) {
-            return 'bg-gray-300 dark:bg-gray-600/80 text-gray-900 dark:text-gray-100';
-        }
-
-        // Gerar hash baseado na data e hora do agendamento (MESMA LÓGICA DO SHOW.TSX)
-        const hashString = `${agendamento.data_inicio}-${agendamento.hora_inicio}`;
-        const hash = generateHash(hashString);
-        const colorIndex = hash % colorPalette.length;
-        const color = colorPalette[colorIndex];
-        
-        return `${color.bg} ${color.text}`;
-    };
-
-    const getStatusBgColor = (status: string) => {
-        switch (status) {
-            case 'pendente':
-                return 'bg-yellow-300 dark:bg-yellow-600/80 text-yellow-900 dark:text-yellow-100';
-            case 'aprovado':
-                return 'bg-green-300 dark:bg-green-600/80 text-green-900 dark:text-green-100';
-            case 'rejeitado':
-                return 'bg-red-300 dark:bg-red-600/80 text-red-900 dark:text-red-100';
-            case 'cancelado':
-                return 'bg-gray-300 dark:bg-gray-600/80 text-gray-900 dark:text-gray-100';
-            default:
-                return 'bg-gray-300 dark:bg-gray-600/80 text-gray-900 dark:text-gray-100';
-        }
-    };
-
-    const getStatusText = (status: string) => {
-        switch (status) {
-            case 'pendente':
-                return 'Pendente';
-            case 'aprovado':
-                return 'Aprovado';
-            case 'rejeitado':
-                return 'Rejeitado';
-            case 'cancelado':
-                return 'Cancelado';
-            default:
-                return status;
-        }
-    };
-
-    const getStatusIcon = (status: string) => {
-        switch (status) {
-            case 'pendente':
-                return (
-                    <div className="w-4 h-4 rounded-full bg-orange-500 dark:bg-orange-400 flex items-center justify-center shadow-sm shrink-0">
-                        <Clock3 className="h-2.5 w-2.5 text-white dark:text-orange-900" />
-                    </div>
-                );
-            case 'aprovado':
-                return (
-                    <div className="w-4 h-4 rounded-full bg-emerald-500 dark:bg-emerald-400 flex items-center justify-center shadow-sm shrink-0">
-                        <CheckCircle className="h-2.5 w-2.5 text-white dark:text-emerald-900" />
-                    </div>
-                );
-            case 'rejeitado':
-                return (
-                    <div className="w-4 h-4 rounded-full bg-red-500 dark:bg-red-400 flex items-center justify-center shadow-sm shrink-0">
-                        <XCircle className="h-2.5 w-2.5 text-white dark:text-red-900" />
-                    </div>
-                );
-            case 'cancelado':
-                return (
-                    <div className="w-4 h-4 rounded-full bg-gray-500 dark:bg-gray-400 flex items-center justify-center shadow-sm shrink-0">
-                        <Ban className="h-2.5 w-2.5 text-white dark:text-gray-900" />
-                    </div>
-                );
-            default:
-                return (
-                    <div className="w-4 h-4 rounded-full bg-gray-500 dark:bg-gray-400 flex items-center justify-center shadow-sm shrink-0">
-                        <Clock3 className="h-2.5 w-2.5 text-white dark:text-gray-900" />
-                    </div>
-                );
-        }
-    };
-
     // Filtrar e ordenar espaços
     const filteredAndSortedEspacos = (() => {
         // Primeiro filtrar pela busca
@@ -363,8 +154,117 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         }
     };
 
+    // Funções para alternar ordenação de datas
+    const toggleDateSort = (type: 'inicio' | 'fim') => {
+        setDateSortOrder(prev => {
+            const currentOrder = prev[type];
+            let newOrder: 'asc' | 'desc' | 'none';
+            
+            if (currentOrder === 'none') {
+                newOrder = 'asc';
+            } else if (currentOrder === 'asc') {
+                newOrder = 'desc';
+            } else {
+                newOrder = 'none';
+            }
+            
+            // Reset the other date sort when one is changed
+            if (type === 'inicio') {
+                return {
+                    inicio: newOrder,
+                    fim: 'none'
+                };
+            } else {
+                return {
+                    inicio: 'none',
+                    fim: newOrder
+                };
+            }
+        });
+    };
+
+    // Função para obter ícone de ordenação de data
+    const getDateSortIcon = (type: 'inicio' | 'fim') => {
+        const order = dateSortOrder[type];
+        switch (order) {
+            case 'asc':
+                return <ArrowUp className="h-3 w-3" />;
+            case 'desc':
+                return <ArrowDown className="h-3 w-3" />;
+            default:
+                return <ArrowUpDown className="h-3 w-3" />;
+        }
+    };
+
     // Extrair dados dos agendamentos (pode ser array ou objeto paginado)
     const agendamentosData = Array.isArray(agendamentos) ? agendamentos : agendamentos.data;
+
+    // Filtrar e ordenar agendamentos para a lista
+    const filteredAndSortedAgendamentos = (() => {
+        let filtered = [...agendamentosData];
+
+        // Aplicar filtros de data se especificados
+        if (filters.data_inicio) {
+            filtered = filtered.filter(agendamento => {
+                const agendamentoDataInicio = agendamento.data_inicio.split('T')[0]; // YYYY-MM-DD
+                return agendamentoDataInicio >= filters.data_inicio!;
+            });
+        }
+
+        if (filters.data_fim) {
+            filtered = filtered.filter(agendamento => {
+                const agendamentoDataFim = agendamento.data_fim.split('T')[0]; // YYYY-MM-DD
+                return agendamentoDataFim <= filters.data_fim!;
+            });
+        }
+
+        // Aplicar ordenação por data se ativa
+        if (dateSortOrder.inicio !== 'none') {
+            filtered.sort((a, b) => {
+                // Normalizar as datas para garantir formato correto
+                const dateStrA = a.data_inicio.split('T')[0]; // Pegar apenas YYYY-MM-DD
+                const timeStrA = a.hora_inicio.split(':').slice(0, 2).join(':'); // Pegar apenas HH:MM
+                const dateStrB = b.data_inicio.split('T')[0];
+                const timeStrB = b.hora_inicio.split(':').slice(0, 2).join(':');
+                
+                const dateA = new Date(`${dateStrA}T${timeStrA}:00`);
+                const dateB = new Date(`${dateStrB}T${timeStrB}:00`);
+                
+                // Verificar se as datas são válidas
+                if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+                    console.warn('Data inválida encontrada:', { a: a.data_inicio, b: b.data_inicio });
+                    return 0;
+                }
+                
+                return dateSortOrder.inicio === 'asc' 
+                    ? dateA.getTime() - dateB.getTime()
+                    : dateB.getTime() - dateA.getTime();
+            });
+        } else if (dateSortOrder.fim !== 'none') {
+            filtered.sort((a, b) => {
+                // Normalizar as datas para garantir formato correto
+                const dateStrA = a.data_fim.split('T')[0]; // Pegar apenas YYYY-MM-DD
+                const timeStrA = a.hora_fim.split(':').slice(0, 2).join(':'); // Pegar apenas HH:MM
+                const dateStrB = b.data_fim.split('T')[0];
+                const timeStrB = b.hora_fim.split(':').slice(0, 2).join(':');
+                
+                const dateA = new Date(`${dateStrA}T${timeStrA}:00`);
+                const dateB = new Date(`${dateStrB}T${timeStrB}:00`);
+                
+                // Verificar se as datas são válidas
+                if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+                    console.warn('Data inválida encontrada:', { a: a.data_fim, b: b.data_fim });
+                    return 0;
+                }
+                
+                return dateSortOrder.fim === 'asc' 
+                    ? dateA.getTime() - dateB.getTime()
+                    : dateB.getTime() - dateA.getTime();
+            });
+        }
+
+        return filtered;
+    })();
     
     // Filtrar agendamentos pelos espaços selecionados
     const filteredAgendamentos = agendamentosData.filter(agendamento => 
@@ -844,7 +744,6 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                 filtered = filtered.filter(espaco => espacosComAgendamentos.has(espaco.id));
             }
 
-
             return filtered;
         })();
 
@@ -1019,24 +918,48 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
 
                         <div>
                             <Label htmlFor="data_inicio">Data Início</Label>
-                            <Input
-                                type="date"
-                                value={filters.data_inicio || ''}
-                                onChange={(e) => {
-                                    router.get('/agendamentos', { ...filters, data_inicio: e.target.value || undefined, view: 'list' });
-                                }}
-                            />
+                            <div className="relative">
+                                <Input
+                                    type="date"
+                                    value={filters.data_inicio || ''}
+                                    onChange={(e) => {
+                                        router.get('/agendamentos', { ...filters, data_inicio: e.target.value || undefined, view: 'list' });
+                                    }}
+                                    className="pr-10"
+                                />
+                                <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={() => toggleDateSort('inicio')}
+                                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
+                                    title={`Ordenar por data de início ${dateSortOrder.inicio === 'none' ? 'crescente' : dateSortOrder.inicio === 'asc' ? 'decrescente' : 'padrão'}`}
+                                >
+                                    {getDateSortIcon('inicio')}
+                                </Button>
+                            </div>
                         </div>
 
                         <div>
                             <Label htmlFor="data_fim">Data Fim</Label>
-                            <Input
-                                type="date"
-                                value={filters.data_fim || ''}
-                                onChange={(e) => {
-                                    router.get('/agendamentos', { ...filters, data_fim: e.target.value || undefined, view: 'list' });
-                                }}
-                            />
+                            <div className="relative">
+                                <Input
+                                    type="date"
+                                    value={filters.data_fim || ''}
+                                    onChange={(e) => {
+                                        router.get('/agendamentos', { ...filters, data_fim: e.target.value || undefined, view: 'list' });
+                                    }}
+                                    className="pr-10"
+                                />
+                                <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={() => toggleDateSort('fim')}
+                                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
+                                    title={`Ordenar por data de fim ${dateSortOrder.fim === 'none' ? 'crescente' : dateSortOrder.fim === 'asc' ? 'decrescente' : 'padrão'}`}
+                                >
+                                    {getDateSortIcon('fim')}
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </CardContent>
@@ -1044,7 +967,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
 
             {/* Lista de Agendamentos */}
             <div className="space-y-4">
-                {agendamentosData.length === 0 ? (
+                {filteredAndSortedAgendamentos.length === 0 ? (
                     <Card>
                         <CardContent className="p-6 text-center">
                             <p className="text-muted-foreground">Nenhum agendamento encontrado.</p>
@@ -1057,19 +980,14 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                         </CardContent>
                     </Card>
                 ) : (
-                    agendamentosData.map((agendamento) => (
+                    filteredAndSortedAgendamentos.map((agendamento) => (
                         <Card key={agendamento.id} className={`border-l-4 ${getEventBorderColor(agendamento)}`}>
                             <CardContent className="p-6">
                                 <div className="flex items-start justify-between">
                                     <div className="space-y-2">
                                         <div className="flex items-center gap-2">
                                             <h3 className="font-semibold text-lg">{agendamento.titulo}</h3>
-                                            <Badge className={getStatusColor(agendamento.status)}>
-                                                <span className="flex items-center gap-1">
-                                                    {getStatusIcon(agendamento.status)}
-                                                    {getStatusText(agendamento.status)}
-                                                </span>
-                                            </Badge>
+                                            <StatusBadge status={agendamento.status} />
                                         </div>
 
                                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -1301,32 +1219,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                 {/* Legenda */}
                                 <div>
                                     <Label>Legenda</Label>
-                                    <div className="space-y-2 mt-2">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-4 h-4 rounded-full bg-orange-500 dark:bg-orange-400 flex items-center justify-center shadow-sm">
-                                                <Clock3 className="h-2.5 w-2.5 text-white dark:text-orange-900" />
-                                            </div>
-                                            <span className="text-sm">Pendente</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-4 h-4 rounded-full bg-emerald-500 dark:bg-emerald-400 flex items-center justify-center shadow-sm">
-                                                <CheckCircle className="h-2.5 w-2.5 text-white dark:text-emerald-900" />
-                                            </div>
-                                            <span className="text-sm">Aprovado</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-4 h-4 rounded-full bg-red-500 dark:bg-red-400 flex items-center justify-center shadow-sm">
-                                                <XCircle className="h-2.5 w-2.5 text-white dark:text-red-900" />
-                                            </div>
-                                            <span className="text-sm">Rejeitado</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-4 h-4 rounded-full bg-gray-500 dark:bg-gray-400 flex items-center justify-center shadow-sm">
-                                                <Ban className="h-2.5 w-2.5 text-white dark:text-gray-900" />
-                                            </div>
-                                            <span className="text-sm">Cancelado</span>
-                                        </div>
-                                    </div>
+                                    <StatusLegend className="mt-2" />
                                 </div>
 
                             </CardContent>
@@ -1370,9 +1263,6 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                     <DialogContent className="max-w-2xl max-h-[90vh] rounded-2xl flex flex-col">
                         <DialogHeader className="flex-shrink-0 pb-4">
                             <DialogTitle>Novo Agendamento</DialogTitle>
-                            {/* <DialogDescription>
-                                Preencha os dados para solicitar um novo agendamento de espaço.
-                            </DialogDescription> */}
                         </DialogHeader>
 
                         <div className="flex-1 overflow-y-auto px-1 min-h-0">
@@ -1515,10 +1405,9 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                     </div>
                                 </div>
                             )}
-
                             </form>
                         </div>
-                        
+
                         <DialogFooter className="flex-shrink-0 border-t pt-4 mt-4">
                             <Button type="button" variant="outline" onClick={() => setCreateModal({ open: false })}>
                                 Cancelar
@@ -1539,7 +1428,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                 Conflito de Horário Detectado
                             </DialogTitle>
                             <DialogDescription>
-                                Existe(m) agendamento(s) conflitante(s) no horário solicitado. 
+                                Existe(m) agendamento(s) conflitante(s) no horário solicitado.
                                 Você pode solicitar prioridade para sobrepor os agendamentos existentes.
                             </DialogDescription>
                         </DialogHeader>
@@ -1548,7 +1437,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                             <Alert>
                                 <AlertTriangle className="h-4 w-4" />
                                 <AlertDescription>
-                                    Ao solicitar prioridade, seu agendamento será enviado para aprovação do diretor, 
+                                    Ao solicitar prioridade, seu agendamento será enviado para aprovação do diretor,
                                     que decidirá se deve sobrepor os agendamentos existentes.
                                 </AlertDescription>
                             </Alert>
@@ -1572,14 +1461,14 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                         </div>
 
                         <DialogFooter>
-                            <Button 
-                                variant="outline" 
+                            <Button
+                                variant="outline"
                                 onClick={() => setConflictModal({ open: false, conflitos: [], formData: null })}
                             >
                                 Cancelar
                             </Button>
-                            <Button 
-                                variant="destructive" 
+                            <Button
+                                variant="destructive"
                                 onClick={handleConflictSubmit}
                             >
                                 Solicitar Prioridade
@@ -1622,12 +1511,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                                 <div className="flex-1 space-y-2">
                                                     <div className="flex items-center gap-2">
                                                         <h3 className="font-semibold text-lg">{event.titulo}</h3>
-                                                        <Badge className={getStatusColor(event.status)}>
-                                                            <span className="flex items-center gap-1">
-                                                                {getStatusIcon(event.status)}
-                                                                {getStatusText(event.status)}
-                                                            </span>
-                                                        </Badge>
+                                                        <StatusBadge status={event.status} />
                                                     </div>
 
                                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
@@ -1693,15 +1577,15 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                 </div>
                             )}
                         </div>
-                        
+
                         <DialogFooter className="flex-shrink-0 border-t pt-4 mt-4">
-                            <Button 
-                                variant="outline" 
+                            <Button
+                                variant="outline"
                                 onClick={() => setDayViewModal({ open: false, selectedDate: null, events: [] })}
                             >
                                 Fechar
                             </Button>
-                            <Button 
+                            <Button
                                 onClick={() => {
                                     setDayViewModal({ open: false, selectedDate: null, events: [] });
                                     if (dayViewModal.selectedDate) {
