@@ -25,20 +25,70 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
         espacos.find(e => e.id === agendamento.espaco_id) || null
     );
 
+    // Função para formatar data no formato YYYY-MM-DD
+    const formatDateForInput = (dateString: string) => {
+        if (!dateString) return '';
+        // Se já está no formato correto, retorna como está
+        if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            return dateString;
+        }
+        // Se está em outro formato, tenta converter
+        try {
+            const date = new Date(dateString);
+            return date.toISOString().split('T')[0];
+        } catch {
+            return '';
+        }
+    };
+
+    // Função para formatar hora no formato HH:MM
+    const formatTimeForInput = (timeString: string) => {
+        if (!timeString) return '';
+        // Se já está no formato correto, retorna como está
+        if (timeString.match(/^\d{2}:\d{2}$/)) {
+            return timeString;
+        }
+        // Se tem segundos, remove
+        if (timeString.match(/^\d{2}:\d{2}:\d{2}$/)) {
+            return timeString.substring(0, 5);
+        }
+        return timeString;
+    };
+
     const { data, setData, put, processing, errors } = useForm({
         espaco_id: agendamento.espaco_id.toString(),
         titulo: agendamento.titulo,
         justificativa: agendamento.justificativa,
-        data_inicio: agendamento.data_inicio,
-        hora_inicio: agendamento.hora_inicio,
-        data_fim: agendamento.data_fim,
-        hora_fim: agendamento.hora_fim,
+        data_inicio: formatDateForInput(agendamento.data_inicio),
+        hora_inicio: formatTimeForInput(agendamento.hora_inicio),
+        data_fim: formatDateForInput(agendamento.data_fim),
+        hora_fim: formatTimeForInput(agendamento.hora_fim),
         observacoes: agendamento.observacoes || '',
         recursos_solicitados: agendamento.recursos_solicitados || [] as number[],
     });
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        
+        // Validação adicional no frontend
+        if (!data.data_inicio || !data.hora_inicio || !data.data_fim || !data.hora_fim) {
+            alert('Por favor, preencha todos os campos de data e horário.');
+            return;
+        }
+
+        // Validar formato da hora
+        const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+        if (!timeRegex.test(data.hora_inicio) || !timeRegex.test(data.hora_fim)) {
+            alert('Por favor, insira horários válidos no formato HH:MM.');
+            return;
+        }
+
+        // Validar se a hora de fim é posterior à hora de início no mesmo dia
+        if (data.data_inicio === data.data_fim && data.hora_fim <= data.hora_inicio) {
+            alert('A hora de fim deve ser posterior à hora de início.');
+            return;
+        }
+
         put(`/agendamentos/${agendamento.id}`);
     };
 

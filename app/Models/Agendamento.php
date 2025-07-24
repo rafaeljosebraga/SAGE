@@ -39,6 +39,35 @@ class Agendamento extends Model
         'recursos_solicitados' => 'array',
     ];
 
+    // Accessor para garantir que as horas sejam retornadas no formato correto
+    public function getHoraInicioAttribute($value)
+    {
+        if (!$value) return null;
+        // Se já está no formato HH:MM, retorna como está
+        if (preg_match('/^\d{2}:\d{2}$/', $value)) {
+            return $value;
+        }
+        // Se tem segundos, remove
+        if (preg_match('/^\d{2}:\d{2}:\d{2}$/', $value)) {
+            return substr($value, 0, 5);
+        }
+        return $value;
+    }
+
+    public function getHoraFimAttribute($value)
+    {
+        if (!$value) return null;
+        // Se já está no formato HH:MM, retorna como está
+        if (preg_match('/^\d{2}:\d{2}$/', $value)) {
+            return $value;
+        }
+        // Se tem segundos, remove
+        if (preg_match('/^\d{2}:\d{2}:\d{2}$/', $value)) {
+            return substr($value, 0, 5);
+        }
+        return $value;
+    }
+
     // Relacionamento com Espaço
     public function espaco(): BelongsTo
     {

@@ -289,6 +289,13 @@ class AgendamentoController extends Controller
 
         $agendamento->load(['espaco']);
 
+        // Garantir que as datas e horas estejam no formato correto
+        $agendamentoFormatado = $agendamento->toArray();
+        $agendamentoFormatado['data_inicio'] = $agendamento->data_inicio ? $agendamento->data_inicio->format('Y-m-d') : '';
+        $agendamentoFormatado['data_fim'] = $agendamento->data_fim ? $agendamento->data_fim->format('Y-m-d') : '';
+        $agendamentoFormatado['hora_inicio'] = $agendamento->hora_inicio ? substr($agendamento->hora_inicio, 0, 5) : '';
+        $agendamentoFormatado['hora_fim'] = $agendamento->hora_fim ? substr($agendamento->hora_fim, 0, 5) : '';
+
         $espacos = Espaco::with(['localizacao', 'recursos'])
                          ->where('disponivel_reserva', true)
                          ->where('status', 'ativo')
@@ -300,7 +307,7 @@ class AgendamentoController extends Controller
                           ->get(['id', 'nome', 'descricao']);
 
         return Inertia::render('Agendamentos/Edit', [
-            'agendamento' => $agendamento,
+            'agendamento' => $agendamentoFormatado,
             'espacos' => $espacos,
             'recursos' => $recursos,
         ]);
@@ -327,17 +334,37 @@ class AgendamentoController extends Controller
             'observacoes' => 'nullable|string|max:500',
             'recursos_solicitados' => 'nullable|array',
             'recursos_solicitados.*' => 'exists:recursos,id',
+        ], [
+            'hora_inicio.date_format' => 'O campo hora início deve corresponder ao formato H:i.',
+            'hora_fim.date_format' => 'O campo hora fim deve corresponder ao formato H:i.',
+            'data_inicio.after_or_equal' => 'A data de início deve ser hoje ou uma data futura.',
+            'data_fim.after_or_equal' => 'A data de fim deve ser igual ou posterior à data de início.',
         ]);
 
+        // Verificar se o espaço está disponível
+        $espaco = Espaco::findOrFail($validated['espaco_id']);
+        
+        if (!$espaco->disponivel_reserva) {
+            return back()->withErrors(['espaco_id' => 'Este espaço não está disponível para reserva.']);
+        }
+
+        // Validar horários (hora fim deve ser maior que hora início no mesmo dia)
+        if ($validated['data_inicio'] === $validated['data_fim'] && 
+            $validated['hora_fim'] <= $validated['hora_inicio']) {
+            return back()->withErrors(['hora_fim' => 'A hora de fim deve ser posterior à hora de início.']);
+        }
+
         // Verificar conflitos de horário (excluindo o agendamento atual)
-        if ($agendamento->temConflito(
+        $temConflito = (new Agendamento())->temConflito(
             $validated['espaco_id'],
             $validated['data_inicio'],
             $validated['hora_inicio'],
             $validated['data_fim'],
             $validated['hora_fim'],
             $agendamento->id
-        )) {
+        );
+
+        if ($temConflito) {
             return back()->withErrors(['horario' => 'Já existe um agendamento para este espaço no horário solicitado.']);
         }
 
