@@ -103,11 +103,11 @@ export default function Register() {
 
                     <Button type="submit" className="mt-2 w-full" tabIndex={5} disabled={processing}>
                         {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                        Create account
+                        Criar conta
                     </Button>
                 </div>
 
-                <div className="text-center text-sm text-muted-foreground">
+                <div className="text-center text-sm text-muted-foreground -mt-3">
                     Ja tem uma conta?{' '}
                     <TextLink href={route('login')} tabIndex={6}>
                         Fazer login

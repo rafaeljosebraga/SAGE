@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
@@ -22,6 +23,7 @@ interface Props {
 }
 
 export default function Edit({ user, perfilAcesso }: Props) {
+    const { toast } = useToast();
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Dashboard',
@@ -29,15 +31,14 @@ export default function Edit({ user, perfilAcesso }: Props) {
         },
         {
             title: 'Gerenciar Usuários',
-            href: '/users',
+            href: '/usuarios',
         },
         {
             title: `Editar ${user.name}`,
-            href: `/users/${user.id}/edit`,
+            href: `/usuarios/${user.id}/editar`,
         },
     ];
-
-    const { data, setData, put, processing, errors } = useForm({
+const { data, setData, put, processing, errors, clearErrors } = useForm({
         name: user.name,
         email: user.email,
         perfil_acesso: user.perfil_acesso,
@@ -45,7 +46,27 @@ export default function Edit({ user, perfilAcesso }: Props) {
 
     const submit = (e: FormEvent) => {
         e.preventDefault();
-        put(`/users/${user.id}`);
+        put(`/usuarios/${user.id}`, {
+            onSuccess: () => {
+                toast({
+                    title: "Usuário atualizado com sucesso!",
+                    description: `Os dados do usuário ${data.name} foram atualizados.`,
+                    variant: "success",
+                    duration: 800, // 0.8 segundos
+                });
+            },
+            onError: (errors) => {
+                // Mostrar toast de erro se houver erros de validação
+                const errorMessages = Object.values(errors).flat();
+                if (errorMessages.length > 0) {
+                    toast({
+                        title: "Erro ao atualizar usuário",
+                        description: errorMessages[0] as string,
+                        variant: "destructive",
+                    });
+                }
+            },
+        });
     };
 
     return (
@@ -54,7 +75,7 @@ export default function Edit({ user, perfilAcesso }: Props) {
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center gap-4">
-                    <Link href="/users">
+                    <Link href="/usuarios">
                         <Button variant="outline" size="sm">
                             <ArrowLeft className="mr-2 h-4 w-4" />
                             Voltar
@@ -71,18 +92,20 @@ export default function Edit({ user, perfilAcesso }: Props) {
                         <CardDescription>Altere os dados do usuário {user.name}</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <form onSubmit={submit} className="space-y-6">
+                         <form onSubmit={submit} className="space-y-6" noValidate>
                             <div className="space-y-2">
                                 <Label htmlFor="name">Nome *</Label>
                                 <Input
                                     id="name"
                                     type="text"
                                     value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
+                                     onChange={(e) => {
+                                        setData('name', e.target.value);
+                                        if (errors.name) clearErrors('name');
+                                    }}
                                     placeholder="Digite o nome completo"
                                     className={errors.name ? 'border-red-500' : ''}
-                                    required
-                                />
+                                       />
                                 {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
                             </div>
 
@@ -92,17 +115,22 @@ export default function Edit({ user, perfilAcesso }: Props) {
                                     id="email"
                                     type="email"
                                     value={data.email}
-                                    onChange={(e) => setData('email', e.target.value)}
+                                      onChange={(e) => {
+                                        setData('email', e.target.value);
+                                        if (errors.email) clearErrors('email');
+                                    }}
                                     placeholder="Digite o e-mail"
                                     className={errors.email ? 'border-red-500' : ''}
-                                    required
-                                />
+                                              />
                                 {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
                             </div>
 
                             <div className="space-y-2">
                                 <Label htmlFor="perfil_acesso">Perfil de Acesso *</Label>
-                                <Select value={data.perfil_acesso} onValueChange={(value) => setData('perfil_acesso', value)}>
+                                 <Select value={data.perfil_acesso} onValueChange={(value) => {
+                                    setData('perfil_acesso', value);
+                                    if (errors.perfil_acesso) clearErrors('perfil_acesso');
+                                }}>
                                     <SelectTrigger className={errors.perfil_acesso ? 'border-red-500' : ''}>
                                         <SelectValue placeholder="Selecione o perfil" />
                                     </SelectTrigger>
@@ -116,18 +144,14 @@ export default function Edit({ user, perfilAcesso }: Props) {
                                 </Select>
                                 {errors.perfil_acesso && <p className="text-sm text-red-500">{errors.perfil_acesso}</p>}
                             </div>
-
-                            {(errors as any).error && (
-                                <div className="rounded-md border border-red-200 bg-red-50 p-3">
-                                    <p className="text-sm text-red-600">{(errors as any).error}</p>
-                                </div>
-                            )}
+                            
+                            {(errors as any).error && <p className="text-sm text-red-500">{(errors as any).error}</p>}
 
                             <div className="flex gap-4 pt-4">
                                 <Button type="submit" disabled={processing}>
                                     {processing ? 'Salvando...' : 'Salvar Alterações'}
                                 </Button>
-                                <Link href="/users">
+                                <Link href="/usuarios">
                                     <Button type="button" variant="outline">
                                         Cancelar
                                     </Button>

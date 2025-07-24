@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -74,6 +75,15 @@ class UserController extends Controller
     }
 
     /**
+     * Display the specified resource.
+     */
+    public function show(User $user)
+    {
+        // Redirect to index instead of showing individual user
+        return redirect()->route('users.index');
+    }
+
+    /**
      * Show the form for editing the specified resource.
      */
     public function edit(User $user)
@@ -87,6 +97,10 @@ class UserController extends Controller
                 'servidores' => 'Servidores',
             ],
         ]);
+    }
+    public function all()
+    {
+        return response()->json(User::select('id', 'name')->get());
     }
 
     /**
@@ -117,7 +131,7 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         try {
-            if ($user->id === auth()->id()) {
+            if ($user->id === Auth::id()) {
                 return back()->withErrors(['error' => 'Você não pode excluir sua própria conta.']);
             }
 

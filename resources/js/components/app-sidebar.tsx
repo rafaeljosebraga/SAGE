@@ -2,14 +2,15 @@ import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { useCanManageUsers } from '@/hooks/use-auth';
+import { useCanManageUsers, useIsDiretorGeral } from '@/hooks/use-auth';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Users } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, Users, Building, MapPin, Package, BookUser, Calendar, Settings } from 'lucide-react';
 import AppLogo from './app-logo';
 
 export function AppSidebar() {
     const canManageUsers = useCanManageUsers();
+    const isDiretorGeral = useIsDiretorGeral();
 
     const mainNavItems: NavItem[] = [
         {
@@ -17,19 +18,53 @@ export function AppSidebar() {
             href: '/dashboard',
             icon: LayoutGrid,
         },
+        {
+            title: 'Agendamentos',
+            href: '/agendamentos',
+            icon: Calendar,
+        },
         ...(canManageUsers
             ? [
                   {
                       title: 'Gerenciar Usuários',
-                      href: '/users',
+                      href: '/usuarios',
                       icon: Users,
+                  },
+              ]
+            : []),
+        ...(isDiretorGeral
+            ? [
+                  {
+                      title: 'Gerenciar Agendamentos',
+                      href: '/gerenciar-agendamentos',
+                      icon: Settings,
+                  },
+                  {
+                      title: 'Espaços',
+                      href: '/espacos',
+                      icon: Building,
+                  },
+                  {
+                      title: 'Localizações',
+                      href: '/localizacoes',
+                      icon: MapPin,
+                  },
+                  {
+                      title: 'Recursos',
+                      href: '/recursos',
+                      icon: Package,
+                  },
+                  {
+                      title: 'Atribuir Permissões',
+                      href: '/atribuir-permissoes',
+                      icon: BookUser,
                   },
               ]
             : []),
     ];
 
     const footerNavItems: NavItem[] = [
-        {
+       /* {
             title: 'Repository',
             href: 'https://github.com/laravel/react-starter-kit',
             icon: Folder,
@@ -38,7 +73,7 @@ export function AppSidebar() {
             title: 'Documentation',
             href: 'https://laravel.com/docs/starter-kits#react',
             icon: BookOpen,
-        },
+        },*/
     ];
 
     return (

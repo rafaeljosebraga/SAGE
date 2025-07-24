@@ -6,16 +6,16 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::middleware('auth')->group(function () {
-    Route::redirect('settings', '/settings/profile');
+    Route::redirect('configuracoes', '/configuracoes/perfil');
 
-    Route::get('settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('settings/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('settings/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('configuracoes/perfil', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('configuracoes/perfil', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('configuracoes/perfil', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::get('settings/password', [PasswordController::class, 'edit'])->name('password.edit');
-    Route::put('settings/password', [PasswordController::class, 'update'])->name('password.update');
+    Route::get('configuracoes/senha', [PasswordController::class, 'edit'])->name('password.edit');
+    Route::put('configuracoes/senha', [PasswordController::class, 'update'])->name('password.update');
 
-    Route::get('settings/appearance', function () {
+    Route::get('configuracoes/aparencia', function () {
         return Inertia::render('settings/appearance');
     })->name('appearance');
 });

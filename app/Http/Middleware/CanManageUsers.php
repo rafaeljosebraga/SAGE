@@ -2,8 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class CanManageUsers
@@ -15,7 +17,8 @@ class CanManageUsers
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!auth()->check() || !auth()->user()->canManageUsers()) {
+        $user = Auth::user();
+        if (!$user || !($user instanceof User) || !$user->canManageUsers()) {
             abort(403, 'Acesso negado. Você não tem permissão para gerenciar usuários.');
         }
 
