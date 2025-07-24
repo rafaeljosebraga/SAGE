@@ -35,15 +35,7 @@ class AgendamentoController extends Controller
             $query->whereDate('data_fim', '<=', $request->data_fim);
         }
 
-        // Se não for diretor geral, mostrar apenas agendamentos próprios ou do espaço que gerencia
-        if (auth()->user()->perfil_acesso !== 'diretor_geral') {
-            $query->where(function ($q) {
-                $q->where('user_id', auth()->id())
-                  ->orWhereHas('espaco', function ($espacoQuery) {
-                      $espacoQuery->where('responsavel_id', auth()->id());
-                  });
-            });
-        }
+        // Todos os usuários podem ver todos os agendamentos
 
         // Se for visualização de lista, usar paginação
         if ($request->get('view') === 'list') {
@@ -264,12 +256,7 @@ class AgendamentoController extends Controller
         // Carregar recursos solicitados
         $recursosSolicitados = $agendamento->recursosSolicitados();
 
-        // Verificar permissão
-        if (auth()->user()->perfil_acesso !== 'diretor_geral' && 
-            $agendamento->user_id !== auth()->id() &&
-            $agendamento->espaco->responsavel_id !== auth()->id()) {
-            abort(403, 'Você não tem permissão para visualizar este agendamento.');
-        }
+        // Todos os usuários podem visualizar agendamentos
 
         return Inertia::render('Agendamentos/Show', [
             'agendamento' => $agendamento,
@@ -514,15 +501,7 @@ class AgendamentoController extends Controller
     {
         $query = Agendamento::with(['espaco.localizacao', 'user', 'aprovadoPor']);
 
-        // Se não for diretor geral, mostrar apenas agendamentos próprios ou do espaço que gerencia
-        if (auth()->user()->perfil_acesso !== 'diretor_geral') {
-            $query->where(function ($q) {
-                $q->where('user_id', auth()->id())
-                  ->orWhereHas('espaco', function ($espacoQuery) {
-                      $espacoQuery->where('responsavel_id', auth()->id());
-                  });
-            });
-        }
+        // Todos os usuários podem ver todos os agendamentos no calendário
 
         // Buscar agendamentos dos próximos 3 meses para o calendário
         $dataInicio = now()->startOfMonth();
