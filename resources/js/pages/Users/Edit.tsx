@@ -1,3 +1,14 @@
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -38,7 +49,7 @@ export default function Edit({ user, perfilAcesso }: Props) {
             href: `/usuarios/${user.id}/editar`,
         },
     ];
-const { data, setData, put, processing, errors, clearErrors } = useForm({
+const { data, setData, reset, put, processing, errors, clearErrors } = useForm({
         name: user.name,
         email: user.email,
         perfil_acesso: user.perfil_acesso,
@@ -52,7 +63,7 @@ const { data, setData, put, processing, errors, clearErrors } = useForm({
                     title: "Usuário atualizado com sucesso!",
                     description: `Os dados do usuário ${data.name} foram atualizados.`,
                     variant: "success",
-                    duration: 800, // 0.8 segundos
+                    duration: 5000, // 5 segundos
                 });
             },
             onError: (errors) => {
@@ -75,12 +86,35 @@ const { data, setData, put, processing, errors, clearErrors } = useForm({
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center gap-4">
-                    <Link href="/usuarios">
-                        <Button variant="outline" size="sm">
-                            <ArrowLeft className="mr-2 h-4 w-4" />
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button
+                            type="button"
+                            variant="outline"
+                            className="gap-2"
+                            >
+                            <ArrowLeft className="h-4 w-4" />
                             Voltar
-                        </Button>
-                    </Link>
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                            <AlertDialogTitle>Tem certeza que deseja voltar?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                As alterações feitas não foram salvas. Você perderá todas as modificações.
+                            </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                            <AlertDialogCancel>Não</AlertDialogCancel>
+                            <AlertDialogAction
+                                className="bg-red-600 hover:bg-red-700"
+                                asChild
+                            >
+                                <Link href="/usuarios">Sim, voltar</Link>
+                            </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                        </AlertDialog>
                 </div>
 
                 <Card className="max-w-2xl">
@@ -151,11 +185,36 @@ const { data, setData, put, processing, errors, clearErrors } = useForm({
                                 <Button type="submit" disabled={processing}>
                                     {processing ? 'Salvando...' : 'Salvar Alterações'}
                                 </Button>
-                                <Link href="/usuarios">
-                                    <Button type="button" variant="outline">
-                                        Cancelar
-                                    </Button>
-                                </Link>
+                                <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button
+                            type="button"
+                            variant="outline"
+                            disabled={processing}
+                            >
+                            Cancelar
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                            <AlertDialogTitle>Tem certeza que deseja cancelar?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Todas as alterações feitas serão descartadas. O formulário voltará ao estado original.
+                            </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                            <AlertDialogCancel>Não</AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={() => {
+                                    reset();
+                                }}
+                                className="bg-red-600 hover:bg-red-700"
+                            >
+                                Sim, cancelar
+                            </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                        </AlertDialog>
                             </div>
                         </form>
                     </CardContent>
