@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import { useAgendamentoColors } from '@/components/ui/agend-colors';
 
 import type { PageProps, Agendamento, Espaco, Recurso, BreadcrumbItem } from '@/types';
 
@@ -21,6 +22,9 @@ interface Props extends PageProps {
 }
 
 export default function AgendamentosEdit({ agendamento, espacos, recursos }: Props) {
+    // Usar o hook de cores
+    const { getEventBorderColor } = useAgendamentoColors();
+    
     const [selectedEspaco, setSelectedEspaco] = useState<Espaco | null>(
         espacos.find(e => e.id === agendamento.espaco_id) || null
     );
@@ -103,6 +107,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
         { title: 'Editar Agendamento', href: `/agendamentos/${agendamento.id}/editar` }
     ];
 
+    
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Editar Agendamento - ${agendamento.titulo}`} />
@@ -128,7 +133,13 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                         {/* Formulário Principal */}
                         <div className="lg:col-span-2 space-y-6">
                             {/* Informações Básicas */}
-                            <Card>
+                            <Card className={`border-l-4 ${getEventBorderColor({
+                                ...agendamento,
+                                data_inicio: data.data_inicio || agendamento.data_inicio,
+                                hora_inicio: data.hora_inicio || agendamento.hora_inicio,
+                                data_fim: data.data_fim || agendamento.data_fim,
+                                hora_fim: data.hora_fim || agendamento.hora_fim
+                            })}`}>
                                 <CardHeader>
                                     <CardTitle>Informações do Agendamento</CardTitle>
                                     <CardDescription>
@@ -199,7 +210,13 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                             </Card>
 
                             {/* Data e Horário */}
-                            <Card>
+                            <Card className={`border-l-4 ${getEventBorderColor({
+                                ...agendamento,
+                                data_inicio: data.data_inicio || agendamento.data_inicio,
+                                hora_inicio: data.hora_inicio || agendamento.hora_inicio,
+                                data_fim: data.data_fim || agendamento.data_fim,
+                                hora_fim: data.hora_fim || agendamento.hora_fim
+                            })}`}>
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2">
                                         <Calendar className="h-5 w-5" />
@@ -267,7 +284,14 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
 
                             {/* Recursos Adicionais */}
                             {recursos && recursos.length > 0 && (
-                                <Card>
+                                
+                                <Card className={`border-l-4 ${getEventBorderColor({
+                                ...agendamento,
+                                data_inicio: data.data_inicio || agendamento.data_inicio,
+                                hora_inicio: data.hora_inicio || agendamento.hora_inicio,
+                                data_fim: data.data_fim || agendamento.data_fim,
+                                hora_fim: data.hora_fim || agendamento.hora_fim
+                                })}`}>
                                     <CardHeader>
                                         <CardTitle>Recursos Adicionais</CardTitle>
                                         <CardDescription>

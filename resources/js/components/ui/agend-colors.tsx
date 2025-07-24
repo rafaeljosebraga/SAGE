@@ -90,23 +90,51 @@ const colorPalette = [
     { bg: 'bg-emerald-400 dark:bg-emerald-500', text: 'text-emerald-900 dark:text-emerald-50', border: 'border-l-emerald-600' },
 ];
 
-// Função para gerar hash simples de uma string
+// Função para gerar hash com máxima distribuição usando múltiplos algoritmos
 const generateHash = (str: string): number => {
-    let hash = 0;
+    // Algoritmo FNV-1a para melhor distribuição
+    let hash = 2166136261;
     for (let i = 0; i < str.length; i++) {
-        const char = str.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash; // Convert to 32bit integer
+        hash ^= str.charCodeAt(i);
+        hash *= 16777619;
     }
-    return Math.abs(hash);
+    
+    // Segundo hash usando DJB2
+    let hash2 = 5381;
+    for (let i = 0; i < str.length; i++) {
+        hash2 = ((hash2 << 5) + hash2) + str.charCodeAt(i);
+    }
+    
+    // Terceiro hash usando SDBM
+    let hash3 = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash3 = str.charCodeAt(i) + (hash3 << 6) + (hash3 << 16) - hash3;
+    }
+    
+    // Combinar os três hashes com números primos para máxima distribuição
+    const combined = Math.abs((hash >>> 0) + (hash2 * 37) + (hash3 * 97));
+    return combined;
+};
+
+// Função para distribuir cores de forma mais uniforme
+const getDistributedColorIndex = (hash: number, paletteSize: number): number => {
+    // Usar sequência de Fibonacci para distribuição mais uniforme
+    const phi = (1 + Math.sqrt(5)) / 2; // Golden ratio
+    const fibonacciHash = (hash * phi) % 1;
+    return Math.floor(fibonacciHash * paletteSize);
 };
 
 // Função para verificar se um agendamento já passou
 const isEventPast = (agendamento: Agendamento): boolean => {
     try {
-        const eventDateTime = new Date(`${agendamento.data_fim}T${agendamento.hora_fim}`);
-        return eventDateTime < new Date();
-    } catch {
+        // Extrair apenas a parte da data (YYYY-MM-DD) independentemente do formato
+        const dateOnly = agendamento.data_fim.split('T')[0];
+        const eventDateTime = new Date(`${dateOnly}T${agendamento.hora_fim}`);
+        const now = new Date();
+        const isPast = eventDateTime < now;
+        
+        return isPast;
+    } catch (error) {
         return false;
     }
 };
@@ -136,10 +164,16 @@ export const useAgendamentoColors = () => {
             return 'bg-gray-300 dark:bg-gray-600/80 text-gray-900 dark:text-gray-100';
         }
 
-        // Gerar hash baseado na data e hora do agendamento
-        const hashString = `${agendamento.data_inicio}-${agendamento.hora_inicio.substring(0, 5)}`;
-        const hash = generateHash(hashString);
-        const colorIndex = hash % colorPalette.length;
+        // Usar apenas o ID do agendamento para garantir unicidade absoluta
+        // Multiplicar por números primos para melhor distribuição
+        const idNumber = parseInt(agendamento.id.toString()) || 0;
+        const hash1 = generateHash(`primary_${idNumber * 7}`);
+        const hash2 = generateHash(`secondary_${idNumber * 11}`);
+        const hash3 = generateHash(`tertiary_${idNumber * 13}`);
+        
+        // Combinar os hashes de forma única
+        const combinedHash = Math.abs(hash1 + (hash2 * 17) + (hash3 * 23));
+        const colorIndex = getDistributedColorIndex(combinedHash, colorPalette.length);
         const color = colorPalette[colorIndex];
         
         return `${color.bg} ${color.text}`;
@@ -152,10 +186,16 @@ export const useAgendamentoColors = () => {
             return 'border-l-gray-500';
         }
 
-        // Gerar hash baseado na data e hora do agendamento
-        const hashString = `${agendamento.data_inicio}-${agendamento.hora_inicio.substring(0, 5)}`;
-        const hash = generateHash(hashString);
-        const colorIndex = hash % colorPalette.length;
+        // Usar apenas o ID do agendamento para garantir unicidade absoluta
+        // Multiplicar por números primos para melhor distribuição
+        const idNumber = parseInt(agendamento.id.toString()) || 0;
+        const hash1 = generateHash(`primary_${idNumber * 7}`);
+        const hash2 = generateHash(`secondary_${idNumber * 11}`);
+        const hash3 = generateHash(`tertiary_${idNumber * 13}`);
+        
+        // Combinar os hashes de forma única
+        const combinedHash = Math.abs(hash1 + (hash2 * 17) + (hash3 * 23));
+        const colorIndex = getDistributedColorIndex(combinedHash, colorPalette.length);
         const color = colorPalette[colorIndex];
         
         return color.border;

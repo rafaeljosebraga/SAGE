@@ -57,7 +57,7 @@ interface Props extends PageProps {
 
 export default function GerenciarAgendamentos({ agendamentos, espacos, estatisticas, filters, auth }: Props) {
     // Usar o hook de cores
-    const { getStatusColor, getStatusText } = useAgendamentoColors();
+    const { getStatusColor, getStatusText, getEventBorderColor } = useAgendamentoColors();
     
     const [rejectionDialog, setRejectionDialog] = useState<{ open: boolean; agendamento: Agendamento | null }>({
         open: false,
@@ -356,7 +356,7 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                             const priority = getPriorityLevel(agendamento);
                             
                             return (
-                                <Card key={agendamento.id} className={`${agendamento.status === 'pendente' ? 'border-l-4 border-l-yellow-500' : ''}`}>
+                                <Card key={agendamento.id} className={`border-l-4 ${getEventBorderColor(agendamento)}`}>
                                     <CardContent className="p-6">
                                         <div className="flex items-start justify-between">
                                             <div className="space-y-3 flex-1">
