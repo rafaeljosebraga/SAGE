@@ -93,7 +93,12 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
             return;
         }
 
-        put(`/agendamentos/${agendamento.id}`);
+        put(`/agendamentos/${agendamento.id}`, {
+            onSuccess: () => {
+                // Redirecionar para a página de detalhes do agendamento
+                window.location.href = `/agendamentos/${agendamento.id}`;
+            }
+        });
     };
 
     const handleEspacoChange = (value: string) => {
@@ -115,7 +120,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
             <div className="space-y-6">
                 <div className="flex items-center gap-4">
                     <Button variant="outline" size="sm" asChild>
-                        <Link href="/agendamentos">
+                        <Link href={`/agendamentos/${agendamento.id}`}>
                             <ArrowLeft className="h-4 w-4 mr-2" />
                             Voltar
                         </Link>

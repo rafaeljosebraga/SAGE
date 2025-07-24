@@ -60,6 +60,10 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     const [searchEspacos, setSearchEspacos] = useState("");
     const [searchAgendamentos, setSearchAgendamentos] = useState("");
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | 'none'>('none');
+    const [dateSortOrder, setDateSortOrder] = useState<{
+        inicio: 'asc' | 'desc' | 'none';
+        fim: 'asc' | 'desc' | 'none';
+    }>({ inicio: 'none', fim: 'none' });
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Agendamentos', href: '/agendamentos' }
@@ -150,8 +154,117 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         }
     };
 
+    // Funções para alternar ordenação de datas
+    const toggleDateSort = (type: 'inicio' | 'fim') => {
+        setDateSortOrder(prev => {
+            const currentOrder = prev[type];
+            let newOrder: 'asc' | 'desc' | 'none';
+            
+            if (currentOrder === 'none') {
+                newOrder = 'asc';
+            } else if (currentOrder === 'asc') {
+                newOrder = 'desc';
+            } else {
+                newOrder = 'none';
+            }
+            
+            // Reset the other date sort when one is changed
+            if (type === 'inicio') {
+                return {
+                    inicio: newOrder,
+                    fim: 'none'
+                };
+            } else {
+                return {
+                    inicio: 'none',
+                    fim: newOrder
+                };
+            }
+        });
+    };
+
+    // Função para obter ícone de ordenação de data
+    const getDateSortIcon = (type: 'inicio' | 'fim') => {
+        const order = dateSortOrder[type];
+        switch (order) {
+            case 'asc':
+                return <ArrowUp className="h-3 w-3" />;
+            case 'desc':
+                return <ArrowDown className="h-3 w-3" />;
+            default:
+                return <ArrowUpDown className="h-3 w-3" />;
+        }
+    };
+
     // Extrair dados dos agendamentos (pode ser array ou objeto paginado)
     const agendamentosData = Array.isArray(agendamentos) ? agendamentos : agendamentos.data;
+
+    // Filtrar e ordenar agendamentos para a lista
+    const filteredAndSortedAgendamentos = (() => {
+        let filtered = [...agendamentosData];
+
+        // Aplicar filtros de data se especificados
+        if (filters.data_inicio) {
+            filtered = filtered.filter(agendamento => {
+                const agendamentoDataInicio = agendamento.data_inicio.split('T')[0]; // YYYY-MM-DD
+                return agendamentoDataInicio >= filters.data_inicio!;
+            });
+        }
+
+        if (filters.data_fim) {
+            filtered = filtered.filter(agendamento => {
+                const agendamentoDataFim = agendamento.data_fim.split('T')[0]; // YYYY-MM-DD
+                return agendamentoDataFim <= filters.data_fim!;
+            });
+        }
+
+        // Aplicar ordenação por data se ativa
+        if (dateSortOrder.inicio !== 'none') {
+            filtered.sort((a, b) => {
+                // Normalizar as datas para garantir formato correto
+                const dateStrA = a.data_inicio.split('T')[0]; // Pegar apenas YYYY-MM-DD
+                const timeStrA = a.hora_inicio.split(':').slice(0, 2).join(':'); // Pegar apenas HH:MM
+                const dateStrB = b.data_inicio.split('T')[0];
+                const timeStrB = b.hora_inicio.split(':').slice(0, 2).join(':');
+                
+                const dateA = new Date(`${dateStrA}T${timeStrA}:00`);
+                const dateB = new Date(`${dateStrB}T${timeStrB}:00`);
+                
+                // Verificar se as datas são válidas
+                if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+                    console.warn('Data inválida encontrada:', { a: a.data_inicio, b: b.data_inicio });
+                    return 0;
+                }
+                
+                return dateSortOrder.inicio === 'asc' 
+                    ? dateA.getTime() - dateB.getTime()
+                    : dateB.getTime() - dateA.getTime();
+            });
+        } else if (dateSortOrder.fim !== 'none') {
+            filtered.sort((a, b) => {
+                // Normalizar as datas para garantir formato correto
+                const dateStrA = a.data_fim.split('T')[0]; // Pegar apenas YYYY-MM-DD
+                const timeStrA = a.hora_fim.split(':').slice(0, 2).join(':'); // Pegar apenas HH:MM
+                const dateStrB = b.data_fim.split('T')[0];
+                const timeStrB = b.hora_fim.split(':').slice(0, 2).join(':');
+                
+                const dateA = new Date(`${dateStrA}T${timeStrA}:00`);
+                const dateB = new Date(`${dateStrB}T${timeStrB}:00`);
+                
+                // Verificar se as datas são válidas
+                if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+                    console.warn('Data inválida encontrada:', { a: a.data_fim, b: b.data_fim });
+                    return 0;
+                }
+                
+                return dateSortOrder.fim === 'asc' 
+                    ? dateA.getTime() - dateB.getTime()
+                    : dateB.getTime() - dateA.getTime();
+            });
+        }
+
+        return filtered;
+    })();
     
     // Filtrar agendamentos pelos espaços selecionados
     const filteredAgendamentos = agendamentosData.filter(agendamento => 
@@ -805,24 +918,48 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
 
                         <div>
                             <Label htmlFor="data_inicio">Data Início</Label>
-                            <Input
-                                type="date"
-                                value={filters.data_inicio || ''}
-                                onChange={(e) => {
-                                    router.get('/agendamentos', { ...filters, data_inicio: e.target.value || undefined, view: 'list' });
-                                }}
-                            />
+                            <div className="relative">
+                                <Input
+                                    type="date"
+                                    value={filters.data_inicio || ''}
+                                    onChange={(e) => {
+                                        router.get('/agendamentos', { ...filters, data_inicio: e.target.value || undefined, view: 'list' });
+                                    }}
+                                    className="pr-10"
+                                />
+                                <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={() => toggleDateSort('inicio')}
+                                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
+                                    title={`Ordenar por data de início ${dateSortOrder.inicio === 'none' ? 'crescente' : dateSortOrder.inicio === 'asc' ? 'decrescente' : 'padrão'}`}
+                                >
+                                    {getDateSortIcon('inicio')}
+                                </Button>
+                            </div>
                         </div>
 
                         <div>
                             <Label htmlFor="data_fim">Data Fim</Label>
-                            <Input
-                                type="date"
-                                value={filters.data_fim || ''}
-                                onChange={(e) => {
-                                    router.get('/agendamentos', { ...filters, data_fim: e.target.value || undefined, view: 'list' });
-                                }}
-                            />
+                            <div className="relative">
+                                <Input
+                                    type="date"
+                                    value={filters.data_fim || ''}
+                                    onChange={(e) => {
+                                        router.get('/agendamentos', { ...filters, data_fim: e.target.value || undefined, view: 'list' });
+                                    }}
+                                    className="pr-10"
+                                />
+                                <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={() => toggleDateSort('fim')}
+                                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
+                                    title={`Ordenar por data de fim ${dateSortOrder.fim === 'none' ? 'crescente' : dateSortOrder.fim === 'asc' ? 'decrescente' : 'padrão'}`}
+                                >
+                                    {getDateSortIcon('fim')}
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </CardContent>
@@ -830,7 +967,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
 
             {/* Lista de Agendamentos */}
             <div className="space-y-4">
-                {agendamentosData.length === 0 ? (
+                {filteredAndSortedAgendamentos.length === 0 ? (
                     <Card>
                         <CardContent className="p-6 text-center">
                             <p className="text-muted-foreground">Nenhum agendamento encontrado.</p>
@@ -843,7 +980,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                         </CardContent>
                     </Card>
                 ) : (
-                    agendamentosData.map((agendamento) => (
+                    filteredAndSortedAgendamentos.map((agendamento) => (
                         <Card key={agendamento.id} className={`border-l-4 ${getEventBorderColor(agendamento)}`}>
                             <CardContent className="p-6">
                                 <div className="flex items-start justify-between">
