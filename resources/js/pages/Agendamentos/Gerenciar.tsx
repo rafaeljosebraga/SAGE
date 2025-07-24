@@ -29,6 +29,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useAgendamentoColors, StatusBadge } from '@/components/ui/agend-colors';
 
 import type { PageProps, Agendamento, Espaco, BreadcrumbItem } from '@/types';
 
@@ -55,6 +56,9 @@ interface Props extends PageProps {
 }
 
 export default function GerenciarAgendamentos({ agendamentos, espacos, estatisticas, filters, auth }: Props) {
+    // Usar o hook de cores
+    const { getStatusColor, getStatusText } = useAgendamentoColors();
+    
     const [rejectionDialog, setRejectionDialog] = useState<{ open: boolean; agendamento: Agendamento | null }>({
         open: false,
         agendamento: null
@@ -64,36 +68,6 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Gerenciar Agendamentos', href: '/gerenciar-agendamentos' }
     ];
-
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'pendente':
-                return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-            case 'aprovado':
-                return 'bg-green-100 text-green-800 border-green-200';
-            case 'rejeitado':
-                return 'bg-red-100 text-red-800 border-red-200';
-            case 'cancelado':
-                return 'bg-gray-100 text-gray-800 border-gray-200';
-            default:
-                return 'bg-gray-100 text-gray-800 border-gray-200';
-        }
-    };
-
-    const getStatusText = (status: string) => {
-        switch (status) {
-            case 'pendente':
-                return 'Pendente';
-            case 'aprovado':
-                return 'Aprovado';
-            case 'rejeitado':
-                return 'Rejeitado';
-            case 'cancelado':
-                return 'Cancelado';
-            default:
-                return status;
-        }
-    };
 
     const handleApprove = (agendamento: Agendamento) => {
         if (confirm(`Tem certeza que deseja aprovar o agendamento "${agendamento.titulo}"?`)) {
@@ -388,9 +362,7 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                                             <div className="space-y-3 flex-1">
                                                 <div className="flex items-center gap-3">
                                                     <h3 className="font-semibold text-lg">{agendamento.titulo}</h3>
-                                                    <Badge className={getStatusColor(agendamento.status)}>
-                                                        {getStatusText(agendamento.status)}
-                                                    </Badge>
+                                                    <StatusBadge status={agendamento.status} />
                                                     {agendamento.status === 'pendente' && (
                                                         <Badge variant="outline" className={getPriorityColor(priority)}>
                                                             Prioridade {getPriorityText(priority)}
