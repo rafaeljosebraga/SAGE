@@ -362,16 +362,37 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     };
 
     const handleDateSelect = (date: Date, timeSlot?: string) => {
-        // Verificar se o horário está no passado
-        if (isTimeInPast(date, timeSlot)) {
+        const selectedDate = format(date, 'yyyy-MM-dd');
+        const now = new Date();
+        const todayStr = format(now, 'yyyy-MM-dd');
+        
+        let selectedTime = timeSlot || '08:00';
+        
+        // Se a data selecionada for hoje, verificar se precisa ajustar o horário
+        if (selectedDate === todayStr && timeSlot) {
+            const [slotHour, slotMinute] = timeSlot.split(':').map(Number);
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+            
+            // Se o slot clicado é a hora atual, ajustar para o minuto atual + 1
+            if (slotHour === currentHour) {
+                const nextMinute = new Date(now.getTime() + 60000); // Adiciona 1 minuto
+                selectedTime = format(nextMinute, 'HH:mm');
+            }
+            // Se o slot clicado é anterior à hora atual, mostrar aviso
+            else if (slotHour < currentHour || (slotHour === currentHour && slotMinute < currentMinute)) {
+                setPastTimeModal({ open: true });
+                return;
+            }
+        }
+        // Para datas passadas, verificar se está no passado
+        else if (isTimeInPast(date, timeSlot)) {
             setPastTimeModal({ open: true });
             return;
         }
 
-        const selectedDate = format(date, 'yyyy-MM-dd');
-        const selectedTime = timeSlot || '08:00';
-        const endTime = timeSlot ? 
-            `${(parseInt(timeSlot.split(':')[0]) + 1).toString().padStart(2, '0')}:00` : 
+        const endTime = selectedTime ? 
+            `${(parseInt(selectedTime.split(':')[0]) + 1).toString().padStart(2, '0')}:00` : 
             '09:00';
         
         setFormData({
