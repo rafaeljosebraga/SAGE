@@ -6,6 +6,7 @@ use App\Http\Controllers\LocalizacaoController;
 use App\Http\Controllers\RecursoController;
 use App\Http\Controllers\EspacoUserController;
 use App\Http\Controllers\FotoController;
+use App\Http\Controllers\AgendamentoController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -71,6 +72,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Rotas de Fotos
         Route::resource('fotos', FotoController::class);
         Route::post('fotos/reorder', [FotoController::class, 'reorder'])->name('fotos.reorder');
+    });
+
+    // Rotas de Agendamentos (disponível para todos os usuários autenticados)
+    Route::get("agendamentos", [AgendamentoController::class, "index"])->name("agendamentos.index");
+    Route::get("agendamentos/criar", [AgendamentoController::class, "create"])->name("agendamentos.create");
+    Route::post("agendamentos", [AgendamentoController::class, "store"])->name("agendamentos.store");
+    Route::post("agendamentos/verificar-disponibilidade", [AgendamentoController::class, "verificarDisponibilidade"])->name("agendamentos.verificar-disponibilidade");
+    Route::get("agendamentos/{agendamento}", [AgendamentoController::class, "show"])->name("agendamentos.show");
+    Route::get("agendamentos/{agendamento}/editar", [AgendamentoController::class, "edit"])->name("agendamentos.edit");
+    Route::put("agendamentos/{agendamento}", [AgendamentoController::class, "update"])->name("agendamentos.update");
+    Route::delete("agendamentos/{agendamento}", [AgendamentoController::class, "destroy"])->name("agendamentos.destroy");
+
+    // Rotas de Gerenciamento de Agendamentos (APENAS para Diretor Geral)
+    Route::middleware(['diretor-geral'])->group(function () {
+        Route::get("gerenciar-agendamentos", [AgendamentoController::class, "gerenciar"])->name("agendamentos.gerenciar");
+        Route::post("agendamentos/{agendamento}/aprovar", [AgendamentoController::class, "aprovar"])->name("agendamentos.aprovar");
+        Route::post("agendamentos/{agendamento}/rejeitar", [AgendamentoController::class, "rejeitar"])->name("agendamentos.rejeitar");
     });
 });
 

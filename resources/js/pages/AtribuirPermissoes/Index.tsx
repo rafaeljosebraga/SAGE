@@ -3,7 +3,7 @@ import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Head, Link } from '@inertiajs/react';
 import { UserIcon } from 'lucide-react';
-import { type User, type Espaco } from '@/types';
+import { type User, type Espaco, type BreadcrumbItem } from '@/types';
 import { FilterableTable, type ColumnConfig } from '@/components/ui/filterable-table';
 
 interface AtribuirPermissoesIndexProps {
@@ -56,8 +56,12 @@ export default function AtribuirPermissoesIndex({ users, espacos }: AtribuirPerm
         }
     ];
 
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: 'Atribuir Permissões', href: '/atribuir-permissoes' }
+    ];
+
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Atribuir Permissões" />
             <div className="space-y-6">
                 <div>

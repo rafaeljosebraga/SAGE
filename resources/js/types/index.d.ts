@@ -140,3 +140,43 @@ export interface EspacoWithPivot extends Espaco {
 export interface UserWithPivot extends User {
     pivot: EspacoUserPivot;
 }
+
+export interface Agendamento {
+    id: number;
+    espaco_id: number;
+    user_id: number;
+    titulo: string;
+    justificativa: string;
+    data_inicio: string;
+    hora_inicio: string;
+    data_fim: string;
+    hora_fim: string;
+    status: 'pendente' | 'aprovado' | 'rejeitado' | 'cancelado';
+    observacoes?: string;
+    aprovado_por?: number;
+    aprovado_em?: string;
+    motivo_rejeicao?: string;
+    recorrente: boolean;
+    tipo_recorrencia?: 'diaria' | 'semanal' | 'mensal';
+    data_fim_recorrencia?: string;
+    recursos_solicitados?: number[];
+    created_at: string;
+    updated_at: string;
+    espaco?: Espaco;
+    user?: User;
+    aprovadoPor?: User;
+    periodo_formatado?: string;
+    ativo?: boolean;
+}
+
+export interface CalendarEvent {
+    id: number;
+    title: string;
+    start: string;
+    end: string;
+    status: 'pendente' | 'aprovado' | 'rejeitado' | 'cancelado';
+    user: string;
+    espaco: string;
+    justificativa?: string;
+    observacoes?: string;
+}

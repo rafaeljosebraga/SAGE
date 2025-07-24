@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Save, Users, MapPin, Eye, Pencil, X, ImageIcon, ZoomIn } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { FilterableTable, type ColumnConfig } from '@/components/ui/filterable-table';
-import { type User, type Espaco } from '@/types';
+import { type User, type Espaco, type BreadcrumbItem } from '@/types';
 
 interface AtribuirPermissoesCreateProps {
     Users: User[];
@@ -394,10 +394,13 @@ const handleSubmit = (e: React.FormEvent) => {
         }
     ];
 
-
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: 'Atribuir Permissões', href: '/atribuir-permissoes' },
+        { title: 'Atribuir Permissões ao Usuário', href: `/atribuir-permissoes/${usID}/criar` }
+    ];
 
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Atribuir Permissões" />
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
