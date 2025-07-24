@@ -101,10 +101,15 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
 
     // Estado para modal de visualização do dia
     const [dayViewModal, setDayViewModal] = useState<{
-        open: boolean;
-        selectedDate: Date | null;
-        events: Agendamento[];
+    open: boolean;
+    selectedDate: Date | null;
+    events: Agendamento[];
     }>({ open: false, selectedDate: null, events: [] });
+    
+    // Estado para modal de aviso de horário passado
+    const [pastTimeModal, setPastTimeModal] = useState<{
+    open: boolean;
+    }>({ open: false });
 
     // Atualizar viewMode quando filters.view mudar
     useEffect(() => {
@@ -341,7 +346,28 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         });
     };
 
+    // Função para verificar se o horário está no passado
+    const isTimeInPast = (date: Date, timeSlot?: string) => {
+        const now = new Date();
+        const selectedDateTime = new Date(date);
+        
+        if (timeSlot) {
+            const [hours, minutes] = timeSlot.split(':').map(Number);
+            selectedDateTime.setHours(hours, minutes, 0, 0);
+        } else {
+            selectedDateTime.setHours(8, 0, 0, 0); // Horário padrão 08:00
+        }
+        
+        return selectedDateTime <= now;
+    };
+
     const handleDateSelect = (date: Date, timeSlot?: string) => {
+        // Verificar se o horário está no passado
+        if (isTimeInPast(date, timeSlot)) {
+            setPastTimeModal({ open: true });
+            return;
+        }
+
         const selectedDate = format(date, 'yyyy-MM-dd');
         const selectedTime = timeSlot || '08:00';
         const endTime = timeSlot ? 
@@ -410,11 +436,63 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         return auth.user.perfil_acesso === 'diretor_geral' || agendamento.user_id === auth.user.id;
     };
 
+    // Função para validar se data e hora estão no passado
+    const isDateTimeInPast = (date: string, time: string) => {
+        if (!date || !time) return false;
+        
+        const now = new Date();
+        const selectedDateTime = new Date(`${date}T${time}:00`);
+        
+        return selectedDateTime <= now;
+    };
+
+    // Função para obter data mínima (hoje)
+    const getMinDate = () => {
+        const today = new Date();
+        return format(today, 'yyyy-MM-dd');
+    };
+
+    // Função para obter hora mínima baseada na data selecionada
+    const getMinTime = (selectedDate: string) => {
+        const today = new Date();
+        const todayStr = format(today, 'yyyy-MM-dd');
+        
+        // Se a data selecionada for hoje, a hora mínima é a hora atual + 1 minuto
+        if (selectedDate === todayStr) {
+            const nextMinute = new Date(today.getTime() + 60000); // Adiciona 1 minuto
+            return format(nextMinute, 'HH:mm');
+        }
+        
+        // Se for uma data futura, pode começar às 00:00
+        return '00:00';
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         
         if (!formData.titulo || !formData.espaco_id || !formData.justificativa) {
             alert('Por favor, preencha todos os campos obrigatórios.');
+            return;
+        }
+
+        // Validar se data/hora de início está no passado
+        if (isDateTimeInPast(formData.data_inicio, formData.hora_inicio)) {
+            setPastTimeModal({ open: true });
+            return;
+        }
+
+        // Validar se data/hora de fim está no passado
+        if (isDateTimeInPast(formData.data_fim, formData.hora_fim)) {
+            setPastTimeModal({ open: true });
+            return;
+        }
+
+        // Validar se data/hora de fim é anterior à de início
+        const dataInicio = new Date(`${formData.data_inicio}T${formData.hora_inicio}:00`);
+        const dataFim = new Date(`${formData.data_fim}T${formData.hora_fim}:00`);
+        
+        if (dataFim <= dataInicio) {
+            alert('A data e hora de fim deve ser posterior à data e hora de início.');
             return;
         }
 
@@ -1305,6 +1383,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                         type="date"
                                         value={formData.data_inicio}
                                         onChange={(e) => setFormData({ ...formData, data_inicio: e.target.value })}
+                                        min={getMinDate()}
                                         required
                                     />
                                 </div>
@@ -1316,6 +1395,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                         type="time"
                                         value={formData.hora_inicio}
                                         onChange={(e) => setFormData({ ...formData, hora_inicio: e.target.value })}
+                                        min={formData.data_inicio ? getMinTime(formData.data_inicio) : undefined}
                                         required
                                     />
                                 </div>
@@ -1327,6 +1407,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                         type="date"
                                         value={formData.data_fim}
                                         onChange={(e) => setFormData({ ...formData, data_fim: e.target.value })}
+                                        min={formData.data_inicio || getMinDate()}
                                         required
                                     />
                                 </div>
@@ -1338,6 +1419,11 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                         type="time"
                                         value={formData.hora_fim}
                                         onChange={(e) => setFormData({ ...formData, hora_fim: e.target.value })}
+                                        min={
+                                            formData.data_fim === formData.data_inicio && formData.hora_inicio
+                                                ? formData.hora_inicio
+                                                : formData.data_fim ? getMinTime(formData.data_fim) : undefined
+                                        }
                                         required
                                     />
                                 </div>
@@ -1599,6 +1685,34 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
+
+                {/* Modal de Aviso de Horário Passado */}
+                <Dialog open={pastTimeModal.open} onOpenChange={(open) => setPastTimeModal({ open })}>
+                    <DialogContent className="max-w-md">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                                <AlertTriangle className="h-5 w-5 text-red-600" />
+                                Horário Inválido
+                            </DialogTitle>
+                        </DialogHeader>
+
+                        <div className="py-4">
+                            <p className="text-center text-muted-foreground">
+                                Não é possível agendar no passado. Por favor, selecione um horário futuro.
+                            </p>
+                        </div>
+
+                        <DialogFooter>
+                            <Button 
+                                onClick={() => setPastTimeModal({ open: false })}
+                                className="w-full"
+                            >
+                                OK
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
             </div>
         </AppLayout>
     );
