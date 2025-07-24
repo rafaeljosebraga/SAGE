@@ -65,6 +65,8 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
     }, [isModalOpen, scrollToResponsaveis]);
 
     const handleViewDetails = (espaco: Espaco) => {
+
+        console.log("ABRINDO MODAL DE DETALHES");
         setSelectedEspaco(espaco);
         setIsModalOpen(true);
         setScrollToResponsaveis(false);
@@ -77,6 +79,8 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
     };
 
     const closeModal = () => {
+
+        console.log("Matando o modal");
         setIsModalOpen(false);
         setSelectedEspaco(null);
         setScrollToResponsaveis(false);
@@ -370,8 +374,8 @@ const handleSubmit = (e: React.FormEvent) => {
             )
         },
         {
-            key: 'acoes',
-            label: 'Ações',
+            key: 'Visualizar',
+            label: 'Ação',
             searchable: false,
             sortable: false,
             render: (value, espaco) => (
@@ -379,6 +383,7 @@ const handleSubmit = (e: React.FormEvent) => {
                     <Button
                         variant="outline"
                         size="sm"
+                        type="button"
                         onClick={() => handleViewDetails(espaco)}
                         className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-blue-700 dark:text-blue-700"
                     >
