@@ -29,15 +29,15 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'pendente':
-                return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+                return 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 border-orange-200 dark:border-orange-700';
             case 'aprovado':
-                return 'bg-green-100 text-green-800 border-green-200';
+                return 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-700';
             case 'rejeitado':
-                return 'bg-red-100 text-red-800 border-red-200';
+                return 'bg-rose-100 dark:bg-rose-900/30 text-rose-800 dark:text-rose-200 border-rose-200 dark:border-rose-700';
             case 'cancelado':
-                return 'bg-gray-100 text-gray-800 border-gray-200';
+                return 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600';
             default:
-                return 'bg-gray-100 text-gray-800 border-gray-200';
+                return 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600';
         }
     };
 
@@ -54,6 +54,131 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
             default:
                 return status;
         }
+    };
+
+    // Função para gerar hash simples de uma string
+    const generateHash = (str: string) => {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            const char = str.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash; // Convert to 32bit integer
+        }
+        return Math.abs(hash);
+    };
+
+    // Paleta de cores 
+    const colorPalette = [
+        // Blues 
+        { bg: 'bg-blue-100 dark:bg-blue-600', border: 'border-l-blue-400' },
+        { bg: 'bg-blue-200 dark:bg-blue-700', border: 'border-l-blue-500' },
+        { bg: 'bg-blue-300 dark:bg-blue-800', border: 'border-l-blue-600' },
+        { bg: 'bg-sky-100 dark:bg-sky-600', border: 'border-l-sky-400' },
+        { bg: 'bg-sky-200 dark:bg-sky-700', border: 'border-l-sky-500' },
+        { bg: 'bg-sky-300 dark:bg-sky-800', border: 'border-l-sky-600' },
+        { bg: 'bg-cyan-100 dark:bg-cyan-600', border: 'border-l-cyan-400' },
+        { bg: 'bg-cyan-200 dark:bg-cyan-700', border: 'border-l-cyan-500' },
+        { bg: 'bg-cyan-300 dark:bg-cyan-800', border: 'border-l-cyan-600' },
+        
+        // Purples 
+        { bg: 'bg-purple-100 dark:bg-purple-600', border: 'border-l-purple-400' },
+        { bg: 'bg-purple-200 dark:bg-purple-700', border: 'border-l-purple-500' },
+        { bg: 'bg-purple-300 dark:bg-purple-800', border: 'border-l-purple-600' },
+        { bg: 'bg-violet-100 dark:bg-violet-600', border: 'border-l-violet-400' },
+        { bg: 'bg-violet-200 dark:bg-violet-700', border: 'border-l-violet-500' },
+        { bg: 'bg-violet-300 dark:bg-violet-800', border: 'border-l-violet-600' },
+        { bg: 'bg-indigo-100 dark:bg-indigo-600', border: 'border-l-indigo-400' },
+        { bg: 'bg-indigo-200 dark:bg-indigo-700', border: 'border-l-indigo-500' },
+        { bg: 'bg-indigo-300 dark:bg-indigo-800', border: 'border-l-indigo-600' },
+        
+        // Pinks
+        { bg: 'bg-pink-100 dark:bg-pink-600', border: 'border-l-pink-400' },
+        { bg: 'bg-pink-200 dark:bg-pink-700', border: 'border-l-pink-500' },
+        { bg: 'bg-pink-300 dark:bg-pink-800', border: 'border-l-pink-600' },
+        { bg: 'bg-rose-100 dark:bg-rose-600', border: 'border-l-rose-400' },
+        { bg: 'bg-rose-200 dark:bg-rose-700', border: 'border-l-rose-500' },
+        { bg: 'bg-rose-300 dark:bg-rose-800', border: 'border-l-rose-600' },
+        { bg: 'bg-fuchsia-100 dark:bg-fuchsia-600', border: 'border-l-fuchsia-400' },
+        { bg: 'bg-fuchsia-200 dark:bg-fuchsia-700', border: 'border-l-fuchsia-500' },
+        { bg: 'bg-fuchsia-300 dark:bg-fuchsia-800', border: 'border-l-fuchsia-600' },
+        
+        // Greens
+        { bg: 'bg-green-100 dark:bg-green-600', border: 'border-l-green-400' },
+        { bg: 'bg-green-200 dark:bg-green-700', border: 'border-l-green-500' },
+        { bg: 'bg-green-300 dark:bg-green-800', border: 'border-l-green-600' },
+        { bg: 'bg-emerald-100 dark:bg-emerald-600', border: 'border-l-emerald-400' },
+        { bg: 'bg-emerald-200 dark:bg-emerald-700', border: 'border-l-emerald-500' },
+        { bg: 'bg-emerald-300 dark:bg-emerald-800', border: 'border-l-emerald-600' },
+        { bg: 'bg-teal-100 dark:bg-teal-600', border: 'border-l-teal-400' },
+        { bg: 'bg-teal-200 dark:bg-teal-700', border: 'border-l-teal-500' },
+        { bg: 'bg-teal-300 dark:bg-teal-800', border: 'border-l-teal-600' },
+        
+        // Yellows
+        { bg: 'bg-yellow-100 dark:bg-yellow-600', border: 'border-l-yellow-400' },
+        { bg: 'bg-yellow-200 dark:bg-yellow-700', border: 'border-l-yellow-500' },
+        { bg: 'bg-yellow-300 dark:bg-yellow-800', border: 'border-l-yellow-600' },
+        { bg: 'bg-amber-100 dark:bg-amber-600', border: 'border-l-amber-400' },
+        { bg: 'bg-amber-200 dark:bg-amber-700', border: 'border-l-amber-500' },
+        { bg: 'bg-amber-300 dark:bg-amber-800', border: 'border-l-amber-600' },
+        { bg: 'bg-orange-100 dark:bg-orange-600', border: 'border-l-orange-400' },
+        { bg: 'bg-orange-200 dark:bg-orange-700', border: 'border-l-orange-500' },
+        { bg: 'bg-orange-300 dark:bg-orange-800', border: 'border-l-orange-600' },
+        
+        // Reds 
+        { bg: 'bg-red-100 dark:bg-red-600', border: 'border-l-red-400' },
+        { bg: 'bg-red-200 dark:bg-red-700', border: 'border-l-red-500' },
+        { bg: 'bg-red-300 dark:bg-red-800', border: 'border-l-red-600' },
+        
+        // Limes 
+        { bg: 'bg-lime-100 dark:bg-lime-600', border: 'border-l-lime-400' },
+        { bg: 'bg-lime-200 dark:bg-lime-700', border: 'border-l-lime-500' },
+        { bg: 'bg-lime-300 dark:bg-lime-800', border: 'border-l-lime-600' },
+        
+        // Tons neutros 
+        { bg: 'bg-slate-100 dark:bg-slate-600', border: 'border-l-slate-400' },
+        { bg: 'bg-slate-200 dark:bg-slate-700', border: 'border-l-slate-500' },
+        { bg: 'bg-stone-100 dark:bg-stone-600', border: 'border-l-stone-400' },
+        { bg: 'bg-stone-200 dark:bg-stone-700', border: 'border-l-stone-500' },
+        { bg: 'bg-zinc-100 dark:bg-zinc-600', border: 'border-l-zinc-400' },
+        { bg: 'bg-zinc-200 dark:bg-zinc-700', border: 'border-l-zinc-500' },
+        
+        // Tons vibrantes 
+        { bg: 'bg-blue-400 dark:bg-blue-500', border: 'border-l-blue-600' },
+        { bg: 'bg-purple-400 dark:bg-purple-500', border: 'border-l-purple-600' },
+        { bg: 'bg-pink-400 dark:bg-pink-500', border: 'border-l-pink-600' },
+        { bg: 'bg-green-400 dark:bg-green-500', border: 'border-l-green-600' },
+        { bg: 'bg-yellow-400 dark:bg-yellow-500', border: 'border-l-yellow-600' },
+        { bg: 'bg-red-400 dark:bg-red-500', border: 'border-l-red-600' },
+        { bg: 'bg-indigo-400 dark:bg-indigo-500', border: 'border-l-indigo-600' },
+        { bg: 'bg-teal-400 dark:bg-teal-500', border: 'border-l-teal-600' },
+        { bg: 'bg-cyan-400 dark:bg-cyan-500', border: 'border-l-cyan-600' },
+        { bg: 'bg-emerald-400 dark:bg-emerald-500', border: 'border-l-emerald-600' },
+    ];
+
+    // Função para verificar se um agendamento já passou
+    const isEventPast = (agendamento: Agendamento) => {
+        try {
+            const eventDateTime = new Date(`${agendamento.data_fim}T${agendamento.hora_fim}`);
+            return eventDateTime < new Date();
+        } catch {
+            return false;
+        }
+    };
+
+    // Função para obter cor do agendamento baseada em hash
+    const getEventBorderColor = (agendamento: Agendamento) => {
+        // Se o evento já passou, usar cinza
+        if (isEventPast(agendamento)) {
+            return 'border-l-4 border-l-gray-500';
+        }
+
+        // Gerar hash baseado na data e hora do agendamento
+        const hashString = `${agendamento.data_inicio}-${agendamento.hora_inicio}`;
+        const hash = generateHash(hashString);
+        const colorIndex = hash % colorPalette.length;
+        const color = colorPalette[colorIndex];
+        
+        return `border-l-4 ${color.border}`;
     };
 
     const handleDelete = () => {
@@ -222,7 +347,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                     {/* Informações Principais */}
                     <div className="lg:col-span-2 space-y-6">
                         {/* Detalhes do Agendamento */}
-                        <Card>
+                        <Card className={getEventBorderColor(agendamento)}>
                             <CardHeader>
                                 <CardTitle>Informações do Agendamento</CardTitle>
                             </CardHeader>
@@ -319,12 +444,18 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                         </Card>
 
                         {/* Status e Aprovação */}
-                        {(agendamento.status === 'rejeitado' || agendamento.status === 'aprovado') && (
-                            <Card>
+                        {(agendamento.status === 'rejeitado' || agendamento.status === 'aprovado' || agendamento.status === 'cancelado') && (
+                            <Card className={`border-l-4 ${
+                                agendamento.status === 'aprovado' ? 'border-l-emerald-500' : 
+                                agendamento.status === 'rejeitado' ? 'border-l-rose-500' : 
+                                'border-l-slate-500'
+                            }`}>
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2">
                                         <MessageSquare className="h-5 w-5" />
-                                        {agendamento.status === 'aprovado' ? 'Aprovação' : 'Rejeição'}
+                                        {agendamento.status === 'aprovado' ? 'Aprovação' : 
+                                         agendamento.status === 'rejeitado' ? 'Rejeição' : 
+                                         'Cancelamento'}
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-4">

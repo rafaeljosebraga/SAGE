@@ -85,6 +85,13 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         formData: any;
     }>({ open: false, conflitos: [], formData: null });
 
+    // Estado para modal de visualização do dia
+    const [dayViewModal, setDayViewModal] = useState<{
+        open: boolean;
+        selectedDate: Date | null;
+        events: Agendamento[];
+    }>({ open: false, selectedDate: null, events: [] });
+
     // Atualizar viewMode quando filters.view mudar
     useEffect(() => {
         if (filters.view === 'list') {
@@ -96,16 +103,141 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'pendente':
-                return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 border-yellow-200 dark:border-yellow-700';
+                return 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 border-orange-200 dark:border-orange-700';
             case 'aprovado':
-                return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 border-green-200 dark:border-green-700';
+                return 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-700';
             case 'rejeitado':
-                return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 border-red-200 dark:border-red-700';
+                return 'bg-rose-100 dark:bg-rose-900/30 text-rose-800 dark:text-rose-200 border-rose-200 dark:border-rose-700';
             case 'cancelado':
-                return 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-600';
+                return 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600';
             default:
-                return 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-600';
+                return 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600';
         }
+    };
+
+    // Função para gerar hash simples de uma string
+    const generateHash = (str: string) => {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            const char = str.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash; // Convert to 32bit integer
+        }
+        return Math.abs(hash);
+    };
+
+    // Paleta de cores 
+    const colorPalette = [
+        // Blues 
+        { bg: 'bg-blue-100 dark:bg-blue-600', text: 'text-blue-900 dark:text-blue-50' },
+        { bg: 'bg-blue-200 dark:bg-blue-700', text: 'text-blue-900 dark:text-blue-50' },
+        { bg: 'bg-blue-300 dark:bg-blue-800', text: 'text-blue-900 dark:text-blue-100' },
+        { bg: 'bg-sky-100 dark:bg-sky-600', text: 'text-sky-900 dark:text-sky-50' },
+        { bg: 'bg-sky-200 dark:bg-sky-700', text: 'text-sky-900 dark:text-sky-50' },
+        { bg: 'bg-sky-300 dark:bg-sky-800', text: 'text-sky-900 dark:text-sky-100' },
+        { bg: 'bg-cyan-100 dark:bg-cyan-600', text: 'text-cyan-900 dark:text-cyan-50' },
+        { bg: 'bg-cyan-200 dark:bg-cyan-700', text: 'text-cyan-900 dark:text-cyan-50' },
+        { bg: 'bg-cyan-300 dark:bg-cyan-800', text: 'text-cyan-900 dark:text-cyan-100' },
+        
+        // Purples 
+        { bg: 'bg-purple-100 dark:bg-purple-600', text: 'text-purple-900 dark:text-purple-50' },
+        { bg: 'bg-purple-200 dark:bg-purple-700', text: 'text-purple-900 dark:text-purple-50' },
+        { bg: 'bg-purple-300 dark:bg-purple-800', text: 'text-purple-900 dark:text-purple-100' },
+        { bg: 'bg-violet-100 dark:bg-violet-600', text: 'text-violet-900 dark:text-violet-50' },
+        { bg: 'bg-violet-200 dark:bg-violet-700', text: 'text-violet-900 dark:text-violet-50' },
+        { bg: 'bg-violet-300 dark:bg-violet-800', text: 'text-violet-900 dark:text-violet-100' },
+        { bg: 'bg-indigo-100 dark:bg-indigo-600', text: 'text-indigo-900 dark:text-indigo-50' },
+        { bg: 'bg-indigo-200 dark:bg-indigo-700', text: 'text-indigo-900 dark:text-indigo-50' },
+        { bg: 'bg-indigo-300 dark:bg-indigo-800', text: 'text-indigo-900 dark:text-indigo-100' },
+        
+        // Pinks 
+        { bg: 'bg-pink-100 dark:bg-pink-600', text: 'text-pink-900 dark:text-pink-50' },
+        { bg: 'bg-pink-200 dark:bg-pink-700', text: 'text-pink-900 dark:text-pink-50' },
+        { bg: 'bg-pink-300 dark:bg-pink-800', text: 'text-pink-900 dark:text-pink-100' },
+        { bg: 'bg-rose-100 dark:bg-rose-600', text: 'text-rose-900 dark:text-rose-50' },
+        { bg: 'bg-rose-200 dark:bg-rose-700', text: 'text-rose-900 dark:text-rose-50' },
+        { bg: 'bg-rose-300 dark:bg-rose-800', text: 'text-rose-900 dark:text-rose-100' },
+        { bg: 'bg-fuchsia-100 dark:bg-fuchsia-600', text: 'text-fuchsia-900 dark:text-fuchsia-50' },
+        { bg: 'bg-fuchsia-200 dark:bg-fuchsia-700', text: 'text-fuchsia-900 dark:text-fuchsia-50' },
+        { bg: 'bg-fuchsia-300 dark:bg-fuchsia-800', text: 'text-fuchsia-900 dark:text-fuchsia-100' },
+        
+        // Greens 
+        { bg: 'bg-green-100 dark:bg-green-600', text: 'text-green-900 dark:text-green-50' },
+        { bg: 'bg-green-200 dark:bg-green-700', text: 'text-green-900 dark:text-green-50' },
+        { bg: 'bg-green-300 dark:bg-green-800', text: 'text-green-900 dark:text-green-100' },
+        { bg: 'bg-emerald-100 dark:bg-emerald-600', text: 'text-emerald-900 dark:text-emerald-50' },
+        { bg: 'bg-emerald-200 dark:bg-emerald-700', text: 'text-emerald-900 dark:text-emerald-50' },
+        { bg: 'bg-emerald-300 dark:bg-emerald-800', text: 'text-emerald-900 dark:text-emerald-100' },
+        { bg: 'bg-teal-100 dark:bg-teal-600', text: 'text-teal-900 dark:text-teal-50' },
+        { bg: 'bg-teal-200 dark:bg-teal-700', text: 'text-teal-900 dark:text-teal-50' },
+        { bg: 'bg-teal-300 dark:bg-teal-800', text: 'text-teal-900 dark:text-teal-100' },
+        
+        // Yellows
+        { bg: 'bg-yellow-100 dark:bg-yellow-600', text: 'text-yellow-900 dark:text-yellow-50' },
+        { bg: 'bg-yellow-200 dark:bg-yellow-700', text: 'text-yellow-900 dark:text-yellow-50' },
+        { bg: 'bg-yellow-300 dark:bg-yellow-800', text: 'text-yellow-900 dark:text-yellow-100' },
+        { bg: 'bg-amber-100 dark:bg-amber-600', text: 'text-amber-900 dark:text-amber-50' },
+        { bg: 'bg-amber-200 dark:bg-amber-700', text: 'text-amber-900 dark:text-amber-50' },
+        { bg: 'bg-amber-300 dark:bg-amber-800', text: 'text-amber-900 dark:text-amber-100' },
+        { bg: 'bg-orange-100 dark:bg-orange-600', text: 'text-orange-900 dark:text-orange-50' },
+        { bg: 'bg-orange-200 dark:bg-orange-700', text: 'text-orange-900 dark:text-orange-50' },
+        { bg: 'bg-orange-300 dark:bg-orange-800', text: 'text-orange-900 dark:text-orange-100' },
+        
+        // Reds 
+        { bg: 'bg-red-100 dark:bg-red-600', text: 'text-red-900 dark:text-red-50' },
+        { bg: 'bg-red-200 dark:bg-red-700', text: 'text-red-900 dark:text-red-50' },
+        { bg: 'bg-red-300 dark:bg-red-800', text: 'text-red-900 dark:text-red-100' },
+        
+        // Limes
+        { bg: 'bg-lime-100 dark:bg-lime-600', text: 'text-lime-900 dark:text-lime-50' },
+        { bg: 'bg-lime-200 dark:bg-lime-700', text: 'text-lime-900 dark:text-lime-50' },
+        { bg: 'bg-lime-300 dark:bg-lime-800', text: 'text-lime-900 dark:text-lime-100' },
+        
+        // Tons neutros 
+        { bg: 'bg-slate-100 dark:bg-slate-600', text: 'text-slate-900 dark:text-slate-50' },
+        { bg: 'bg-slate-200 dark:bg-slate-700', text: 'text-slate-900 dark:text-slate-50' },
+        { bg: 'bg-stone-100 dark:bg-stone-600', text: 'text-stone-900 dark:text-stone-50' },
+        { bg: 'bg-stone-200 dark:bg-stone-700', text: 'text-stone-900 dark:text-stone-50' },
+        { bg: 'bg-zinc-100 dark:bg-zinc-600', text: 'text-zinc-900 dark:text-zinc-50' },
+        { bg: 'bg-zinc-200 dark:bg-zinc-700', text: 'text-zinc-900 dark:text-zinc-50' },
+        
+        // Tons vibrantes 
+        { bg: 'bg-blue-400 dark:bg-blue-500', text: 'text-blue-900 dark:text-blue-50' },
+        { bg: 'bg-purple-400 dark:bg-purple-500', text: 'text-purple-900 dark:text-purple-50' },
+        { bg: 'bg-pink-400 dark:bg-pink-500', text: 'text-pink-900 dark:text-pink-50' },
+        { bg: 'bg-green-400 dark:bg-green-500', text: 'text-green-900 dark:text-green-50' },
+        { bg: 'bg-yellow-400 dark:bg-yellow-500', text: 'text-yellow-900 dark:text-yellow-50' },
+        { bg: 'bg-red-400 dark:bg-red-500', text: 'text-red-900 dark:text-red-50' },
+        { bg: 'bg-indigo-400 dark:bg-indigo-500', text: 'text-indigo-900 dark:text-indigo-50' },
+        { bg: 'bg-teal-400 dark:bg-teal-500', text: 'text-teal-900 dark:text-teal-50' },
+        { bg: 'bg-cyan-400 dark:bg-cyan-500', text: 'text-cyan-900 dark:text-cyan-50' },
+        { bg: 'bg-emerald-400 dark:bg-emerald-500', text: 'text-emerald-900 dark:text-emerald-50' },
+    ];
+
+    // Função para verificar se um agendamento já passou
+    const isEventPast = (agendamento: Agendamento) => {
+        try {
+            const eventDateTime = new Date(`${agendamento.data_fim}T${agendamento.hora_fim}`);
+            return eventDateTime < new Date();
+        } catch {
+            return false;
+        }
+    };
+
+    // Função para obter cor do agendamento baseada em hash
+    const getEventColor = (agendamento: Agendamento) => {
+        // Se o evento já passou, usar cinza
+        if (isEventPast(agendamento)) {
+            return 'bg-gray-300 dark:bg-gray-600/80 text-gray-900 dark:text-gray-100';
+        }
+
+        // Gerar hash baseado na data e hora do agendamento
+        const hashString = `${agendamento.data_inicio}-${agendamento.hora_inicio}`;
+        const hash = generateHash(hashString);
+        const colorIndex = hash % colorPalette.length;
+        const color = colorPalette[colorIndex];
+        
+        return `${color.bg} ${color.text}`;
     };
 
     const getStatusBgColor = (status: string) => {
@@ -141,15 +273,35 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     const getStatusIcon = (status: string) => {
         switch (status) {
             case 'pendente':
-                return <Clock3 className="h-3 w-3 text-yellow-600 dark:text-yellow-400" />;
+                return (
+                    <div className="w-4 h-4 rounded-full bg-orange-500 dark:bg-orange-400 flex items-center justify-center shadow-sm shrink-0">
+                        <Clock3 className="h-2.5 w-2.5 text-white dark:text-orange-900" />
+                    </div>
+                );
             case 'aprovado':
-                return <CheckCircle className="h-3 w-3 text-green-600 dark:text-green-400" />;
+                return (
+                    <div className="w-4 h-4 rounded-full bg-emerald-500 dark:bg-emerald-400 flex items-center justify-center shadow-sm shrink-0">
+                        <CheckCircle className="h-2.5 w-2.5 text-white dark:text-emerald-900" />
+                    </div>
+                );
             case 'rejeitado':
-                return <XCircle className="h-3 w-3 text-red-600 dark:text-red-400" />;
+                return (
+                    <div className="w-4 h-4 rounded-full bg-red-500 dark:bg-red-400 flex items-center justify-center shadow-sm shrink-0">
+                        <XCircle className="h-2.5 w-2.5 text-white dark:text-red-900" />
+                    </div>
+                );
             case 'cancelado':
-                return <Ban className="h-3 w-3 text-gray-600 dark:text-gray-400" />;
+                return (
+                    <div className="w-4 h-4 rounded-full bg-gray-500 dark:bg-gray-400 flex items-center justify-center shadow-sm shrink-0">
+                        <Ban className="h-2.5 w-2.5 text-white dark:text-gray-900" />
+                    </div>
+                );
             default:
-                return <Clock3 className="h-3 w-3 text-gray-600 dark:text-gray-400" />;
+                return (
+                    <div className="w-4 h-4 rounded-full bg-gray-500 dark:bg-gray-400 flex items-center justify-center shadow-sm shrink-0">
+                        <Clock3 className="h-2.5 w-2.5 text-white dark:text-gray-900" />
+                    </div>
+                );
         }
     };
 
@@ -304,6 +456,19 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
 
     const handleEventClick = (agendamento: Agendamento) => {
         router.get(`/agendamentos/${agendamento.id}`);
+    };
+
+    // Função para abrir modal de visualização do dia
+    const handleDayClick = (date: Date, events: Agendamento[]) => {
+        if (events.length > 0) {
+            setDayViewModal({
+                open: true,
+                selectedDate: date,
+                events: events.sort((a, b) => a.hora_inicio.localeCompare(b.hora_inicio))
+            });
+        } else {
+            handleDateSelect(date);
+        }
     };
 
     const handleDelete = (agendamento: Agendamento) => {
@@ -466,7 +631,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                     ? 'ring-2 ring-primary shadow-md border-primary/50' 
                                     : 'hover:shadow-sm'
                             }`}
-                            onClick={() => handleDateSelect(day)}
+                            onClick={() => handleDayClick(day, dayEvents)}
                         >
                             <div className={`text-sm font-medium mb-1 ${
                                 isCurrentMonth ? 'text-foreground' : 'text-muted-foreground'
@@ -478,7 +643,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                 {dayEvents.slice(0, 3).map((event) => (
                                     <div
                                         key={event.id}
-                                        className={`text-xs p-1 rounded cursor-pointer transition-opacity hover:opacity-80 ${getStatusBgColor(event.status)}`}
+                                        className={`text-xs p-1 rounded cursor-pointer transition-opacity hover:opacity-80 ${getEventColor(event)}`}
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             handleEventClick(event);
@@ -560,7 +725,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                     {events.map((event) => (
                                         <div
                                             key={event.id}
-                                            className={`text-xs p-1 rounded mb-1 cursor-pointer transition-opacity hover:opacity-80 relative ${getStatusBgColor(event.status)}`}
+                                            className={`text-xs p-1 rounded mb-1 cursor-pointer transition-opacity hover:opacity-80 relative ${getEventColor(event)}`}
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 handleEventClick(event);
@@ -620,7 +785,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                         events.map((event) => (
                                             <div
                                                 key={event.id}
-                                                className={`p-3 rounded-lg cursor-pointer transition-opacity hover:opacity-80 ${getStatusBgColor(event.status)}`}
+                                                className={`p-3 rounded-lg cursor-pointer transition-opacity hover:opacity-80 ${getEventColor(event)}`}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     handleEventClick(event);
@@ -750,7 +915,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                                 {dayEvents.map((event) => (
                                                     <div
                                                         key={event.id}
-                                                        className={`text-xs p-1 rounded cursor-pointer transition-opacity hover:opacity-80 relative ${getStatusBgColor(event.status)}`}
+                                                        className={`text-xs p-1 rounded cursor-pointer transition-opacity hover:opacity-80 relative ${getEventColor(event)}`}
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             handleEventClick(event);
@@ -1121,26 +1286,26 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                     <Label>Legenda</Label>
                                     <div className="space-y-2 mt-2">
                                         <div className="flex items-center gap-2">
-                                            <div className="w-4 h-4 rounded bg-yellow-300 dark:bg-yellow-600/80 border border-yellow-400 dark:border-yellow-500 flex items-center justify-center">
-                                                <Clock3 className="h-2.5 w-2.5 text-yellow-700 dark:text-yellow-300" />
+                                            <div className="w-4 h-4 rounded-full bg-orange-500 dark:bg-orange-400 flex items-center justify-center shadow-sm">
+                                                <Clock3 className="h-2.5 w-2.5 text-white dark:text-orange-900" />
                                             </div>
                                             <span className="text-sm">Pendente</span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <div className="w-4 h-4 rounded bg-green-300 dark:bg-green-600/80 border border-green-400 dark:border-green-500 flex items-center justify-center">
-                                                <CheckCircle className="h-2.5 w-2.5 text-green-700 dark:text-green-300" />
+                                            <div className="w-4 h-4 rounded-full bg-emerald-500 dark:bg-emerald-400 flex items-center justify-center shadow-sm">
+                                                <CheckCircle className="h-2.5 w-2.5 text-white dark:text-emerald-900" />
                                             </div>
                                             <span className="text-sm">Aprovado</span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <div className="w-4 h-4 rounded bg-red-300 dark:bg-red-600/80 border border-red-400 dark:border-red-500 flex items-center justify-center">
-                                                <XCircle className="h-2.5 w-2.5 text-red-700 dark:text-red-300" />
+                                            <div className="w-4 h-4 rounded-full bg-red-500 dark:bg-red-400 flex items-center justify-center shadow-sm">
+                                                <XCircle className="h-2.5 w-2.5 text-white dark:text-red-900" />
                                             </div>
                                             <span className="text-sm">Rejeitado</span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <div className="w-4 h-4 rounded bg-gray-300 dark:bg-gray-600/80 border border-gray-400 dark:border-gray-500 flex items-center justify-center">
-                                                <Ban className="h-2.5 w-2.5 text-gray-700 dark:text-gray-300" />
+                                            <div className="w-4 h-4 rounded-full bg-gray-500 dark:bg-gray-400 flex items-center justify-center shadow-sm">
+                                                <Ban className="h-2.5 w-2.5 text-white dark:text-gray-900" />
                                             </div>
                                             <span className="text-sm">Cancelado</span>
                                         </div>
@@ -1401,6 +1566,134 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                 onClick={handleConflictSubmit}
                             >
                                 Solicitar Prioridade
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Modal de Visualização do Dia */}
+                <Dialog open={dayViewModal.open} onOpenChange={(open) => setDayViewModal({ ...dayViewModal, open })}>
+                    <DialogContent className="max-w-4xl max-h-[90vh] rounded-2xl flex flex-col">
+                        <DialogHeader className="flex-shrink-0 pb-4">
+                            <DialogTitle className="flex items-center gap-2">
+                                <Calendar className="h-5 w-5" />
+                                {dayViewModal.selectedDate && format(dayViewModal.selectedDate, 'EEEE, dd \'de\' MMMM \'de\' yyyy', { locale: ptBR })}
+                            </DialogTitle>
+                            <DialogDescription>
+                                {dayViewModal.events.length} agendamento(s) para este dia
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="flex-1 overflow-y-auto px-1 min-h-0">
+                            {dayViewModal.events.length === 0 ? (
+                                <div className="text-center py-8 text-muted-foreground">
+                                    <Calendar className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                                    <p>Nenhum agendamento para este dia</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    {dayViewModal.events.map((event) => (
+                                        <div
+                                            key={event.id}
+                                            className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:shadow-md ${getEventColor(event)} border-border/20`}
+                                            onClick={() => {
+                                                setDayViewModal({ open: false, selectedDate: null, events: [] });
+                                                handleEventClick(event);
+                                            }}
+                                        >
+                                            <div className="flex items-start justify-between gap-4">
+                                                <div className="flex-1 space-y-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <h3 className="font-semibold text-lg">{event.titulo}</h3>
+                                                        <Badge className={getStatusColor(event.status)}>
+                                                            <span className="flex items-center gap-1">
+                                                                {getStatusIcon(event.status)}
+                                                                {getStatusText(event.status)}
+                                                            </span>
+                                                        </Badge>
+                                                    </div>
+
+                                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                                        <div className="flex items-center gap-2">
+                                                            <Clock className="h-4 w-4 text-muted-foreground" />
+                                                            <span>{event.hora_inicio.substring(0, 5)} - {event.hora_fim.substring(0, 5)}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                                                            <span>{event.espaco?.nome || 'Espaço não encontrado'}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <User className="h-4 w-4 text-muted-foreground" />
+                                                            <span>{event.user?.name || 'Usuário não encontrado'}</span>
+                                                        </div>
+                                                    </div>
+
+                                                    {event.justificativa && (
+                                                        <p className="text-sm text-foreground">
+                                                            <strong className="text-foreground">Justificativa:</strong> {event.justificativa}
+                                                        </p>
+                                                    )}
+
+                                                    {event.observacoes && (
+                                                        <p className="text-sm text-foreground">
+                                                            <strong className="text-foreground">Observações:</strong> {event.observacoes}
+                                                        </p>
+                                                    )}
+                                                </div>
+
+                                                <div className="flex items-center gap-2">
+                                                    <Button variant="outline" size="sm" asChild>
+                                                        <Link href={`/agendamentos/${event.id}`}>
+                                                            <Eye className="h-4 w-4" />
+                                                        </Link>
+                                                    </Button>
+
+                                                    {canEdit(event) && (
+                                                        <Button variant="outline" size="sm" asChild>
+                                                            <Link href={`/agendamentos/${event.id}/editar`}>
+                                                                <Edit className="h-4 w-4" />
+                                                            </Link>
+                                                        </Button>
+                                                    )}
+
+                                                    {canDelete(event) && (
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleDelete(event);
+                                                            }}
+                                                            className="text-red-600 hover:text-red-700"
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                        
+                        <DialogFooter className="flex-shrink-0 border-t pt-4 mt-4">
+                            <Button 
+                                variant="outline" 
+                                onClick={() => setDayViewModal({ open: false, selectedDate: null, events: [] })}
+                            >
+                                Fechar
+                            </Button>
+                            <Button 
+                                onClick={() => {
+                                    setDayViewModal({ open: false, selectedDate: null, events: [] });
+                                    if (dayViewModal.selectedDate) {
+                                        handleDateSelect(dayViewModal.selectedDate);
+                                    }
+                                }}
+                            >
+                                <Plus className="h-4 w-4 mr-2" />
+                                Novo Agendamento
                             </Button>
                         </DialogFooter>
                     </DialogContent>
