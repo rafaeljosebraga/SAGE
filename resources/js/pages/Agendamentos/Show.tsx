@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
-import type { PageProps, Agendamento, Foto } from '@/types';
+import type { PageProps, Agendamento, Foto, BreadcrumbItem } from '@/types';
 
 interface Props extends PageProps {
     agendamento: Agendamento;
@@ -293,8 +293,13 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
         setSelectedFoto(null);
     };
 
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: 'Agendamentos', href: '/agendamentos' },
+        { title: 'Detalhes do Agendamento', href: `/agendamentos/${agendamento.id}` }
+    ];
+
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Agendamento - ${agendamento.titulo}`} />
 
             <div className="space-y-6">

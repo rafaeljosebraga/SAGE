@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 
-import type { PageProps, Espaco, Recurso } from '@/types';
+import type { PageProps, Espaco, Recurso, BreadcrumbItem } from '@/types';
 
 interface Props extends PageProps {
     espacos: Espaco[];
@@ -98,8 +98,13 @@ export default function AgendamentosCreate({ espacos, recursos, espacoSelecionad
 
     const isFormDisabled = processing || isSubmitting;
 
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: 'Agendamentos', href: '/agendamentos' },
+        { title: 'Novo Agendamento', href: '/agendamentos/criar' }
+    ];
+
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Novo Agendamento" />
 
             <div className="space-y-6">

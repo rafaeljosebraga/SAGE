@@ -1,14 +1,18 @@
 import AppLayout from '@/layouts/app-layout';
 import { Head, usePage } from '@inertiajs/react';
-import { type PageProps } from '@/types';
+import { type PageProps, type BreadcrumbItem } from '@/types';
 import { CalendarDays } from 'lucide-react';
 
 export default function Dashboard() {
     const { auth } = usePage<PageProps>().props;
     const currentDate = new Date().toLocaleDateString('pt-BR');
 
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: 'Dashboard', href: '/dashboard' }
+    ];
+
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
 
             <div className="p-6 space-y-6">
