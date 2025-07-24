@@ -30,7 +30,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
-import type { PageProps, Agendamento, Espaco } from '@/types';
+import type { PageProps, Agendamento, Espaco, BreadcrumbItem } from '@/types';
 
 interface Props extends PageProps {
     agendamentos: {
@@ -60,6 +60,10 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
         agendamento: null
     });
     const [rejectionReason, setRejectionReason] = useState('');
+
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: 'Gerenciar Agendamentos', href: '/gerenciar-agendamentos' }
+    ];
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -195,7 +199,7 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
     };
 
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Gerenciar Agendamentos" />
 
             <div className="space-y-6">

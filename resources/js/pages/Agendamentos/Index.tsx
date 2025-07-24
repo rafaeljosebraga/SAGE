@@ -16,7 +16,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
 
-import type { PageProps, Agendamento, Espaco } from '@/types';
+import type { PageProps, Agendamento, Espaco, BreadcrumbItem } from '@/types';
 
 interface Props extends PageProps {
     agendamentos: Agendamento[] | {
@@ -50,6 +50,10 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     const [searchEspacos, setSearchEspacos] = useState("");
     const [searchAgendamentos, setSearchAgendamentos] = useState("");
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | 'none'>('none');
+
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: 'Agendamentos', href: '/agendamentos' }
+    ];
     
     // Estados para o modal de criação
     const [createModal, setCreateModal] = useState<{
@@ -88,6 +92,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         }
     }, [filters.view]);
 
+    
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'pendente':
@@ -971,7 +976,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     );
 
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Agendamentos" />
 
             <div className="space-y-6">

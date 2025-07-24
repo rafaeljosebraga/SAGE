@@ -219,6 +219,14 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
         if (fotosConvertidas.length > 0 && errors.fotos) {
             clearErrors('fotos');
         }
+        
+        // Limpar a classe vermelha do painel de fotos quando uma foto for adicionada
+        if (fotosConvertidas.length > 0) {
+            const painelFotos = document.getElementById('painel-fotos');
+            if (painelFotos) {
+                painelFotos.classList.remove('border-red-500');
+            }
+        }
     };
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -232,35 +240,61 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
 
             <div className="space-y-6">
                 <div className="flex items-center gap-4">
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button
-                            type="button"
+                    {(!fotosAtuais || fotosAtuais.length === 0) ? (
+                        <Button
                             variant="outline"
-                            className="gap-2"
-                            >
-                            <ArrowLeft className="h-4 w-4" />
+                            type="button"
+                            className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-[#F26326] hover:text-black dark:text-[#F26326] dark:hover:text-black border-red-500"
+                            onClick={() => {
+                                // Mostrar erro de fotos e fazer scroll
+                                setDeveScrollParaErro(true);
+                                
+                                // Simular erro de fotos para mostrar o campo em vermelho
+                                const painelFotos = document.getElementById('painel-fotos');
+                                if (painelFotos) {
+                                    painelFotos.classList.add('border-red-500');
+                                    painelFotos.scrollIntoView({
+                                        behavior: 'smooth',
+                                        block: 'center',
+                                        inline: 'nearest'
+                                    });
+                                }
+                            }}
+                        >
+                            <ArrowLeft className="mr-2 h-4 w-4" />
                             Voltar
-                            </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                            <AlertDialogTitle>Tem certeza que deseja voltar?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                As alterações feitas não foram salvas. Você perderá todas as modificações.
-                            </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                            <AlertDialogCancel>Não</AlertDialogCancel>
-                            <AlertDialogAction
-                                className="bg-red-600 hover:bg-red-700"
-                                asChild
-                            >
-                                <Link href="/espacos">Sim, voltar</Link>
-                            </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                        </AlertDialog>
+                        </Button>
+                    ) : (
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button
+                                variant="outline"
+                                type="button"
+                                className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-[#F26326] hover:text-black dark:text-[#F26326] dark:hover:text-black"
+                                >
+                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                Voltar
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                <AlertDialogTitle>Tem certeza que deseja voltar?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    As alterações feitas não foram salvas. Você perderá todas as modificações exceto as fotos que são salvas.
+                                </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                <AlertDialogCancel>Não</AlertDialogCancel>
+                                <AlertDialogAction
+                                    className="bg-red-600 hover:bg-red-700"
+                                    asChild
+                                >
+                                    <Link href="/espacos">Sim, voltar</Link>
+                                </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                            </AlertDialog>
+                    )}
                     <h1 className="text-3xl font-bold text-black dark:text-white">Editar espaço</h1>
                 </div>
 
