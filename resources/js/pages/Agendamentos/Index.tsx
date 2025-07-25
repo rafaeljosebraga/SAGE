@@ -369,20 +369,27 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         let selectedTime = timeSlot || '08:00';
         
         // Se a data selecionada for hoje, verificar se precisa ajustar o horário
-        if (selectedDate === todayStr && timeSlot) {
-            const [slotHour, slotMinute] = timeSlot.split(':').map(Number);
-            const currentHour = now.getHours();
-            const currentMinute = now.getMinutes();
-            
-            // Se o slot clicado é a hora atual, ajustar para o minuto atual + 1
-            if (slotHour === currentHour) {
+        if (selectedDate === todayStr) {
+            if (timeSlot) {
+                const [slotHour, slotMinute] = timeSlot.split(':').map(Number);
+                const currentHour = now.getHours();
+                const currentMinute = now.getMinutes();
+                
+                // Se o slot clicado é a hora atual, ajustar para o minuto atual + 1
+                if (slotHour === currentHour) {
+                    const nextMinute = new Date(now.getTime() + 60000); // Adiciona 1 minuto
+                    selectedTime = format(nextMinute, 'HH:mm');
+                }
+                // Se o slot clicado é anterior à hora atual, mostrar aviso
+                else if (slotHour < currentHour || (slotHour === currentHour && slotMinute < currentMinute)) {
+                    setPastTimeModal({ open: true });
+                    return;
+                }
+            } else {
+                // Quando não há timeSlot especificado (clique no dia no modo mês)
+                // Definir horário como próximo minuto se for hoje
                 const nextMinute = new Date(now.getTime() + 60000); // Adiciona 1 minuto
                 selectedTime = format(nextMinute, 'HH:mm');
-            }
-            // Se o slot clicado é anterior à hora atual, mostrar aviso
-            else if (slotHour < currentHour || (slotHour === currentHour && slotMinute < currentMinute)) {
-                setPastTimeModal({ open: true });
-                return;
             }
         }
         // Para datas passadas, verificar se está no passado
