@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
-import { Calendar, Clock, MapPin, User, Filter, Plus, Eye, Edit, Trash2, Settings, AlertTriangle, ChevronLeft, ChevronRight, List, Search, ArrowUpDown, ArrowUp, ArrowDown, RotateCcw } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, Filter, Plus, Eye, Edit, Trash2, Settings, AlertTriangle, ChevronLeft, ChevronRight, List, Search, ArrowUpDown, ArrowUp, ArrowDown, RotateCcw, X } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, addMonths, subMonths, startOfWeek, endOfWeek, addDays, isSameDay, parseISO, addHours, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -109,11 +109,13 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     const [selectedEspacos, setSelectedEspacos] = useState<number[]>(initialState.espacos);
     const [searchEspacos, setSearchEspacos] = useState("");
     const [searchAgendamentos, setSearchAgendamentos] = useState("");
+    const [nomeFilter, setNomeFilter] = useState(filters.nome || '');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | 'none'>('none');
     const [dateSortOrder, setDateSortOrder] = useState<{
         inicio: 'asc' | 'desc' | 'none';
         fim: 'asc' | 'desc' | 'none';
     }>({ inicio: 'none', fim: 'none' });
+    const [nomeSortOrder, setNomeSortOrder] = useState<'asc' | 'desc' | 'none'>('none');
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Agendamentos', href: '/agendamentos' }
@@ -178,6 +180,30 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         }
     }, [filters.view]);
 
+    // Debounce para o filtro de nome
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (nomeFilter !== (filters.nome || '')) {
+                router.get('/agendamentos', { 
+                    ...filters, 
+                    nome: nomeFilter || undefined, 
+                    view: 'list' 
+                }, {
+                    preserveState: true,
+                    preserveScroll: true,
+                    replace: true
+                });
+            }
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [nomeFilter]);
+
+    // Atualizar estado local quando filters.nome mudar
+    useEffect(() => {
+        setNomeFilter(filters.nome || '');
+    }, [filters.nome]);
+
     // Filtrar e ordenar espaços
     const filteredAndSortedEspacos = (() => {
         // Primeiro filtrar pela busca
@@ -220,6 +246,30 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     };
 
     // Funções para alternar ordenação de datas
+    // Função para alternar ordenação de nome
+    const toggleNomeSort = () => {
+        if (nomeSortOrder === 'none') {
+            setNomeSortOrder('asc');
+            setDateSortOrder({ inicio: 'none', fim: 'none' });
+        } else if (nomeSortOrder === 'asc') {
+            setNomeSortOrder('desc');
+        } else {
+            setNomeSortOrder('none');
+        }
+    };
+
+    // Função para obter ícone de ordenação de nome
+    const getNomeSortIcon = () => {
+        switch (nomeSortOrder) {
+            case 'asc':
+                return <ArrowUp className="h-3 w-3" />;
+            case 'desc':
+                return <ArrowDown className="h-3 w-3" />;
+            default:
+                return <ArrowUpDown className="h-3 w-3" />;
+        }
+    };
+
     const toggleDateSort = (type: 'inicio' | 'fim') => {
         setDateSortOrder(prev => {
             const currentOrder = prev[type];
@@ -233,7 +283,11 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                 newOrder = 'none';
             }
             
-            // Reset the other date sort when one is changed
+            
+            // Reset nome sort when date sort is activated
+            if (newOrder !== 'none') {
+                setNomeSortOrder('none');
+            }
             if (type === 'inicio') {
                 return {
                     inicio: newOrder,
@@ -280,6 +334,17 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
             filtered = filtered.filter(agendamento => {
                 const agendamentoDataFim = agendamento.data_fim.split('T')[0]; // YYYY-MM-DD
                 return agendamentoDataFim <= filters.data_fim!;
+            });
+        }
+
+        // Aplicar ordenação por nome se ativa
+        if (nomeSortOrder !== 'none') {
+            filtered.sort((a, b) => {
+                const nomeA = a.titulo.toLowerCase();
+                const nomeB = b.titulo.toLowerCase();
+                return nomeSortOrder === 'asc'
+                    ? nomeA.localeCompare(nomeB)
+                    : nomeB.localeCompare(nomeA);
             });
         }
 
@@ -1088,20 +1153,29 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                        <div>
+                    <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+                        <div className="md:col-span-2">
                             <Label htmlFor="nome_agendamento">Nome do Agendamento</Label>
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    id="nome_agendamento"
-                                    placeholder="Buscar por nome..."
-                                    value={filters.nome || ''}
-                                    onChange={(e) => {
-                                        router.get('/agendamentos', { ...filters, nome: e.target.value || undefined, view: 'list' });
-                                    }}
-                                    className="pl-10"
-                                />
+                                <div className="relative">
+                                    <Input
+                                        id="nome_agendamento"
+                                        placeholder="Buscar por nome..."
+                                        value={nomeFilter}
+                                        onChange={(e) => setNomeFilter(e.target.value)}
+                                        className="pl-10 pr-10"
+                                    />
+                                    <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        onClick={toggleNomeSort}
+                                        className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
+                                        title={`Ordenar por nome ${nomeSortOrder === 'none' ? 'crescente' : nomeSortOrder === 'asc' ? 'decrescente' : 'padrão'}`}
+                                    >
+                                        {getNomeSortIcon()}
+                                    </Button>
+                                </div>
                             </div>
                         </div>
 
@@ -1150,50 +1224,77 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                             </Select>
                         </div>
 
-                        <div>
-                            <Label htmlFor="data_inicio">Data Início</Label>
-                            <div className="relative">
-                                <Input
-                                    type="date"
-                                    value={filters.data_inicio || ''}
-                                    onChange={(e) => {
-                                        router.get('/agendamentos', { ...filters, data_inicio: e.target.value || undefined, view: 'list' });
-                                    }}
-                                    className="pr-10"
-                                />
-                                <Button 
-                                    variant="ghost" 
-                                    size="sm" 
-                                    onClick={() => toggleDateSort('inicio')}
-                                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
-                                    title={`Ordenar por data de início ${dateSortOrder.inicio === 'none' ? 'crescente' : dateSortOrder.inicio === 'asc' ? 'decrescente' : 'padrão'}`}
-                                >
-                                    {getDateSortIcon('inicio')}
-                                </Button>
+                        <div className="flex gap-2">
+                            <div className="flex-1">
+                                <Label htmlFor="data_inicio">Início</Label>
+                                <div className="relative">
+                                    <Input
+                                        type="date"
+                                        value={filters.data_inicio || ''}
+                                        onChange={(e) => {
+                                            router.get('/agendamentos', { ...filters, data_inicio: e.target.value || undefined, view: 'list' });
+                                        }}
+                                        className="pr-8 text-sm"
+                                    />
+                                    <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        onClick={() => toggleDateSort('inicio')}
+                                        className="absolute right-1 top-1/2 transform -translate-y-1/2 h-5 w-5 p-0 hover:bg-muted"
+                                        title={`Ordenar por data de início ${dateSortOrder.inicio === 'none' ? 'crescente' : dateSortOrder.inicio === 'asc' ? 'decrescente' : 'padrão'}`}
+                                    >
+                                        {getDateSortIcon('inicio')}
+                                    </Button>
+                                </div>
                             </div>
-                        </div>
 
-                        <div>
-                            <Label htmlFor="data_fim">Data Fim</Label>
-                            <div className="relative">
-                                <Input
-                                    type="date"
-                                    value={filters.data_fim || ''}
-                                    onChange={(e) => {
-                                        router.get('/agendamentos', { ...filters, data_fim: e.target.value || undefined, view: 'list' });
-                                    }}
-                                    className="pr-10"
-                                />
-                                <Button 
-                                    variant="ghost" 
-                                    size="sm" 
-                                    onClick={() => toggleDateSort('fim')}
-                                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
-                                    title={`Ordenar por data de fim ${dateSortOrder.fim === 'none' ? 'crescente' : dateSortOrder.fim === 'asc' ? 'decrescente' : 'padrão'}`}
-                                >
-                                    {getDateSortIcon('fim')}
-                                </Button>
+                            <div className="flex-1">
+                                <Label htmlFor="data_fim">Fim</Label>
+                                <div className="relative">
+                                    <Input
+                                        type="date"
+                                        value={filters.data_fim || ''}
+                                        onChange={(e) => {
+                                            router.get('/agendamentos', { ...filters, data_fim: e.target.value || undefined, view: 'list' });
+                                        }}
+                                        className="pr-8 text-sm"
+                                    />
+                                    <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        onClick={() => toggleDateSort('fim')}
+                                        className="absolute right-1 top-1/2 transform -translate-y-1/2 h-5 w-5 p-0 hover:bg-muted"
+                                        title={`Ordenar por data de fim ${dateSortOrder.fim === 'none' ? 'crescente' : dateSortOrder.fim === 'asc' ? 'decrescente' : 'padrão'}`}
+                                    >
+                                        {getDateSortIcon('fim')}
+                                    </Button>
+                                </div>
                             </div>
+
+                            {/* Botão Limpar Filtros - só aparece quando há filtros ativos */}
+                            {(filters.nome || filters.espaco_id || filters.status || filters.data_inicio || filters.data_fim || 
+                              nomeSortOrder !== 'none' || dateSortOrder.inicio !== 'none' || dateSortOrder.fim !== 'none') && (
+                                <div className="flex flex-col">
+                                    <Label className="mb-2 opacity-0">Ações</Label>
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        onClick={() => {
+                                            // Limpar todos os filtros e ordenações
+                                            setNomeFilter('');
+                                            setNomeSortOrder('none');
+                                            setDateSortOrder({ inicio: 'none', fim: 'none' });
+                                            
+                                            // Redirecionar para a página sem filtros
+                                            router.get('/agendamentos', { view: 'list' });
+                                        }}
+                                        className="flex items-center gap-2 whitespace-nowrap h-10"
+                                    >
+                                        <X className="h-4 w-4" />
+                                        Limpar
+                                    </Button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </CardContent>
