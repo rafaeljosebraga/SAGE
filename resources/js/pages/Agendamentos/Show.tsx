@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, Calendar, Clock, MapPin, User, Users, Edit, Trash2, MessageSquare, X, Image as ImageIcon, ZoomIn, AlertTriangle, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, MapPin, User, Users, Edit, MessageSquare, X, Image as ImageIcon, ZoomIn, AlertTriangle, RotateCcw, Ban, Trash2 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -31,6 +31,11 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
     
     // Estado para modal de confirmação de descancelamento
     const [uncancelModal, setUncancelModal] = useState<{
+    open: boolean;
+    }>({ open: false });
+    
+    // Estado para modal de confirmação de exclusão permanente
+    const [forceDeleteModal, setForceDeleteModal] = useState<{
     open: boolean;
     }>({ open: false });
     
@@ -121,6 +126,33 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
         });
     };
 
+    const handleForceDelete = () => {
+        setForceDeleteModal({ open: true });
+    };
+
+    const confirmForceDelete = () => {
+        router.delete(`/agendamentos/${agendamento.id}/force-delete`, {
+            onSuccess: () => {
+                setForceDeleteModal({ open: false });
+                toast({
+                    title: "Agendamento excluído permanentemente!",
+                    description: "O agendamento foi removido do sistema.",
+                    duration: 5000,
+                });
+                // Redirecionar para a lista de agendamentos
+                router.visit('/agendamentos');
+            },
+            onError: () => {
+                setForceDeleteModal({ open: false });
+                toast({
+                    title: "Erro ao excluir agendamento",
+                    description: "Ocorreu um erro ao tentar excluir o agendamento. Tente novamente.",
+                    variant: "destructive",
+                });
+            }
+        });
+    };
+
     // Diretor geral pode editar qualquer agendamento, usuários comuns só podem editar seus próprios agendamentos pendentes
     const canEdit = auth.user.perfil_acesso === 'diretor_geral' || (agendamento.user_id === auth.user.id && agendamento.status === 'pendente');
     
@@ -131,6 +163,9 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
     // Verificar se pode descancelar (apenas agendamentos cancelados)
     const canUncancel = auth.user.perfil_acesso === 'diretor_geral' && 
                        agendamento.status === 'cancelado';
+    
+    // Verificar se pode excluir permanentemente (apenas diretor geral pode excluir a qualquer momento)
+    const canForceDelete = auth.user.perfil_acesso === 'diretor_geral';
 
     const formatDate = (dateString: string) => {
         try {
@@ -257,11 +292,25 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                         <StatusBadge status={agendamento.status} agendamento={agendamento} />
 
                         {canEdit && (
-                            <Button variant="outline" size="sm" asChild>
+                            <Button variant="outline" size="sm" asChild title="Editar agendamento">
                                 <Link href={`/agendamentos/${agendamento.id}/editar`}>
                                     <Edit className="h-4 w-4 mr-2" />
                                     Editar
                                 </Link>
+                            </Button>
+                        )}
+
+                        {/* Mostrar botão Excluir apenas para diretor geral */}
+                        {canForceDelete && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleForceDelete}
+                                title="Excluir agendamento"
+                                className="text-orange-600 hover:text-orange-700 border-orange-200 hover:border-orange-300 dark:text-orange-400 dark:hover:text-orange-300 dark:border-orange-800 dark:hover:border-orange-700"
+                            >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Excluir
                             </Button>
                         )}
 
@@ -271,9 +320,10 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                                 variant="outline"
                                 size="sm"
                                 onClick={handleDelete}
-                                className="text-red-600 hover:text-red-700"
+                                title="Cancelar agendamento"
+                                className="text-slate-600 hover:text-slate-700 border-slate-200 hover:border-slate-300 dark:text-slate-400 dark:hover:text-slate-300 dark:border-slate-600 dark:hover:border-slate-500"
                             >
-                                <Trash2 className="h-4 w-4 mr-2" />
+                                <Ban className="h-4 w-4 mr-2" />
                                 Cancelar
                             </Button>
                         )}
@@ -284,6 +334,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                                 variant="outline"
                                 size="sm"
                                 onClick={handleUncancel}
+                                title="Voltar agendamento"
                                 className="text-green-600 hover:text-green-700"
                             >
                                 <RotateCcw className="h-4 w-4 mr-2" />
@@ -963,6 +1014,45 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                             className="bg-green-600 hover:bg-green-700"
                         >
                             Sim, Voltar Evento
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Modal de Confirmação de Exclusão Permanente */}
+            <Dialog open={forceDeleteModal.open} onOpenChange={(open) => setForceDeleteModal({ open })}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <Trash2 className="h-5 w-5 text-red-600" />
+                            Excluir Agendamento Permanentemente
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    <div className="py">
+                        <p className="text-muted-foreground mb-3">
+                            <strong>ATENÇÃO:</strong> Esta ação é irreversível! Tem certeza que deseja excluir permanentemente este agendamento?
+                        </p>
+                        <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                            <p className="font-medium text-sm text-red-800 dark:text-red-200">{agendamento.titulo}</p>
+                            <p className="text-xs text-red-600 dark:text-red-300">
+                                {agendamento.espaco?.nome} • {formatDate(agendamento.data_inicio)}
+                            </p>
+                        </div>          
+                    </div>
+
+                    <DialogFooter className="gap-2">
+                        <Button
+                            variant="outline"
+                            onClick={() => setForceDeleteModal({ open: false })}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={confirmForceDelete}
+                        >
+                            Sim, Excluir Permanentemente
                         </Button>
                     </DialogFooter>
                 </DialogContent>

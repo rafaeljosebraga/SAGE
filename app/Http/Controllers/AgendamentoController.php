@@ -35,6 +35,10 @@ class AgendamentoController extends Controller
             $query->whereDate('data_fim', '<=', $request->data_fim);
         }
 
+        if ($request->filled('nome')) {
+            $query->where('titulo', 'like', '%' . $request->nome . '%');
+        }
+
         // Todos os usuários podem ver todos os agendamentos
 
         // Se for visualização de lista, usar paginação
@@ -63,7 +67,7 @@ class AgendamentoController extends Controller
         return Inertia::render('Agendamentos/Index', [
             'agendamentos' => $agendamentos,
             'espacos' => $espacos,
-            'filters' => $request->only(['espaco_id', 'status', 'data_inicio', 'data_fim', 'view']),
+            'filters' => $request->only(['espaco_id', 'status', 'data_inicio', 'data_fim', 'nome', 'view']),
         ]);
     }
 
@@ -593,5 +597,32 @@ class AgendamentoController extends Controller
 
         return redirect()->route('agendamentos.index')
                         ->with('success', 'Agendamento descancelado com sucesso! Status alterado para pendente.');
+    }
+
+    /**
+     * Excluir agendamento permanentemente (apenas diretor geral)
+     */
+    public function forceDelete(Agendamento $agendamento)
+    {
+        // Verificar permissão - apenas diretor geral pode excluir permanentemente
+        if (auth()->user()->perfil_acesso !== 'diretor_geral') { 
+            abort(403, 'Você não tem permissão para excluir este agendamento.');
+        }
+
+        // Salvar informações para a mensagem
+        $titulo = $agendamento->titulo;
+        $espaco = $agendamento->espaco->nome ?? 'Espaço não encontrado';
+
+        // Excluir permanentemente o agendamento
+        $agendamento->delete();
+
+        // Para requisições Inertia, redirecionar para a lista de agendamentos
+        if (request()->header('X-Inertia')) {
+            return redirect()->route('agendamentos.index')
+                           ->with('success', "Agendamento '{$titulo}' foi excluído permanentemente.");
+        }
+
+        return redirect()->route('agendamentos.index')
+                        ->with('success', "Agendamento '{$titulo}' foi excluído permanentemente.");
     }
 }

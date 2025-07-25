@@ -35,6 +35,7 @@ interface Props extends PageProps {
         status?: string;
         data_inicio?: string;
         data_fim?: string;
+        nome?: string;
         view?: string;
     };
 }
@@ -1087,7 +1088,23 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <div>
+                            <Label htmlFor="nome_agendamento">Nome do Agendamento</Label>
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    id="nome_agendamento"
+                                    placeholder="Buscar por nome..."
+                                    value={filters.nome || ''}
+                                    onChange={(e) => {
+                                        router.get('/agendamentos', { ...filters, nome: e.target.value || undefined, view: 'list' });
+                                    }}
+                                    className="pl-10"
+                                />
+                            </div>
+                        </div>
+
                         <div>
                             <Label htmlFor="espaco">Espaço</Label>
                             <Select
