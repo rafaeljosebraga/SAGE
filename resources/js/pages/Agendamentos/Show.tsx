@@ -121,7 +121,8 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
         });
     };
 
-    const canEdit = agendamento.user_id === auth.user.id && agendamento.status === 'pendente';
+    // Diretor geral pode editar qualquer agendamento, usuários comuns só podem editar seus próprios agendamentos pendentes
+    const canEdit = auth.user.perfil_acesso === 'diretor_geral' || (agendamento.user_id === auth.user.id && agendamento.status === 'pendente');
     
     // Verificar se pode cancelar (agendamentos pendentes ou aprovados, mas não cancelados)
     const canDelete = auth.user.perfil_acesso === 'diretor_geral' && 

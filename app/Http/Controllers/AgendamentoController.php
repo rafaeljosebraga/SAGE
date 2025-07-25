@@ -269,8 +269,8 @@ class AgendamentoController extends Controller
      */
     public function edit(Agendamento $agendamento)
     {
-        // Apenas o solicitante pode editar agendamentos pendentes
-        if ($agendamento->user_id !== auth()->id() || $agendamento->status !== 'pendente') {
+        // Diretor geral pode editar qualquer agendamento, usuários comuns só podem editar seus próprios agendamentos pendentes
+        if (auth()->user()->perfil_acesso !== 'diretor_geral' && ($agendamento->user_id !== auth()->id() || $agendamento->status !== 'pendente')) {
             abort(403, 'Você não pode editar este agendamento.');
         }
 
@@ -305,8 +305,8 @@ class AgendamentoController extends Controller
      */
     public function update(Request $request, Agendamento $agendamento)
     {
-        // Apenas o solicitante pode editar agendamentos pendentes
-        if ($agendamento->user_id !== auth()->id() || $agendamento->status !== 'pendente') {
+        // Diretor geral pode editar qualquer agendamento, usuários comuns só podem editar seus próprios agendamentos pendentes
+        if (auth()->user()->perfil_acesso !== 'diretor_geral' && ($agendamento->user_id !== auth()->id() || $agendamento->status !== 'pendente')) {
             abort(403, 'Você não pode editar este agendamento.');
         }
 
@@ -369,8 +369,7 @@ class AgendamentoController extends Controller
     public function destroy(Agendamento $agendamento)
     {
         // Verificar permissão
-        if (auth()->user()->perfil_acesso !== 'diretor_geral' && 
-            $agendamento->user_id !== auth()->id()) {
+        if (auth()->user()->perfil_acesso !== 'diretor_geral') { 
             abort(403, 'Você não tem permissão para cancelar este agendamento.');
         }
 
@@ -567,8 +566,7 @@ class AgendamentoController extends Controller
     public function descancelar(Agendamento $agendamento)
     {
         // Verificar permissão
-        if (auth()->user()->perfil_acesso !== 'diretor_geral' && 
-            $agendamento->user_id !== auth()->id()) {
+        if (auth()->user()->perfil_acesso !== 'diretor_geral') { 
             abort(403, 'Você não tem permissão para descancelar este agendamento.');
         }
 

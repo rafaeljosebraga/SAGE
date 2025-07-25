@@ -539,7 +539,8 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     };
 
     const canEdit = (agendamento: Agendamento) => {
-        return agendamento.user_id === auth.user.id && agendamento.status === 'pendente';
+        // Diretor geral pode editar qualquer agendamento, usuários comuns só podem editar seus próprios agendamentos pendentes
+        return auth.user.perfil_acesso === 'diretor_geral' || (agendamento.user_id === auth.user.id && agendamento.status === 'pendente');
     };
 
     const canDelete = (agendamento: Agendamento) => {
