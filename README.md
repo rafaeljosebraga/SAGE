@@ -41,8 +41,10 @@ docker run --rm -v $(pwd):/app composer install --ignore-platform-reqs
 echo $SHELL
 echo "alias sail='sh $([ -f sail ] && echo sail || echo vendor/bin/sail)'" >> ~/.bashrc
 source ~/.bashrc
-```
 
+# 11. comando para habilitar os toast, para popups
+npm install @radix-ui/react-toast
+```
 # Atualizar Projeto para o gerenciar usuário
 
 ```bash
