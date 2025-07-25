@@ -254,7 +254,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <StatusBadge status={agendamento.status} />
+                        <StatusBadge status={agendamento.status} agendamento={agendamento} />
 
                         {canEdit && (
                             <Button variant="outline" size="sm" asChild>

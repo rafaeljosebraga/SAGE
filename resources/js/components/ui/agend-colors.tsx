@@ -1,5 +1,5 @@
 import React from 'react';
-import { Clock3, CheckCircle, XCircle, Ban } from 'lucide-react';
+import { Clock3, CheckCircle, XCircle, Ban, Clock } from 'lucide-react';
 import type { Agendamento } from '@/types';
 
 // Paleta de cores para agendamentos
@@ -316,28 +316,48 @@ interface StatusBadgeProps {
     status: string;
     showText?: boolean;
     className?: string;
+    agendamento?: Agendamento;
 }
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ 
     status, 
     showText = true, 
-    className = "" 
+    className = "",
+    agendamento
 }) => {
-    const { getStatusIcon, getStatusText, getStatusColor } = useAgendamentoColors();
+    const { getStatusIcon, getStatusText, getStatusColor, isEventPast } = useAgendamentoColors();
+
+    // Verificar se o evento já passou
+    const eventPast = agendamento ? isEventPast(agendamento) : false;
 
     if (showText) {
         return (
-            <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border text-sm font-medium ${getStatusColor(status)} ${className}`}>
-                {getStatusIcon(status)}
-                {getStatusText(status)}
+            <div className={`inline-flex items-center gap-2 ${className}`}>
+                {eventPast && (
+                    <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-sm font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-600">
+                        <div className="w-4 h-4 rounded-full bg-gray-500 dark:bg-gray-400 flex items-center justify-center shadow-sm shrink-0">
+                            <Clock className="h-2.5 w-2.5 text-white dark:text-gray-900" />
+                        </div>
+                        Já Passou
+                    </div>
+                )}
+                <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border text-sm font-medium ${getStatusColor(status)}`}>
+                    {getStatusIcon(status)}
+                    {getStatusText(status)}
+                </div>
             </div>
         );
     }
 
     return (
-        <div className={className}>
+        <div className={`inline-flex items-center gap-2 ${className}`}>
+            {eventPast && (
+                <div className="w-4 h-4 rounded-full bg-gray-500 dark:bg-gray-400 flex items-center justify-center shadow-sm shrink-0" title="Evento já passou">
+                    <Clock className="h-2.5 w-2.5 text-white dark:text-gray-900" />
+                </div>
+            )}
             {getStatusIcon(status)}
-        </div>
+i        </div>
     );
 };
 

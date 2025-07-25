@@ -15,7 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useAgendamentoColors, StatusLegend, StatusBadge } from '@/components/ui/agend-colors';
+import { useAgendamentoColors, StatusLegend, StatusBadge, isEventPast } from '@/components/ui/agend-colors';
 import { useToast } from '@/hooks/use-toast';
 
 import type { PageProps, Agendamento, Espaco, BreadcrumbItem } from '@/types';
@@ -725,6 +725,16 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         }
     };
 
+    // Função para gerar tooltip com informação de "já passou"
+    const getEventTooltip = (event: Agendamento, includeTime: boolean = true) => {
+        const baseTooltip = includeTime 
+            ? `${event.titulo} - ${event.espaco?.nome || 'Espaço'} - ${event.hora_inicio.substring(0, 5)} às ${event.hora_fim.substring(0, 5)} - ${getStatusText(event.status)}`
+            : `${event.titulo} - ${event.espaco?.nome || 'Espaço'} - ${getStatusText(event.status)}`;
+        
+        const eventPast = isEventPast(event);
+        return eventPast ? `${baseTooltip} - JÁ PASSOU` : baseTooltip;
+    };
+
     const renderMonthView = () => (
         <div className="space-y-4">
             {/* Cabeçalho dos dias da semana */}
@@ -772,7 +782,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                             e.stopPropagation();
                                             handleEventClick(event);
                                         }}
-                                        title={`${event.titulo} - ${event.espaco?.nome || 'Espaço'} - ${event.hora_inicio.substring(0, 5)} às ${event.hora_fim.substring(0, 5)} - ${getStatusText(event.status)}`}
+                                        title={getEventTooltip(event)}
                                     >
                                         <div className="flex items-start justify-between gap-1">
                                             <div className="flex-1 min-w-0">
@@ -854,7 +864,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                                 e.stopPropagation();
                                                 handleEventClick(event);
                                             }}
-                                            title={`${event.titulo} - ${event.espaco?.nome || 'Espaço'} - ${getStatusText(event.status)}`}
+                                            title={getEventTooltip(event, false)}
                                         >
                                             <div className="absolute top-0.5 right-0.5">
                                                 {getStatusIcon(event.status)}
@@ -1043,7 +1053,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                                             e.stopPropagation();
                                                             handleEventClick(event);
                                                         }}
-                                                        title={`${event.titulo} - ${event.hora_inicio.substring(0, 5)} às ${event.hora_fim.substring(0, 5)} - ${getStatusText(event.status)}`}
+                                                        title={getEventTooltip(event)}
                                                     >
                                                         <div className="absolute top-0.5 right-0.5">
                                                             {getStatusIcon(event.status)}
@@ -1194,7 +1204,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                     <div className="space-y-2">
                                         <div className="flex items-center gap-2">
                                             <h3 className="font-semibold text-lg">{agendamento.titulo}</h3>
-                                            <StatusBadge status={agendamento.status} />
+                                            <StatusBadge status={agendamento.status} agendamento={agendamento} />
                                         </div>
 
                                         <div className="flex items-center gap-4 text-sm text-muted-foreground">

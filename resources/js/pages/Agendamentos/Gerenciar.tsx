@@ -362,7 +362,7 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                                             <div className="space-y-3 flex-1">
                                                 <div className="flex items-center gap-3">
                                                     <h3 className="font-semibold text-lg">{agendamento.titulo}</h3>
-                                                    <StatusBadge status={agendamento.status} />
+                                                    <StatusBadge status={agendamento.status} agendamento={agendamento} />
                                                     {agendamento.status === 'pendente' && (
                                                         <Badge variant="outline" className={getPriorityColor(priority)}>
                                                             Prioridade {getPriorityText(priority)}
