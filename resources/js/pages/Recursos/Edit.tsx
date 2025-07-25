@@ -23,6 +23,8 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
+import { useToastDismissOnClick } from '@/hooks/use-toast-dismiss-on-click';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Save } from 'lucide-react';
 import { type User, type Recurso, type BreadcrumbItem } from '@/types';
@@ -36,7 +38,9 @@ interface RecursosEditProps {
 }
 
 export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
-    const { data, setData, reset, put, processing, errors } = useForm({
+    const { toast } = useToast();
+    useToastDismissOnClick(); // Hook para dismissar toast ao clicar em botões
+    const { data, setData, reset, put, processing, errors, clearErrors } = useForm({
         nome: recurso.nome || '',
         descricao: recurso.descricao || '',
         status: recurso.status || 'disponivel',
@@ -48,7 +52,24 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        put(route('recursos.update', recurso.id));
+        put(route('recursos.update', recurso.id), {
+            onSuccess: () => {
+                toast({
+                    title: "Recurso atualizado com sucesso!",
+                    description: `O recurso ${data.nome} foi atualizado no sistema.`,
+                    variant: "success",
+                    duration: 5000, // 5 segundos
+                });
+            },
+            onError: () => {
+                toast({
+                    title: "Erro ao atualizar recurso",
+                    description: "Ocorreu um erro ao executar a ação, verifique os campos",
+                    variant: "destructive",
+                    duration: 5000, // 5 segundos
+                });
+            }
+        });
     };
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -91,7 +112,7 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                             </AlertDialogFooter>
                         </AlertDialogContent>
                         </AlertDialog>
-                      <h1 className="text-3xl font-bold text-black dark:text-white">Novo Recurso</h1>
+                      <h1 className="text-3xl font-bold text-black dark:text-white">Editar Recurso</h1>
                 </div>
 
                 <form onSubmit={submit} className="space-y-6">
@@ -107,7 +128,10 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                                         id="nome"
                                         type="text"
                                         value={data.nome}
-                                        onChange={(e) => setData('nome', e.target.value)}
+                                        onChange={(e) => {
+                                            setData('nome', e.target.value);
+                                            if (errors.nome) clearErrors('nome');
+                                        }}
                                         placeholder="Nome do recurso"
                                         className={errors.nome ? 'border-red-500' : ''}
                                     />
@@ -120,7 +144,10 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                                     <Label htmlFor="status">Status *</Label>
                                     <Select
                                         value={data.status}
-                                        onValueChange={(value) => setData('status', value as 'disponivel' | 'manutencao' | 'indisponivel')}
+                                        onValueChange={(value) => {
+                                            setData('status', value as 'disponivel' | 'manutencao' | 'indisponivel');
+                                            if (errors.status) clearErrors('status');
+                                        }}
                                     >
                                         <SelectTrigger className={errors.status ? 'border-red-500' : ''}>
                                             <SelectValue />
@@ -142,7 +169,10 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                                 <Textarea
                                     id="descricao"
                                     value={data.descricao}
-                                    onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setData('descricao', e.target.value)}
+                                    onChange={(e: ChangeEvent<HTMLTextAreaElement>) => {
+                                        setData('descricao', e.target.value);
+                                        if (errors.descricao) clearErrors('descricao');
+                                    }}
                                     placeholder="Descrição do recurso"
                                     rows={3}
                                     className={errors.descricao ? 'border-red-500' : ''}
@@ -177,7 +207,10 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                                         id="marca"
                                         type="text"
                                         value={data.marca}
-                                        onChange={(e) => setData('marca', e.target.value)}
+                                        onChange={(e) => {
+                                            setData('marca', e.target.value);
+                                            if (errors.marca) clearErrors('marca');
+                                        }}
                                         placeholder="Marca do equipamento"
                                         className={errors.marca ? 'border-red-500' : ''}
                                     />
@@ -192,7 +225,10 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                                         id="modelo"
                                         type="text"
                                         value={data.modelo}
-                                        onChange={(e) => setData('modelo', e.target.value)}
+                                        onChange={(e) => {
+                                            setData('modelo', e.target.value);
+                                            if (errors.modelo) clearErrors('modelo');
+                                        }}
                                         placeholder="Modelo do equipamento"
                                         className={errors.modelo ? 'border-red-500' : ''}
                                     />
@@ -207,7 +243,10 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                                 <Textarea
                                     id="observacoes"
                                     value={data.observacoes}
-                                    onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setData('observacoes', e.target.value)}
+                                    onChange={(e: ChangeEvent<HTMLTextAreaElement>) => {
+                                        setData('observacoes', e.target.value);
+                                        if (errors.observacoes) clearErrors('observacoes');
+                                    }}
                                     placeholder="Observações gerais sobre o recurso"
                                     rows={3}
                                     className={errors.observacoes ? 'border-red-500' : ''}
