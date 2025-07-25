@@ -51,12 +51,57 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     } = useAgendamentoColors();
 
     // Detectar se deve iniciar no modo calendário baseado na URL
-    const initialView = filters.view === 'list' ? 'list' : 'week';
-    const [viewMode, setViewMode] = useState<ViewMode>(initialView);
-    const [currentDate, setCurrentDate] = useState(new Date());
-    const [selectedEspacos, setSelectedEspacos] = useState<number[]>(
-        filters.espaco_id ? [parseInt(filters.espaco_id)] : espacos.map(e => e.id)
-    );
+    const getInitialState = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const viewParam = urlParams.get('view') || filters.view;
+        const dateParam = urlParams.get('date');
+        const espacosParam = urlParams.get('espacos');
+        
+        // Determinar visualização inicial
+        const initialView: ViewMode = viewParam === 'list' ? 'list' : 
+                                     viewParam === 'month' ? 'month' :
+                                     viewParam === 'day' ? 'day' :
+                                     viewParam === 'timeline' ? 'timeline' : 'week';
+        
+        // Determinar data inicial
+        let initialDate = new Date();
+        if (dateParam) {
+            try {
+                const parsedDate = new Date(dateParam);
+                if (!isNaN(parsedDate.getTime())) {
+                    initialDate = parsedDate;
+                }
+            } catch (error) {
+                console.warn('Data inválida na URL:', dateParam);
+            }
+        }
+        
+        // Determinar espaços selecionados
+        let initialEspacos = espacos.map(e => e.id);
+        if (espacosParam) {
+            try {
+                const espacosIds = espacosParam.split(',').map(id => parseInt(id)).filter(id => !isNaN(id));
+                if (espacosIds.length > 0) {
+                    initialEspacos = espacosIds.filter(id => espacos.some(e => e.id === id));
+                }
+            } catch (error) {
+                console.warn('Espaços inválidos na URL:', espacosParam);
+            }
+        } else if (filters.espaco_id) {
+            initialEspacos = [parseInt(filters.espaco_id)];
+        }
+        
+        return {
+            view: initialView,
+            date: initialDate,
+            espacos: initialEspacos
+        };
+    };
+    
+    const initialState = getInitialState();
+    const [viewMode, setViewMode] = useState<ViewMode>(initialState.view);
+    const [currentDate, setCurrentDate] = useState(initialState.date);
+    const [selectedEspacos, setSelectedEspacos] = useState<number[]>(initialState.espacos);
     const [searchEspacos, setSearchEspacos] = useState("");
     const [searchAgendamentos, setSearchAgendamentos] = useState("");
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | 'none'>('none');
@@ -110,6 +155,11 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     const [pastTimeModal, setPastTimeModal] = useState<{
     open: boolean;
     }>({ open: false });
+    // Estado para modal de conflito de horário
+    const [conflictTimeModal, setConflictTimeModal] = useState<{
+    open: boolean;
+    message: string;
+    }>({ open: false, message: "" });
 
     // Atualizar viewMode quando filters.view mudar
     useEffect(() => {
@@ -426,7 +476,17 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     };
 
     const handleEventClick = (agendamento: Agendamento) => {
-        router.get(`/agendamentos/${agendamento.id}`);
+        // Preservar o estado atual da visualização na URL
+        const currentParams = new URLSearchParams();
+        currentParams.set('view', viewMode);
+        currentParams.set('date', format(currentDate, 'yyyy-MM-dd'));
+        
+        // Adicionar filtros de espaços selecionados se não for todos
+        if (selectedEspacos.length !== espacos.length) {
+            currentParams.set('espacos', selectedEspacos.join(','));
+        }
+        
+        router.get(`/agendamentos/${agendamento.id}?${currentParams.toString()}`);
     };
 
     // Função para abrir modal de visualização do dia
@@ -530,12 +590,21 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                 resetForm();
             },
             onError: (errors: any) => {
+                console.log('Erro recebido:', errors);
+                
+                // Verificar se há conflitos (pode vir como string ou array)
                 if (errors.conflitos) {
-                    setConflictModal({
-                        open: true,
-                        conflitos: Array.isArray(errors.conflitos) ? errors.conflitos : [],
-                        formData: formData
-                    });
+                    // Se for uma string simples, mostrar alerta
+                    if (typeof errors.conflitos === 'string') {
+                        setConflictTimeModal({ open: true, message: errors.conflitos });
+                    } else if (Array.isArray(errors.conflitos)) {
+                        // Se for array, mostrar modal de conflitos
+                        setConflictModal({
+                            open: true,
+                            conflitos: errors.conflitos,
+                            formData: formData
+                        });
+                    }
                 } else {
                     console.error('Erro ao criar agendamento:', errors);
                     alert('Erro ao criar agendamento. Verifique os dados informados.');
@@ -1739,6 +1808,32 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                             </Button>
                         </DialogFooter>
                     </DialogContent>
+                {/* Modal de Conflito de Horário */}
+                <Dialog open={conflictTimeModal.open} onOpenChange={(open) => setConflictTimeModal({ open, message: "" })}>
+                    <DialogContent className="max-w-md">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                                <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                                Conflito de Horário
+                            </DialogTitle>
+                        </DialogHeader>
+
+                        <div className="py-4">
+                            <p className="text-center text-muted-foreground">
+                                {conflictTimeModal.message}
+                            </p>
+                        </div>
+
+                        <DialogFooter>
+                            <Button
+                                onClick={() => setConflictTimeModal({ open: false, message: "" })}
+                                className="w-full"
+                            >
+                                OK
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
                 </Dialog>
 
             </div>

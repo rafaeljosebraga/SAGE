@@ -204,7 +204,7 @@ class AgendamentoController extends Controller
         // Se há conflitos e não foi forçado, retornar erro com os conflitos
         if ($conflitos->isNotEmpty() && !($validated['force_create'] ?? false)) {
             return back()->withErrors([
-                'conflitos' => $conflitos->toArray()
+                'conflitos' => 'Existe(m) agendamento(s) conflitante(s) no horário solicitado.'
             ])->withInput();
         }
 

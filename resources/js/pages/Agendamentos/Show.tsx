@@ -30,12 +30,38 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
     const [selectedFoto, setSelectedFoto] = useState<Foto | null>(null);
     const [isFotoModalOpen, setIsFotoModalOpen] = useState(false);
 
+    // Função para obter URL de retorno baseada nos parâmetros da URL atual
+    const getBackUrl = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const view = urlParams.get('view');
+        const date = urlParams.get('date');
+        const espacos = urlParams.get('espacos');
+        
+        // Construir URL de retorno com os parâmetros preservados
+        const backParams = new URLSearchParams();
+        
+        if (view && view !== 'week') {
+            backParams.set('view', view);
+        }
+        
+        if (date) {
+            backParams.set('date', date);
+        }
+        
+        if (espacos) {
+            backParams.set('espacos', espacos);
+        }
+        
+        const queryString = backParams.toString();
+        return queryString ? `/agendamentos?${queryString}` : '/agendamentos';
+    };
+
     const handleDelete = () => {
         if (confirm('Tem certeza que deseja cancelar este agendamento?')) {
             router.delete(`/agendamentos/${agendamento.id}`, {
                 onSuccess: () => {
                     alert('Agendamento cancelado com sucesso!');
-                    router.get('/agendamentos');
+                    router.get(getBackUrl());
                 },
                 onError: () => {
                     alert('Erro ao cancelar agendamento');
@@ -155,7 +181,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <Button variant="outline" size="sm" asChild>
-                            <Link href="/agendamentos">
+                            <Link href={getBackUrl()}>
                                 <ArrowLeft className="h-4 w-4 mr-2" />
                                 Voltar
                             </Link>
