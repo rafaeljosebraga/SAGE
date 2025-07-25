@@ -544,15 +544,13 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
 
     const canDelete = (agendamento: Agendamento) => {
         // Verificar se pode cancelar (agendamentos pendentes ou aprovados, mas não cancelados)
-        return (auth.user.perfil_acesso === 'diretor_geral' || 
-                agendamento.user_id === auth.user.id) && 
+        return auth.user.perfil_acesso === 'diretor_geral' && 
                (agendamento.status === 'pendente' || agendamento.status === 'aprovado');
     };
 
     const canUncancel = (agendamento: Agendamento) => {
-        // Verificar se pode descancelar (apenas agendamentos cancelados)
-        return (auth.user.perfil_acesso === 'diretor_geral' || 
-                agendamento.user_id === auth.user.id) && 
+        // Verificar se pode descancelar (apenas diretor geral pode descancelar agendamentos cancelados)
+        return auth.user.perfil_acesso === 'diretor_geral' && 
                agendamento.status === 'cancelado';
         
     };

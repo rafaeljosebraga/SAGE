@@ -124,13 +124,11 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
     const canEdit = agendamento.user_id === auth.user.id && agendamento.status === 'pendente';
     
     // Verificar se pode cancelar (agendamentos pendentes ou aprovados, mas não cancelados)
-    const canDelete = (auth.user.perfil_acesso === 'diretor_geral' || 
-                      agendamento.user_id === auth.user.id) && 
+    const canDelete = auth.user.perfil_acesso === 'diretor_geral' && 
                      (agendamento.status === 'pendente' || agendamento.status === 'aprovado');
     
     // Verificar se pode descancelar (apenas agendamentos cancelados)
-    const canUncancel = (auth.user.perfil_acesso === 'diretor_geral' || 
-                        agendamento.user_id === auth.user.id) && 
+    const canUncancel = auth.user.perfil_acesso === 'diretor_geral' && 
                        agendamento.status === 'cancelado';
 
     const formatDate = (dateString: string) => {
