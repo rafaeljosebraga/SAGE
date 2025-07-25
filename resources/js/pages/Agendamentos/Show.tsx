@@ -71,7 +71,10 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
     };
 
     const canEdit = agendamento.user_id === auth.user.id && agendamento.status === 'pendente';
-    const canDelete = auth.user.perfil_acesso === 'diretor_geral' || agendamento.user_id === auth.user.id;
+    // Diretor geral pode cancelar a qualquer momento
+    // Usuários comuns só podem cancelar agendamentos pendentes que são seus
+    const canDelete = auth.user.perfil_acesso === 'diretor_geral' || 
+                     (agendamento.user_id === auth.user.id && agendamento.status === 'pendente');
 
     const formatDate = (dateString: string) => {
         try {

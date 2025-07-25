@@ -521,7 +521,13 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     };
 
     const canDelete = (agendamento: Agendamento) => {
-        return auth.user.perfil_acesso === 'diretor_geral' || agendamento.user_id === auth.user.id;
+        // Diretor geral pode cancelar a qualquer momento
+        if (auth.user.perfil_acesso === 'diretor_geral') {
+            return true;
+        }
+        
+        // Usuários comuns só podem cancelar agendamentos pendentes que são seus
+        return agendamento.user_id === auth.user.id && agendamento.status === 'pendente';
     };
 
     // Função para validar se data e hora estão no passado
