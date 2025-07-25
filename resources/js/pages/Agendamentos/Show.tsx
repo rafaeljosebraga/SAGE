@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import { ArrowLeft, Calendar, Clock, MapPin, User, Users, Edit, Trash2, MessageSquare, X, Image as ImageIcon, ZoomIn, AlertTriangle, RotateCcw } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
@@ -81,7 +81,8 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                     title: "Agendamento cancelado com sucesso!",
                     // description: "O agendamento foi cancelado.",
                 });
-                // O backend já retorna back() então permanece na tela de detalhes
+                // Recarregar a página para atualizar os dados
+                router.reload({ only: ['agendamento'] });
             },
             onError: () => {
                 setDeleteModal({ open: false });
@@ -90,7 +91,6 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                     description: "Ocorreu um erro ao tentar cancelar o agendamento. Tente novamente.",
                     variant: "destructive",
                 });
-                // Permanece na tela de detalhes do agendamento mesmo com erro
             }
         });
     };
@@ -107,7 +107,8 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                     title: "Agendamento descancelado com sucesso!",
                     description: "O status foi alterado para pendente.",
                 });
-                // O backend já retorna back() então permanece na tela de detalhes
+                // Recarregar a página para atualizar os dados
+                router.reload({ only: ['agendamento'] });
             },
             onError: () => {
                 setUncancelModal({ open: false });
@@ -116,7 +117,6 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                     description: "Ocorreu um erro ao tentar descancelar o agendamento. Tente novamente.",
                     variant: "destructive",
                 });
-                // Permanece na tela de detalhes do agendamento mesmo com erro
             }
         });
     };
@@ -394,6 +394,45 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                         </Card>
 
                         {/* Status e Aprovação */}
+                        {agendamento.status === 'pendente' && (
+                            <Card className="border-l-4 border-l-orange-500">
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <Clock className="h-5 w-5" />
+                                        Aguardando Aprovação
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="flex items-center gap-2">
+                                        <Clock className="h-4 w-4 text-muted-foreground" />
+                                        <div>
+                                            <p className="text-sm font-medium">Status</p>
+                                            <p className="text-sm text-muted-foreground">
+                                                Aguardando análise do diretor geral
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                                        <div>
+                                            <p className="text-sm font-medium">Solicitado em</p>
+                                            <p className="text-sm text-muted-foreground">
+                                                {formatDateTime(agendamento.created_at)}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
+                                        <p className="text-sm text-orange-800 dark:text-orange-200">
+                                            <strong>Informação:</strong> Seu agendamento está na fila de aprovação. 
+                                            Você receberá uma notificação quando houver uma decisão.
+                                        </p>
+                                    </div> */}
+                                </CardContent>
+                            </Card>
+                        )}
+
                         {(agendamento.status === 'rejeitado' || agendamento.status === 'aprovado' || agendamento.status === 'cancelado') && (
                             <Card className={`border-l-4 ${
                                 agendamento.status === 'aprovado' ? 'border-l-emerald-500' : 
@@ -413,7 +452,9 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                                         <User className="h-4 w-4 text-muted-foreground" />
                                         <div>
                                             <p className="text-sm font-medium">
-                                                {agendamento.status === 'aprovado' ? 'Aprovado por' : 'Rejeitado por'}
+                                                {agendamento.status === 'aprovado' ? 'Aprovado por' : 
+                                                 agendamento.status === 'rejeitado' ? 'Rejeitado por' : 
+                                                 'Cancelado por'}
                                             </p>
                                             <p className="text-sm text-muted-foreground">
                                                 {(agendamento.aprovadoPor?.name || (agendamento as any).aprovado_por?.name) || 'Não informado'}

@@ -373,7 +373,11 @@ class AgendamentoController extends Controller
             abort(403, 'Você não tem permissão para cancelar este agendamento.');
         }
 
-        $agendamento->update(['status' => 'cancelado']);
+        $agendamento->update([
+            'status' => 'cancelado',
+            'aprovado_por' => auth()->id(),
+            'aprovado_em' => now(),
+        ]);
 
         // Para requisições Inertia, retornar back() para permanecer na mesma página
         if (request()->header('X-Inertia')) {
@@ -575,7 +579,12 @@ class AgendamentoController extends Controller
             return back()->withErrors(['status' => 'Apenas agendamentos cancelados podem ser descancelados.']);
         }
 
-        $agendamento->update(['status' => 'pendente']);
+        $agendamento->update([
+            'status' => 'pendente',
+            'aprovado_por' => null,
+            'aprovado_em' => null,
+            'motivo_rejeicao' => null,
+        ]);
 
         // Para requisições Inertia, retornar back() para permanecer na mesma página
         if (request()->header('X-Inertia')) {
