@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, Calendar, Clock, MapPin, User, Users, Edit, Trash2, MessageSquare, X, Image as ImageIcon, ZoomIn, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, MapPin, User, Users, Edit, Trash2, MessageSquare, X, Image as ImageIcon, ZoomIn, AlertTriangle, RotateCcw } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -28,6 +28,12 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
     const [deleteModal, setDeleteModal] = useState<{
     open: boolean;
     }>({ open: false });
+    
+    // Estado para modal de confirmação de descancelamento
+    const [uncancelModal, setUncancelModal] = useState<{
+    open: boolean;
+    }>({ open: false });
+    
     // Usar o hook de cores
     const { getStatusColor, getStatusText, getEventBorderColor } = useAgendamentoColors();
     // Usar o hook de toast
@@ -89,11 +95,43 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
         });
     };
 
+    const handleUncancel = () => {
+        setUncancelModal({ open: true });
+    };
+
+    const confirmUncancel = () => {
+        router.post(`/agendamentos/${agendamento.id}/descancelar`, {}, {
+            onSuccess: () => {
+                setUncancelModal({ open: false });
+                toast({
+                    title: "Agendamento descancelado com sucesso!",
+                    description: "O status foi alterado para pendente.",
+                });
+                // O backend já retorna back() então permanece na tela de detalhes
+            },
+            onError: () => {
+                setUncancelModal({ open: false });
+                toast({
+                    title: "Erro ao descancelar agendamento",
+                    description: "Ocorreu um erro ao tentar descancelar o agendamento. Tente novamente.",
+                    variant: "destructive",
+                });
+                // Permanece na tela de detalhes do agendamento mesmo com erro
+            }
+        });
+    };
+
     const canEdit = agendamento.user_id === auth.user.id && agendamento.status === 'pendente';
-    // Diretor geral pode cancelar a qualquer momento
-    // Usuários comuns só podem cancelar agendamentos pendentes que são seus
-    const canDelete = auth.user.perfil_acesso === 'diretor_geral' || 
-                     (agendamento.user_id === auth.user.id && agendamento.status === 'pendente');
+    
+    // Verificar se pode cancelar (agendamentos pendentes ou aprovados, mas não cancelados)
+    const canDelete = (auth.user.perfil_acesso === 'diretor_geral' || 
+                      agendamento.user_id === auth.user.id) && 
+                     (agendamento.status === 'pendente' || agendamento.status === 'aprovado');
+    
+    // Verificar se pode descancelar (apenas agendamentos cancelados)
+    const canUncancel = (auth.user.perfil_acesso === 'diretor_geral' || 
+                        agendamento.user_id === auth.user.id) && 
+                       agendamento.status === 'cancelado';
 
     const formatDate = (dateString: string) => {
         try {
@@ -228,7 +266,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                             </Button>
                         )}
 
-                        
+                        {/* Mostrar botão Cancelar apenas se não estiver cancelado */}
                         {canDelete && (
                             <Button
                                 variant="outline"
@@ -238,6 +276,19 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                             >
                                 <Trash2 className="h-4 w-4 mr-2" />
                                 Cancelar
+                            </Button>
+                        )}
+
+                        {/* Mostrar botão Voltar Evento apenas se estiver cancelado */}
+                        {canUncancel && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleUncancel}
+                                className="text-green-600 hover:text-green-700"
+                            >
+                                <RotateCcw className="h-4 w-4 mr-2" />
+                                Voltar Evento
                             </Button>
                         )}
                     </div>
@@ -797,6 +848,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                     </div>
                 </div>
             )}
+            
             {/* Modal de Confirmação de Cancelamento */}
             <Dialog open={deleteModal.open} onOpenChange={(open) => setDeleteModal({ open })}>
                 <DialogContent className="max-w-md">
@@ -831,6 +883,46 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                             onClick={confirmDelete}
                         >
                             Sim, Cancelar Agendamento
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Modal de Confirmação de Volta do evento */}
+            <Dialog open={uncancelModal.open} onOpenChange={(open) => setUncancelModal({ open })}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <RotateCcw className="h-5 w-5 text-green-600" />
+                            Voltar Agendamento
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    <div className="py">
+                        <p className="text-muted-foreground">
+                            Tem certeza que deseja voltar este agendamento? O status será alterado para pendente.
+                        </p>
+                        <div className="mt p-3 bg-muted/30 rounded-lg">
+                            <p className="font-medium text-sm">{agendamento.titulo}</p>
+                            <p className="text-xs text-muted-foreground">
+                                {agendamento.espaco?.nome} • {formatDate(agendamento.data_inicio)}
+                            </p>
+                        </div>
+                    </div>
+
+                    <DialogFooter className="gap-2">
+                        <Button
+                            variant="outline"
+                            onClick={() => setUncancelModal({ open: false })}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            variant="default"
+                            onClick={confirmUncancel}
+                            className="bg-green-600 hover:bg-green-700"
+                        >
+                            Sim, Voltar Evento
                         </Button>
                     </DialogFooter>
                 </DialogContent>

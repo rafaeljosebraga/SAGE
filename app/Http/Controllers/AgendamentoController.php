@@ -560,4 +560,31 @@ class AgendamentoController extends Controller
             'espaco' => $espaco->nome,
         ]);
     }
+
+    /**
+     * Descancelar agendamento (voltar de cancelado para pendente)
+     */
+    public function descancelar(Agendamento $agendamento)
+    {
+        // Verificar permissão
+        if (auth()->user()->perfil_acesso !== 'diretor_geral' && 
+            $agendamento->user_id !== auth()->id()) {
+            abort(403, 'Você não tem permissão para descancelar este agendamento.');
+        }
+
+        // Verificar se o agendamento está cancelado
+        if ($agendamento->status !== 'cancelado') {
+            return back()->withErrors(['status' => 'Apenas agendamentos cancelados podem ser descancelados.']);
+        }
+
+        $agendamento->update(['status' => 'pendente']);
+
+        // Para requisições Inertia, retornar back() para permanecer na mesma página
+        if (request()->header('X-Inertia')) {
+            return back()->with('success', 'Agendamento descancelado com sucesso! Status alterado para pendente.');
+        }
+
+        return redirect()->route('agendamentos.index')
+                        ->with('success', 'Agendamento descancelado com sucesso! Status alterado para pendente.');
+    }
 }

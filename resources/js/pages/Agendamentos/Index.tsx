@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
-import { Calendar, Clock, MapPin, User, Filter, Plus, Eye, Edit, Trash2, Settings, AlertTriangle, ChevronLeft, ChevronRight, List, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, Filter, Plus, Eye, Edit, Trash2, Settings, AlertTriangle, ChevronLeft, ChevronRight, List, Search, ArrowUpDown, ArrowUp, ArrowDown, RotateCcw } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, addMonths, subMonths, startOfWeek, endOfWeek, addDays, isSameDay, parseISO, addHours, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -543,13 +543,18 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     };
 
     const canDelete = (agendamento: Agendamento) => {
-        // Diretor geral pode cancelar a qualquer momento
-        if (auth.user.perfil_acesso === 'diretor_geral') {
-            return true;
-        }
+        // Verificar se pode cancelar (agendamentos pendentes ou aprovados, mas não cancelados)
+        return (auth.user.perfil_acesso === 'diretor_geral' || 
+                agendamento.user_id === auth.user.id) && 
+               (agendamento.status === 'pendente' || agendamento.status === 'aprovado');
+    };
+
+    const canUncancel = (agendamento: Agendamento) => {
+        // Verificar se pode descancelar (apenas agendamentos cancelados)
+        return (auth.user.perfil_acesso === 'diretor_geral' || 
+                agendamento.user_id === auth.user.id) && 
+               agendamento.status === 'cancelado';
         
-        // Usuários comuns só podem cancelar agendamentos pendentes que são seus
-        return agendamento.user_id === auth.user.id && agendamento.status === 'pendente';
     };
 
     // Função para validar se data e hora estão no passado
@@ -1266,6 +1271,34 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                                 className="text-red-600 hover:text-red-700"
                                             >
                                                 <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        )}
+
+                                        {canUncancel(agendamento) && (
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => {
+                                                    router.post(`/agendamentos/${agendamento.id}/descancelar`, {}, {
+                                                        onSuccess: () => {
+                                                            toast({
+                                                                title: "Agendamento voltado com sucesso!",
+                                                                description: "O status foi alterado para pendente.",
+                                                            });
+                                                            router.reload();
+                                                        },
+                                                        onError: () => {
+                                                            toast({
+                                                                title: "Erro ao voltar agendamento",
+                                                                description: "Ocorreu um erro ao tentar voltar o agendamento. Tente novamente.",
+                                                                variant: "destructive",
+                                                            });
+                                                        }
+                                                    });
+                                                }}
+                                                className="text-green-600 hover:text-green-700"
+                                            >
+                                                <RotateCcw className="h-4 w-4" />
                                             </Button>
                                         )}
                                     </div>
