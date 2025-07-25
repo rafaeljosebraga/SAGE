@@ -2,7 +2,7 @@ import { useState } from 'react';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Head, Link } from '@inertiajs/react';
-import { UserIcon } from 'lucide-react';
+import { UserIcon, Plus } from 'lucide-react';
 import { type User, type Espaco, type BreadcrumbItem } from '@/types';
 import { FilterableTable, type ColumnConfig } from '@/components/ui/filterable-table';
 
@@ -49,6 +49,7 @@ export default function AtribuirPermissoesIndex({ users, espacos }: AtribuirPerm
                         className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black"
                     >
                         <Link href={`atribuir-permissoes/${user.id}/criar`}>
+                            <Plus className="h-4 w-4 text-[#F26326]" />
                         </Link>
                     </Button>
                 </div>

@@ -1,6 +1,8 @@
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import { useToastDismissOnClick } from '@/hooks/use-toast-dismiss-on-click';
 import { Head, Link, router } from '@inertiajs/react';
 import { Plus, Pencil, Trash2, Package, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import { type User, type Recurso, type BreadcrumbItem } from '@/types';
@@ -25,8 +27,28 @@ interface RecursosIndexProps {
 }
 
 export default function RecursosIndex({ auth, recursos }: RecursosIndexProps) {
-    const handleDelete = (id: number) => {
-        router.delete(`/recursos/${id}`);
+    const { toast } = useToast();
+    useToastDismissOnClick(); // Hook para dismissar toast ao clicar em botões
+
+    const handleDelete = (recurso: Recurso) => {
+        router.delete(`/recursos/${recurso.id}`, {
+            onSuccess: () => {
+                toast({
+                    title: "Recurso excluído com sucesso!",
+                    description: `O recurso ${recurso.nome} foi removido do sistema.`,
+                    variant: "success",
+                    duration: 5000, // 5 segundos
+                });
+            },
+            onError: () => {
+                toast({
+                    title: "Erro ao excluir recurso",
+                    description: "Ocorreu um erro ao executar a ação, verifique os campos",
+                    variant: "destructive",
+                    duration: 5000, // 5 segundos
+                });
+            }
+        });
     };
 
     const getStatusVariant = (status: string) => {
@@ -184,7 +206,7 @@ export default function RecursosIndex({ auth, recursos }: RecursosIndexProps) {
                                     Cancelar
                                 </AlertDialogCancel>
                                 <AlertDialogAction
-                                    onClick={() => handleDelete(recurso.id)}
+                                    onClick={() => handleDelete(recurso)}
                                     className="bg-red-600 hover:bg-red-700"
                                 >
                                     Excluir

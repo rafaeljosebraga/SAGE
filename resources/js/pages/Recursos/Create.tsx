@@ -23,6 +23,8 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
+import { useToastDismissOnClick } from '@/hooks/use-toast-dismiss-on-click';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Save } from 'lucide-react';
 import { type User, type BreadcrumbItem } from '@/types';
@@ -35,7 +37,9 @@ interface RecursosCreateProps {
 }
 
 export default function RecursosCreate({ auth }: RecursosCreateProps) {
-    const { data, setData, reset, post, processing, errors } = useForm({
+    const { toast } = useToast();
+    useToastDismissOnClick(); // Hook para dismissar toast ao clicar em botões
+    const { data, setData, reset, post, processing, errors, clearErrors } = useForm({
         nome: '',
         descricao: '',
         status: 'disponivel' as 'disponivel' | 'manutencao' | 'indisponivel',
@@ -47,7 +51,25 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        post(route('recursos.store'));
+        post(route('recursos.store'), {
+            onSuccess: () => {
+                reset();
+                toast({
+                    title: "Recurso criado com sucesso!",
+                    description: `O recurso ${data.nome} foi criado e adicionado ao sistema.`,
+                    variant: "success",
+                    duration: 5000, // 5 segundos
+                });
+            },
+            onError: () => {
+                toast({
+                    title: "Erro ao criar recurso",
+                    description: "Ocorreu um erro ao executar a ação, verifique os campos",
+                    variant: "destructive",
+                    duration: 5000, // 5 segundos
+                });
+            }
+        });
     };
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -108,7 +130,10 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                                         id="nome"
                                         type="text"
                                         value={data.nome}
-                                        onChange={(e) => setData('nome', e.target.value)}
+                                        onChange={(e) => {
+                                            setData('nome', e.target.value);
+                                            if (errors.nome) clearErrors('nome');
+                                        }}
                                         placeholder="Nome do recurso"
                                         className={errors.nome ? 'border-red-500' : ''}
                                     />
@@ -121,7 +146,10 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                                     <Label htmlFor="status">Status *</Label>
                                     <Select
                                         value={data.status}
-                                        onValueChange={(value) => setData('status', value as 'disponivel' | 'manutencao' | 'indisponivel')}
+                                        onValueChange={(value) => {
+                                            setData('status', value as 'disponivel' | 'manutencao' | 'indisponivel');
+                                            if (errors.status) clearErrors('status');
+                                        }}
                                     >
                                         <SelectTrigger className={errors.status ? 'border-red-500' : ''}>
                                             <SelectValue />
@@ -143,7 +171,10 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                                 <Textarea
                                     id="descricao"
                                     value={data.descricao}
-                                    onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setData('descricao', e.target.value)}
+                                    onChange={(e: ChangeEvent<HTMLTextAreaElement>) => {
+                                        setData('descricao', e.target.value);
+                                        if (errors.descricao) clearErrors('descricao');
+                                    }}
                                     placeholder="Descrição do recurso"
                                     rows={3}
                                     className={errors.descricao ? 'border-red-500' : ''}
@@ -178,7 +209,10 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                                         id="marca"
                                         type="text"
                                         value={data.marca}
-                                        onChange={(e) => setData('marca', e.target.value)}
+                                        onChange={(e) => {
+                                            setData('marca', e.target.value);
+                                            if (errors.marca) clearErrors('marca');
+                                        }}
                                         placeholder="Marca do equipamento"
                                         className={errors.marca ? 'border-red-500' : ''}
                                     />
@@ -193,7 +227,10 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                                         id="modelo"
                                         type="text"
                                         value={data.modelo}
-                                        onChange={(e) => setData('modelo', e.target.value)}
+                                        onChange={(e) => {
+                                            setData('modelo', e.target.value);
+                                            if (errors.modelo) clearErrors('modelo');
+                                        }}
                                         placeholder="Modelo do equipamento"
                                         className={errors.modelo ? 'border-red-500' : ''}
                                     />
@@ -208,7 +245,10 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                                 <Textarea
                                     id="observacoes"
                                     value={data.observacoes}
-                                    onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setData('observacoes', e.target.value)}
+                                    onChange={(e: ChangeEvent<HTMLTextAreaElement>) => {
+                                        setData('observacoes', e.target.value);
+                                        if (errors.observacoes) clearErrors('observacoes');
+                                    }}
                                     placeholder="Observações gerais sobre o recurso"
                                     rows={3}
                                     className={errors.observacoes ? 'border-red-500' : ''}
