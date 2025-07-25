@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, Calendar, Clock, MapPin, User, Users, Edit, Trash2, MessageSquare, X, Image as ImageIcon, ZoomIn } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, MapPin, User, Users, Edit, Trash2, MessageSquare, X, Image as ImageIcon, ZoomIn, AlertTriangle } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -8,8 +8,9 @@ import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAgendamentoColors, StatusBadge } from '@/components/ui/agend-colors';
+import { useToast } from '@/hooks/use-toast';
 
 import type { PageProps, Agendamento, Foto, BreadcrumbItem } from '@/types';
 
@@ -23,8 +24,14 @@ interface Props extends PageProps {
 }
 
 export default function AgendamentosShow({ agendamento, auth, recursosSolicitados }: Props) {
+    // Estado para modal de confirmação de cancelamento
+    const [deleteModal, setDeleteModal] = useState<{
+    open: boolean;
+    }>({ open: false });
     // Usar o hook de cores
     const { getStatusColor, getStatusText, getEventBorderColor } = useAgendamentoColors();
+    // Usar o hook de toast
+    const { toast } = useToast();
     
     const [isEspacoModalOpen, setIsEspacoModalOpen] = useState(false);
     const [selectedFoto, setSelectedFoto] = useState<Foto | null>(null);
@@ -57,17 +64,29 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
     };
 
     const handleDelete = () => {
-        if (confirm('Tem certeza que deseja cancelar este agendamento?')) {
-            router.delete(`/agendamentos/${agendamento.id}`, {
-                onSuccess: () => {
-                    alert('Agendamento cancelado com sucesso!');
-                    router.get(getBackUrl());
-                },
-                onError: () => {
-                    alert('Erro ao cancelar agendamento');
-                }
-            });
-        }
+        setDeleteModal({ open: true });
+    };
+
+    const confirmDelete = () => {
+        router.delete(`/agendamentos/${agendamento.id}`, {
+            onSuccess: () => {
+                setDeleteModal({ open: false });
+                toast({
+                    title: "Agendamento cancelado com sucesso!",
+                    // description: "O agendamento foi cancelado.",
+                });
+                // O backend já retorna back() então permanece na tela de detalhes
+            },
+            onError: () => {
+                setDeleteModal({ open: false });
+                toast({
+                    title: "Erro ao cancelar agendamento",
+                    description: "Ocorreu um erro ao tentar cancelar o agendamento. Tente novamente.",
+                    variant: "destructive",
+                });
+                // Permanece na tela de detalhes do agendamento mesmo com erro
+            }
+        });
     };
 
     const canEdit = agendamento.user_id === auth.user.id && agendamento.status === 'pendente';
@@ -778,6 +797,44 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                     </div>
                 </div>
             )}
+            {/* Modal de Confirmação de Cancelamento */}
+            <Dialog open={deleteModal.open} onOpenChange={(open) => setDeleteModal({ open })}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <AlertTriangle className="h-5 w-5 text-red-600" />
+                            Confirmar Cancelamento
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    <div className="py">
+                        <p className="text-muted-foreground">
+                            Tem certeza que deseja cancelar este agendamento?
+                        </p>
+                        <div className="mt p-3 bg-muted/30 rounded-lg">
+                            <p className="font-medium text-sm">{agendamento.titulo}</p>
+                            <p className="text-xs text-muted-foreground">
+                                {agendamento.espaco?.nome} • {formatDate(agendamento.data_inicio)}
+                            </p>
+                        </div>
+                    </div>
+
+                    <DialogFooter className="gap-2">
+                        <Button
+                            variant="outline"
+                            onClick={() => setDeleteModal({ open: false })}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={confirmDelete}
+                        >
+                            Sim, Cancelar Agendamento
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </AppLayout>
     );
 }

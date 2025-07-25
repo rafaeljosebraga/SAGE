@@ -376,6 +376,11 @@ class AgendamentoController extends Controller
 
         $agendamento->update(['status' => 'cancelado']);
 
+        // Para requisições Inertia, retornar back() para permanecer na mesma página
+        if (request()->header('X-Inertia')) {
+            return back()->with('success', 'Agendamento cancelado com sucesso!');
+        }
+
         return redirect()->route('agendamentos.index')
                         ->with('success', 'Agendamento cancelado com sucesso!');
     }

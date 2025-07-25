@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAgendamentoColors, StatusLegend, StatusBadge } from '@/components/ui/agend-colors';
+import { useToast } from '@/hooks/use-toast';
 
 import type { PageProps, Agendamento, Espaco, BreadcrumbItem } from '@/types';
 
@@ -49,6 +50,9 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         getStatusText,
         getStatusIcon
     } = useAgendamentoColors();
+    
+    // Usar o hook de toast
+    const { toast } = useToast();
 
     // Detectar se deve iniciar no modo calendário baseado na URL
     const getInitialState = () => {
@@ -160,6 +164,11 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     open: boolean;
     message: string;
     }>({ open: false, message: "" });
+    // Estado para modal de confirmação de cancelamento
+    const [deleteModal, setDeleteModal] = useState<{
+    open: boolean;
+    agendamento: Agendamento | null;
+    }>({ open: false, agendamento: null });
 
     // Atualizar viewMode quando filters.view mudar
     useEffect(() => {
@@ -503,14 +512,27 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     };
 
     const handleDelete = (agendamento: Agendamento) => {
-        if (confirm('Tem certeza que deseja cancelar este agendamento?')) {
-            router.delete(`/agendamentos/${agendamento.id}`, {
+        setDeleteModal({ open: true, agendamento });
+    };
+
+    const confirmDelete = () => {
+        if (deleteModal.agendamento) {
+            router.delete(`/agendamentos/${deleteModal.agendamento.id}`, {
                 onSuccess: () => {
-                    alert('Agendamento cancelado com sucesso!');
+                    setDeleteModal({ open: false, agendamento: null });
+                    toast({
+                        title: "Agendamento cancelado com sucesso!",
+                        // description: "O agendamento foi cancelado.",
+                    });
                     router.reload();
                 },
                 onError: () => {
-                    alert('Erro ao cancelar agendamento');
+                    setDeleteModal({ open: false, agendamento: null });
+                    toast({
+                        title: "Erro ao cancelar agendamento",
+                        description: "Ocorreu um erro ao tentar cancelar o agendamento. Tente novamente.",
+                        variant: "destructive",
+                    });
                 }
             });
         }
@@ -1822,6 +1844,49 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                 <AlertTriangle className="h-5 w-5 text-yellow-600" />
                                 Conflito de Horário
                             </DialogTitle>
+                {/* Modal de Confirmação de Cancelamento */}
+                <Dialog open={deleteModal.open} onOpenChange={(open) => setDeleteModal({ open, agendamento: null })}>
+                    <DialogContent className="max-w-md">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                                <AlertTriangle className="h-5 w-5 text-red-600" />
+                                Confirmar Cancelamento
+                            </DialogTitle>
+                            <DialogDescription>
+                                Esta ação não pode ser desfeita.
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="py-4">
+                            <p className="text-center text-muted-foreground">
+                                Tem certeza que deseja cancelar este agendamento?
+                            </p>
+                            {deleteModal.agendamento && (
+                                <div className="mt-3 p-3 bg-muted/30 rounded-lg">
+                                    <p className="font-medium text-sm">{deleteModal.agendamento.titulo}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {deleteModal.agendamento.espaco?.nome} • {deleteModal.agendamento.data_inicio}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+
+                        <DialogFooter className="gap-2">
+                            <Button
+                                variant="outline"
+                                onClick={() => setDeleteModal({ open: false, agendamento: null })}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                onClick={confirmDelete}
+                            >
+                                Sim, Cancelar Agendamento
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
                         </DialogHeader>
 
                         <div className="py-4">
