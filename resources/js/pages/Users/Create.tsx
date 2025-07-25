@@ -54,7 +54,8 @@ export default function Create({ perfilAcesso }: Props) {
 
     const submit = (e: FormEvent) => {
         e.preventDefault();
-        post('/usuarios', { onSuccess: () => {
+        post('/usuarios', { 
+            onSuccess: () => {
                 reset();
                 toast({
                     title: "Usuário criado com sucesso!",
@@ -63,7 +64,14 @@ export default function Create({ perfilAcesso }: Props) {
                     duration: 5000, // 5 segundos
                 });
             },
-            
+            onError: () => {
+                toast({
+                    title: "Erro ao criar usuário",
+                    description: "Ocorreu um erro ao executar a ação, verifique os campos",
+                    variant: "destructive",
+                    duration: 5000, // 5 segundos
+                });
+            }
         });
     };
 
