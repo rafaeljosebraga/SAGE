@@ -1,3 +1,14 @@
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -62,12 +73,37 @@ export default function Create({ perfilAcesso }: Props) {
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center gap-4">
-                    <Link href="/usuarios">
-                        <Button variant="outline" size="sm">
-                            <ArrowLeft className="mr-2 h-4 w-4" />
-                            Voltar
-                        </Button>
-                    </Link>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button
+                                variant="outline"
+                                type="button"
+                                className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-[#F26326] hover:text-black dark:text-[#F26326] dark:hover:text-black"
+                            >
+                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                Voltar
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Tem certeza que deseja voltar?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    As informações preenchidas serão perdidas.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Não</AlertDialogCancel>
+                                <AlertDialogAction
+                                    onClick={() => {
+                                        window.location.href = '/usuarios';
+                                    }}
+                                    className="bg-red-600 hover:bg-red-700"
+                                >
+                                    Sim, voltar
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                 </div>
 
                 <Card className="max-w-2xl">
@@ -173,11 +209,33 @@ export default function Create({ perfilAcesso }: Props) {
                                 <Button type="submit" disabled={processing}>
                                     {processing ? 'Criando...' : 'Criar Usuário'}
                                 </Button>
-                                <Link href="/usuarios">
-                                    <Button type="button" variant="outline">
-                                        Cancelar
-                                    </Button>
-                                </Link>
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button>
+                                            Cancelar
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Tem certeza que deseja cancelar?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                Todas as informações preenchidas serão limpas.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Não</AlertDialogCancel>
+                                            <AlertDialogAction
+                                                onClick={() => {
+                                                    reset();
+                                                }}
+                                                className="bg-red-600 hover:bg-red-700"
+                                            >
+                                                Sim, cancelar
+                                            </AlertDialogAction>
+        
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>    
                             </div>
                         </form>
                     </CardContent>
