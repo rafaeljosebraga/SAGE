@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
-import { Calendar, Clock, MapPin, User, Filter, Plus, Eye, Edit, Trash2, Settings, AlertTriangle, ChevronLeft, ChevronRight, List, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, Users, Filter, Plus, Eye, Edit, Trash2, Settings, AlertTriangle, ChevronLeft, ChevronRight, List, Search, ArrowUpDown, ArrowUp, ArrowDown, RotateCcw, X, Building, Info } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, addMonths, subMonths, startOfWeek, endOfWeek, addDays, isSameDay, parseISO, addHours, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -15,7 +15,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useAgendamentoColors, StatusLegend, StatusBadge } from '@/components/ui/agend-colors';
+import { useAgendamentoColors, StatusLegend, StatusBadge, isEventPast } from '@/components/ui/agend-colors';
+import { useToast } from '@/hooks/use-toast';
 
 import type { PageProps, Agendamento, Espaco, BreadcrumbItem } from '@/types';
 
@@ -34,6 +35,7 @@ interface Props extends PageProps {
         status?: string;
         data_inicio?: string;
         data_fim?: string;
+        nome?: string;
         view?: string;
     };
 }
@@ -49,21 +51,71 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         getStatusText,
         getStatusIcon
     } = useAgendamentoColors();
+    
+    // Usar o hook de toast
+    const { toast } = useToast();
 
     // Detectar se deve iniciar no modo calendário baseado na URL
-    const initialView = filters.view === 'list' ? 'list' : 'week';
-    const [viewMode, setViewMode] = useState<ViewMode>(initialView);
-    const [currentDate, setCurrentDate] = useState(new Date());
-    const [selectedEspacos, setSelectedEspacos] = useState<number[]>(
-        filters.espaco_id ? [parseInt(filters.espaco_id)] : espacos.map(e => e.id)
-    );
+    const getInitialState = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const viewParam = urlParams.get('view') || filters.view;
+        const dateParam = urlParams.get('date');
+        const espacosParam = urlParams.get('espacos');
+        
+        // Determinar visualização inicial
+        const initialView: ViewMode = viewParam === 'list' ? 'list' : 
+                                     viewParam === 'month' ? 'month' :
+                                     viewParam === 'day' ? 'day' :
+                                     viewParam === 'timeline' ? 'timeline' : 'week';
+        
+        // Determinar data inicial
+        let initialDate = new Date();
+        if (dateParam) {
+            try {
+                const parsedDate = new Date(dateParam);
+                if (!isNaN(parsedDate.getTime())) {
+                    initialDate = parsedDate;
+                }
+            } catch (error) {
+                console.warn('Data inválida na URL:', dateParam);
+            }
+        }
+        
+        // Determinar espaços selecionados
+        let initialEspacos = espacos.map(e => e.id);
+        if (espacosParam) {
+            try {
+                const espacosIds = espacosParam.split(',').map(id => parseInt(id)).filter(id => !isNaN(id));
+                if (espacosIds.length > 0) {
+                    initialEspacos = espacosIds.filter(id => espacos.some(e => e.id === id));
+                }
+            } catch (error) {
+                console.warn('Espaços inválidos na URL:', espacosParam);
+            }
+        } else if (filters.espaco_id) {
+            initialEspacos = [parseInt(filters.espaco_id)];
+        }
+        
+        return {
+            view: initialView,
+            date: initialDate,
+            espacos: initialEspacos
+        };
+    };
+    
+    const initialState = getInitialState();
+    const [viewMode, setViewMode] = useState<ViewMode>(initialState.view);
+    const [currentDate, setCurrentDate] = useState(initialState.date);
+    const [selectedEspacos, setSelectedEspacos] = useState<number[]>(initialState.espacos);
     const [searchEspacos, setSearchEspacos] = useState("");
     const [searchAgendamentos, setSearchAgendamentos] = useState("");
+    const [nomeFilter, setNomeFilter] = useState(filters.nome || '');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | 'none'>('none');
     const [dateSortOrder, setDateSortOrder] = useState<{
         inicio: 'asc' | 'desc' | 'none';
         fim: 'asc' | 'desc' | 'none';
     }>({ inicio: 'none', fim: 'none' });
+    const [nomeSortOrder, setNomeSortOrder] = useState<'asc' | 'desc' | 'none'>('none');
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Agendamentos', href: '/agendamentos' }
@@ -87,7 +139,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         justificativa: '',
         observacoes: '',
         recorrente: false,
-        tipo_recorrencia: 'semanal',
+        tipo_recorrencia: '',
         data_fim_recorrencia: '',
         recursos_solicitados: [] as string[]
     });
@@ -110,6 +162,22 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     const [pastTimeModal, setPastTimeModal] = useState<{
     open: boolean;
     }>({ open: false });
+    // Estado para modal de conflito de horário
+    const [conflictTimeModal, setConflictTimeModal] = useState<{
+    open: boolean;
+    message: string;
+    }>({ open: false, message: "" });
+    // Estado para modal de confirmação de cancelamento
+    const [deleteModal, setDeleteModal] = useState<{
+    open: boolean;
+    agendamento: Agendamento | null;
+    }>({ open: false, agendamento: null });
+    
+    // Estado para modal de confirmação de exclusão permanente
+    const [forceDeleteModal, setForceDeleteModal] = useState<{
+    open: boolean;
+    agendamento: Agendamento | null;
+    }>({ open: false, agendamento: null });
 
     // Atualizar viewMode quando filters.view mudar
     useEffect(() => {
@@ -117,6 +185,30 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
             setViewMode('list');
         }
     }, [filters.view]);
+
+    // Debounce para o filtro de nome
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (nomeFilter !== (filters.nome || '')) {
+                router.get('/agendamentos', { 
+                    ...filters, 
+                    nome: nomeFilter || undefined, 
+                    view: 'list' 
+                }, {
+                    preserveState: true,
+                    preserveScroll: true,
+                    replace: true
+                });
+            }
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [nomeFilter]);
+
+    // Atualizar estado local quando filters.nome mudar
+    useEffect(() => {
+        setNomeFilter(filters.nome || '');
+    }, [filters.nome]);
 
     // Filtrar e ordenar espaços
     const filteredAndSortedEspacos = (() => {
@@ -160,6 +252,30 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     };
 
     // Funções para alternar ordenação de datas
+    // Função para alternar ordenação de nome
+    const toggleNomeSort = () => {
+        if (nomeSortOrder === 'none') {
+            setNomeSortOrder('asc');
+            setDateSortOrder({ inicio: 'none', fim: 'none' });
+        } else if (nomeSortOrder === 'asc') {
+            setNomeSortOrder('desc');
+        } else {
+            setNomeSortOrder('none');
+        }
+    };
+
+    // Função para obter ícone de ordenação de nome
+    const getNomeSortIcon = () => {
+        switch (nomeSortOrder) {
+            case 'asc':
+                return <ArrowUp className="h-3 w-3" />;
+            case 'desc':
+                return <ArrowDown className="h-3 w-3" />;
+            default:
+                return <ArrowUpDown className="h-3 w-3" />;
+        }
+    };
+
     const toggleDateSort = (type: 'inicio' | 'fim') => {
         setDateSortOrder(prev => {
             const currentOrder = prev[type];
@@ -173,7 +289,11 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                 newOrder = 'none';
             }
             
-            // Reset the other date sort when one is changed
+            
+            // Reset nome sort when date sort is activated
+            if (newOrder !== 'none') {
+                setNomeSortOrder('none');
+            }
             if (type === 'inicio') {
                 return {
                     inicio: newOrder,
@@ -220,6 +340,17 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
             filtered = filtered.filter(agendamento => {
                 const agendamentoDataFim = agendamento.data_fim.split('T')[0]; // YYYY-MM-DD
                 return agendamentoDataFim <= filters.data_fim!;
+            });
+        }
+
+        // Aplicar ordenação por nome se ativa
+        if (nomeSortOrder !== 'none') {
+            filtered.sort((a, b) => {
+                const nomeA = a.titulo.toLowerCase();
+                const nomeB = b.titulo.toLowerCase();
+                return nomeSortOrder === 'asc'
+                    ? nomeA.localeCompare(nomeB)
+                    : nomeB.localeCompare(nomeA);
             });
         }
 
@@ -369,20 +500,27 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         let selectedTime = timeSlot || '08:00';
         
         // Se a data selecionada for hoje, verificar se precisa ajustar o horário
-        if (selectedDate === todayStr && timeSlot) {
-            const [slotHour, slotMinute] = timeSlot.split(':').map(Number);
-            const currentHour = now.getHours();
-            const currentMinute = now.getMinutes();
-            
-            // Se o slot clicado é a hora atual, ajustar para o minuto atual + 1
-            if (slotHour === currentHour) {
+        if (selectedDate === todayStr) {
+            if (timeSlot) {
+                const [slotHour, slotMinute] = timeSlot.split(':').map(Number);
+                const currentHour = now.getHours();
+                const currentMinute = now.getMinutes();
+                
+                // Se o slot clicado é a hora atual, ajustar para o minuto atual + 1
+                if (slotHour === currentHour) {
+                    const nextMinute = new Date(now.getTime() + 60000); // Adiciona 1 minuto
+                    selectedTime = format(nextMinute, 'HH:mm');
+                }
+                // Se o slot clicado é anterior à hora atual, mostrar aviso
+                else if (slotHour < currentHour || (slotHour === currentHour && slotMinute < currentMinute)) {
+                    setPastTimeModal({ open: true });
+                    return;
+                }
+            } else {
+                // Quando não há timeSlot especificado (clique no dia no modo mês)
+                // Definir horário como próximo minuto se for hoje
                 const nextMinute = new Date(now.getTime() + 60000); // Adiciona 1 minuto
                 selectedTime = format(nextMinute, 'HH:mm');
-            }
-            // Se o slot clicado é anterior à hora atual, mostrar aviso
-            else if (slotHour < currentHour || (slotHour === currentHour && slotMinute < currentMinute)) {
-                setPastTimeModal({ open: true });
-                return;
             }
         }
         // Para datas passadas, verificar se está no passado
@@ -405,7 +543,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
             justificativa: '',
             observacoes: '',
             recorrente: false,
-            tipo_recorrencia: 'semanal',
+            tipo_recorrencia: '',
             data_fim_recorrencia: '',
             recursos_solicitados: []
         });
@@ -419,7 +557,36 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     };
 
     const handleEventClick = (agendamento: Agendamento) => {
-        router.get(`/agendamentos/${agendamento.id}`);
+        // Preservar o estado atual da visualização na URL
+        const currentParams = new URLSearchParams();
+        currentParams.set('view', viewMode);
+        currentParams.set('date', format(currentDate, 'yyyy-MM-dd'));
+        
+        // Adicionar filtros de espaços selecionados se não for todos
+        if (selectedEspacos.length !== espacos.length) {
+            currentParams.set('espacos', selectedEspacos.join(','));
+        }
+        
+        // Preservar filtros da lista se estiver na visualização de lista
+        if (viewMode === 'list') {
+            if (filters.espaco_id) {
+                currentParams.set('espaco_id', filters.espaco_id);
+            }
+            if (filters.status) {
+                currentParams.set('status', filters.status);
+            }
+            if (filters.data_inicio) {
+                currentParams.set('data_inicio', filters.data_inicio);
+            }
+            if (filters.data_fim) {
+                currentParams.set('data_fim', filters.data_fim);
+            }
+            if (filters.nome) {
+                currentParams.set('nome', filters.nome);
+            }
+        }
+        
+        router.get(`/agendamentos/${agendamento.id}?${currentParams.toString()}`);
     };
 
     // Função para abrir modal de visualização do dia
@@ -436,25 +603,83 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     };
 
     const handleDelete = (agendamento: Agendamento) => {
-        if (confirm('Tem certeza que deseja cancelar este agendamento?')) {
-            router.delete(`/agendamentos/${agendamento.id}`, {
+        setDeleteModal({ open: true, agendamento });
+    };
+
+    const confirmDelete = () => {
+        if (deleteModal.agendamento) {
+            router.delete(`/agendamentos/${deleteModal.agendamento.id}`, {
                 onSuccess: () => {
-                    alert('Agendamento cancelado com sucesso!');
+                    setDeleteModal({ open: false, agendamento: null });
+                    toast({
+                        title: "Agendamento cancelado com sucesso!",
+                        // description: "O agendamento foi cancelado.",
+                    });
                     router.reload();
                 },
                 onError: () => {
-                    alert('Erro ao cancelar agendamento');
+                    setDeleteModal({ open: false, agendamento: null });
+                    toast({
+                        title: "Erro ao cancelar agendamento",
+                        description: "Ocorreu um erro ao tentar cancelar o agendamento. Tente novamente.",
+                        variant: "destructive",
+                        duration: 5000, // 5 segundos
+                    });
+                }
+            });
+        }
+    };
+
+    const handleForceDelete = (agendamento: Agendamento) => {
+        setForceDeleteModal({ open: true, agendamento });
+    };
+
+    const confirmForceDelete = () => {
+        if (forceDeleteModal.agendamento) {
+            router.delete(`/agendamentos/${forceDeleteModal.agendamento.id}/force-delete`, {
+                onSuccess: () => {
+                    setForceDeleteModal({ open: false, agendamento: null });
+                    toast({
+                        title: "Agendamento excluído com sucesso!",
+                        // description: "O agendamento foi removido do sistema.",
+                        duration: 5000,
+                    });
+                    router.reload();
+                },
+                onError: () => {
+                    setForceDeleteModal({ open: false, agendamento: null });
+                    toast({
+                        title: "Erro ao excluir agendamento",
+                        description: "Ocorreu um erro ao tentar excluir o agendamento. Tente novamente.",
+                        variant: "destructive",
+                        duration: 5000,
+                    });
                 }
             });
         }
     };
 
     const canEdit = (agendamento: Agendamento) => {
-        return agendamento.user_id === auth.user.id && agendamento.status === 'pendente';
+        // Diretor geral pode editar qualquer agendamento, usuários comuns só podem editar seus próprios agendamentos pendentes
+        return auth.user.perfil_acesso === 'diretor_geral' || (agendamento.user_id === auth.user.id && agendamento.status === 'pendente');
     };
 
     const canDelete = (agendamento: Agendamento) => {
-        return auth.user.perfil_acesso === 'diretor_geral' || agendamento.user_id === auth.user.id;
+        // Verificar se pode cancelar (agendamentos pendentes ou aprovados, mas não cancelados)
+        return auth.user.perfil_acesso === 'diretor_geral' && 
+               (agendamento.status === 'pendente' || agendamento.status === 'aprovado');
+    };
+
+    const canUncancel = (agendamento: Agendamento) => {
+        // Verificar se pode descancelar (apenas diretor geral pode descancelar agendamentos cancelados)
+        return auth.user.perfil_acesso === 'diretor_geral' && 
+               agendamento.status === 'cancelado';
+        
+    };
+
+    const canForceDelete = (agendamento: Agendamento) => {
+        // Verificar se pode excluir permanentemente (apenas diretor geral pode excluir a qualquer momento)
+        return auth.user.perfil_acesso === 'diretor_geral';
     };
 
     // Função para validar se data e hora estão no passado
@@ -523,12 +748,21 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                 resetForm();
             },
             onError: (errors: any) => {
+                console.log('Erro recebido:', errors);
+                
+                // Verificar se há conflitos (pode vir como string ou array)
                 if (errors.conflitos) {
-                    setConflictModal({
-                        open: true,
-                        conflitos: Array.isArray(errors.conflitos) ? errors.conflitos : [],
-                        formData: formData
-                    });
+                    // Se for uma string simples, mostrar alerta
+                    if (typeof errors.conflitos === 'string') {
+                        setConflictTimeModal({ open: true, message: errors.conflitos });
+                    } else if (Array.isArray(errors.conflitos)) {
+                        // Se for array, mostrar modal de conflitos
+                        setConflictModal({
+                            open: true,
+                            conflitos: errors.conflitos,
+                            formData: formData
+                        });
+                    }
                 } else {
                     console.error('Erro ao criar agendamento:', errors);
                     alert('Erro ao criar agendamento. Verifique os dados informados.');
@@ -562,7 +796,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
             justificativa: '',
             observacoes: '',
             recorrente: false,
-            tipo_recorrencia: 'semanal',
+            tipo_recorrencia: '',
             data_fim_recorrencia: '',
             recursos_solicitados: []
         });
@@ -617,6 +851,16 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         }
     };
 
+    // Função para gerar tooltip com informação de "já passou"
+    const getEventTooltip = (event: Agendamento, includeTime: boolean = true) => {
+        const baseTooltip = includeTime 
+            ? `${event.titulo} - ${event.espaco?.nome || 'Espaço'} - ${event.hora_inicio.substring(0, 5)} às ${event.hora_fim.substring(0, 5)} - ${getStatusText(event.status)}`
+            : `${event.titulo} - ${event.espaco?.nome || 'Espaço'} - ${getStatusText(event.status)}`;
+        
+        const eventPast = isEventPast(event);
+        return eventPast ? `${baseTooltip} - JÁ PASSOU` : baseTooltip;
+    };
+
     const renderMonthView = () => (
         <div className="space-y-4">
             {/* Cabeçalho dos dias da semana */}
@@ -664,7 +908,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                             e.stopPropagation();
                                             handleEventClick(event);
                                         }}
-                                        title={`${event.titulo} - ${event.espaco?.nome || 'Espaço'} - ${event.hora_inicio.substring(0, 5)} às ${event.hora_fim.substring(0, 5)} - ${getStatusText(event.status)}`}
+                                        title={getEventTooltip(event)}
                                     >
                                         <div className="flex items-start justify-between gap-1">
                                             <div className="flex-1 min-w-0">
@@ -746,7 +990,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                                 e.stopPropagation();
                                                 handleEventClick(event);
                                             }}
-                                            title={`${event.titulo} - ${event.espaco?.nome || 'Espaço'} - ${getStatusText(event.status)}`}
+                                            title={getEventTooltip(event, false)}
                                         >
                                             <div className="absolute top-0.5 right-0.5">
                                                 {getStatusIcon(event.status)}
@@ -935,7 +1179,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                                             e.stopPropagation();
                                                             handleEventClick(event);
                                                         }}
-                                                        title={`${event.titulo} - ${event.hora_inicio.substring(0, 5)} às ${event.hora_fim.substring(0, 5)} - ${getStatusText(event.status)}`}
+                                                        title={getEventTooltip(event)}
                                                     >
                                                         <div className="absolute top-0.5 right-0.5">
                                                             {getStatusIcon(event.status)}
@@ -969,7 +1213,32 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+                        <div className="md:col-span-2">
+                            <Label htmlFor="nome_agendamento">Nome do Agendamento</Label>
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <div className="relative">
+                                    <Input
+                                        id="nome_agendamento"
+                                        placeholder="Buscar por nome..."
+                                        value={nomeFilter}
+                                        onChange={(e) => setNomeFilter(e.target.value)}
+                                        className="pl-10 pr-10"
+                                    />
+                                    <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        onClick={toggleNomeSort}
+                                        className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
+                                        title={`Ordenar por nome ${nomeSortOrder === 'none' ? 'crescente' : nomeSortOrder === 'asc' ? 'decrescente' : 'padrão'}`}
+                                    >
+                                        {getNomeSortIcon()}
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+
                         <div>
                             <Label htmlFor="espaco">Espaço</Label>
                             <Select
@@ -1015,50 +1284,77 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                             </Select>
                         </div>
 
-                        <div>
-                            <Label htmlFor="data_inicio">Data Início</Label>
-                            <div className="relative">
-                                <Input
-                                    type="date"
-                                    value={filters.data_inicio || ''}
-                                    onChange={(e) => {
-                                        router.get('/agendamentos', { ...filters, data_inicio: e.target.value || undefined, view: 'list' });
-                                    }}
-                                    className="pr-10"
-                                />
-                                <Button 
-                                    variant="ghost" 
-                                    size="sm" 
-                                    onClick={() => toggleDateSort('inicio')}
-                                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
-                                    title={`Ordenar por data de início ${dateSortOrder.inicio === 'none' ? 'crescente' : dateSortOrder.inicio === 'asc' ? 'decrescente' : 'padrão'}`}
-                                >
-                                    {getDateSortIcon('inicio')}
-                                </Button>
+                        <div className="flex gap-2">
+                            <div className="flex-1">
+                                <Label htmlFor="data_inicio">Início</Label>
+                                <div className="relative">
+                                    <Input
+                                        type="date"
+                                        value={filters.data_inicio || ''}
+                                        onChange={(e) => {
+                                            router.get('/agendamentos', { ...filters, data_inicio: e.target.value || undefined, view: 'list' });
+                                        }}
+                                        className="pr-8 text-sm"
+                                    />
+                                    <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        onClick={() => toggleDateSort('inicio')}
+                                        className="absolute right-1 top-1/2 transform -translate-y-1/2 h-5 w-5 p-0 hover:bg-muted"
+                                        title={`Ordenar por data de início ${dateSortOrder.inicio === 'none' ? 'crescente' : dateSortOrder.inicio === 'asc' ? 'decrescente' : 'padrão'}`}
+                                    >
+                                        {getDateSortIcon('inicio')}
+                                    </Button>
+                                </div>
                             </div>
-                        </div>
 
-                        <div>
-                            <Label htmlFor="data_fim">Data Fim</Label>
-                            <div className="relative">
-                                <Input
-                                    type="date"
-                                    value={filters.data_fim || ''}
-                                    onChange={(e) => {
-                                        router.get('/agendamentos', { ...filters, data_fim: e.target.value || undefined, view: 'list' });
-                                    }}
-                                    className="pr-10"
-                                />
-                                <Button 
-                                    variant="ghost" 
-                                    size="sm" 
-                                    onClick={() => toggleDateSort('fim')}
-                                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
-                                    title={`Ordenar por data de fim ${dateSortOrder.fim === 'none' ? 'crescente' : dateSortOrder.fim === 'asc' ? 'decrescente' : 'padrão'}`}
-                                >
-                                    {getDateSortIcon('fim')}
-                                </Button>
+                            <div className="flex-1">
+                                <Label htmlFor="data_fim">Fim</Label>
+                                <div className="relative">
+                                    <Input
+                                        type="date"
+                                        value={filters.data_fim || ''}
+                                        onChange={(e) => {
+                                            router.get('/agendamentos', { ...filters, data_fim: e.target.value || undefined, view: 'list' });
+                                        }}
+                                        className="pr-8 text-sm"
+                                    />
+                                    <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        onClick={() => toggleDateSort('fim')}
+                                        className="absolute right-1 top-1/2 transform -translate-y-1/2 h-5 w-5 p-0 hover:bg-muted"
+                                        title={`Ordenar por data de fim ${dateSortOrder.fim === 'none' ? 'crescente' : dateSortOrder.fim === 'asc' ? 'decrescente' : 'padrão'}`}
+                                    >
+                                        {getDateSortIcon('fim')}
+                                    </Button>
+                                </div>
                             </div>
+
+                            {/* Botão Limpar Filtros - só aparece quando há filtros ativos */}
+                            {(filters.nome || filters.espaco_id || filters.status || filters.data_inicio || filters.data_fim || 
+                              nomeSortOrder !== 'none' || dateSortOrder.inicio !== 'none' || dateSortOrder.fim !== 'none') && (
+                                <div className="flex flex-col">
+                                    <Label className="mb-2 opacity-0">Ações</Label>
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        onClick={() => {
+                                            // Limpar todos os filtros e ordenações
+                                            setNomeFilter('');
+                                            setNomeSortOrder('none');
+                                            setDateSortOrder({ inicio: 'none', fim: 'none' });
+                                            
+                                            // Redirecionar para a página sem filtros
+                                            router.get('/agendamentos', { view: 'list' });
+                                        }}
+                                        className="flex items-center gap-2 whitespace-nowrap h-10"
+                                    >
+                                        <X className="h-4 w-4" />
+                                        Limpar
+                                    </Button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </CardContent>
@@ -1086,7 +1382,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                     <div className="space-y-2">
                                         <div className="flex items-center gap-2">
                                             <h3 className="font-semibold text-lg">{agendamento.titulo}</h3>
-                                            <StatusBadge status={agendamento.status} />
+                                            <StatusBadge status={agendamento.status} agendamento={agendamento} />
                                         </div>
 
                                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -1140,30 +1436,76 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                     </div>
 
                                     <div className="flex items-center gap-2">
-                                        <Button variant="outline" size="sm" asChild>
-                                            <Link href={`/agendamentos/${agendamento.id}`}>
-                                                <Eye className="h-4 w-4" />
-                                            </Link>
+                                        <Button 
+                                            variant="outline" 
+                                            size="sm" 
+                                            onClick={() => handleEventClick(agendamento)}
+                                        >
+                                            <Eye className="h-4 w-4" />
                                         </Button>
 
                                         {canEdit(agendamento) && (
-                                            <Button variant="outline" size="sm" asChild>
-                                                <Link href={`/agendamentos/${agendamento.id}/editar`}>
-                                                    <Edit className="h-4 w-4" />
-                                                </Link>
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm" 
+                                                onClick={() => {
+                                                    // Preservar o estado atual da visualização na URL
+                                                    const currentParams = new URLSearchParams();
+                                                    currentParams.set('view', viewMode);
+                                                    currentParams.set('date', format(currentDate, 'yyyy-MM-dd'));
+                                                    
+                                                    // Adicionar filtros de espaços selecionados se não for todos
+                                                    if (selectedEspacos.length !== espacos.length) {
+                                                        currentParams.set('espacos', selectedEspacos.join(','));
+                                                    }
+                                                    
+                                                    // Preservar filtros da lista se estiver na visualização de lista
+                                                    if (viewMode === 'list') {
+                                                        if (filters.espaco_id) {
+                                                            currentParams.set('espaco_id', filters.espaco_id);
+                                                        }
+                                                        if (filters.status) {
+                                                            currentParams.set('status', filters.status);
+                                                        }
+                                                        if (filters.data_inicio) {
+                                                            currentParams.set('data_inicio', filters.data_inicio);
+                                                        }
+                                                        if (filters.data_fim) {
+                                                            currentParams.set('data_fim', filters.data_fim);
+                                                        }
+                                                        if (filters.nome) {
+                                                            currentParams.set('nome', filters.nome);
+                                                        }
+                                                    }
+                                                    
+                                                    router.get(`/agendamentos/${agendamento.id}/editar?${currentParams.toString()}`);
+                                                }}
+                                            >
+                                                <Edit className="h-4 w-4" />
                                             </Button>
                                         )}
 
-                                        {canDelete(agendamento) && (
+                                        {canForceDelete(agendamento) ? (
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleForceDelete(agendamento)}
+                                                className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                                                title="Excluir agendamento permanentemente"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        ) : canDelete(agendamento) ? (
                                             <Button
                                                 variant="outline"
                                                 size="sm"
                                                 onClick={() => handleDelete(agendamento)}
-                                                className="text-red-600 hover:text-red-700"
+                                                className="text-slate-600 hover:text-slate-700 hover:bg-slate-50"
+                                                title="Cancelar agendamento"
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>
-                                        )}
+                                        ) : null}
                                     </div>
                                 </div>
                             </CardContent>
@@ -1236,41 +1578,47 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                 {viewMode !== 'list' ? (
                     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                         {/* Painel de Controle */}
-                        <Card className="lg:col-span-1">
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <Filter className="h-5 w-5" />
-                                    Controles
+                        <Card className="lg:col-span-1 shadow-sm bg-card dark:bg-card">
+                            <CardHeader className="pb-4">
+                                <CardTitle className="flex items-center gap-3 text-lg bg-gradient-to-r from-background to-muted/20 dark:from-background dark:to-muted/10 rounded-lg p-4 -m-4">
+                                    <div className="p-2.5 bg-primary/10 dark:bg-primary/20 rounded-lg ring-1 ring-primary/20 dark:ring-primary/30">
+                                        <Filter className="h-5 w-5 text-primary dark:text-primary" />
+                                    </div>
+                                    <span className="text-foreground dark:text-foreground">Controles</span>
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent className="space-y-4">
+                            <CardContent className="space-y-6 p-6">
                                 {/* Filtro de Espaços */}
-                                <div>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <Label>Espaços</Label>
-                                        <div className="flex gap-1">
+                                <div className="space-y-4">
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                        <Label className="text-sm font-semibold text-foreground dark:text-foreground flex items-center gap-2">
+                                            <Building className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
+                                            Espaços
+                                        </Label>
+                                        <div className="flex items-center gap-1 flex-wrap">
                                             <Button 
-                                                variant="outline" 
+                                                variant="ghost" 
                                                 size="sm" 
                                                 onClick={toggleSort}
-                                                className="text-xs h-6 px-1 bg-muted/50 hover:bg-muted border-border/50"
+                                                className="h-7 w-7 p-0 hover:bg-primary/10 dark:hover:bg-primary/20 text-muted-foreground hover:text-primary dark:text-muted-foreground dark:hover:text-primary transition-colors flex-shrink-0"
                                                 title={`Ordenar ${sortOrder === 'none' ? 'A-Z' : sortOrder === 'asc' ? 'Z-A' : 'padrão'}`}
                                             >
                                                 {getSortIcon()}
                                             </Button>
+                                            <div className="h-4 w-px bg-border dark:bg-border mx-1 flex-shrink-0" />
                                             <Button 
-                                                variant="outline" 
+                                                variant="ghost" 
                                                 size="sm" 
                                                 onClick={selectAllEspacos}
-                                                className="text-xs h-6 px-2 bg-muted/50 hover:bg-muted border-border/50"
+                                                className="text-xs h-7 px-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors flex-shrink-0"
                                             >
                                                 Todos
                                             </Button>
                                             <Button 
-                                                variant="outline" 
+                                                variant="ghost" 
                                                 size="sm" 
                                                 onClick={deselectAllEspacos}
-                                                className="text-xs h-6 px-2 bg-muted/50 hover:bg-muted border-border/50"
+                                                className="text-xs h-7 px-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 hover:text-red-700 dark:hover:text-red-300 transition-colors flex-shrink-0"
                                             >
                                                 Nenhum
                                             </Button>
@@ -1278,47 +1626,66 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                     </div>
                                     
                                     {/* Campo de busca */}
-                                    <div className="relative mb-3">
-                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <div className="relative">
+                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
                                         <Input
                                             placeholder="Buscar espaços..."
                                             value={searchEspacos}
                                             onChange={(e) => setSearchEspacos(e.target.value)}
-                                            className="pl-10 h-8 text-sm"
+                                            className="pl-10 h-9 text-sm bg-background dark:bg-background border-border/60 dark:border-border/40 focus:border-primary/60 dark:focus:border-primary/50 focus:ring-primary/20 dark:focus:ring-primary/30 placeholder:text-muted-foreground dark:placeholder:text-muted-foreground"
                                         />
                                     </div>
                                     
-                                    <div className="space-y-2 max-h-48 overflow-y-auto scrollbar-thin scrollbar-track-muted/30 scrollbar-thumb-muted-foreground/20 hover:scrollbar-thumb-muted-foreground/40">
+                                    {/* Lista de espaços */}
+                                    <div className="space-y-2 max-h-52 overflow-y-auto scrollbar-thin scrollbar-track-muted/20 dark:scrollbar-track-muted/10 scrollbar-thumb-muted-foreground/30 dark:scrollbar-thumb-muted-foreground/40 hover:scrollbar-thumb-muted-foreground/50 dark:hover:scrollbar-thumb-muted-foreground/60 pr-1">
                                         {filteredAndSortedEspacos.map((espaco) => (
-                                            <div key={espaco.id} className="flex items-center space-x-2">
+                                            <div key={espaco.id} className="group flex items-start space-x-3 p-3 rounded-lg hover:bg-muted/50 dark:hover:bg-muted/30 transition-all duration-200 border border-transparent hover:border-border/50 dark:hover:border-border/30">
                                                 <Checkbox
                                                     id={`espaco-${espaco.id}`}
                                                     checked={selectedEspacos.includes(espaco.id)}
                                                     onCheckedChange={() => toggleEspaco(espaco.id)}
+                                                    className="mt-0.5 data-[state=checked]:bg-primary dark:data-[state=checked]:bg-orange-500 data-[state=checked]:border-primary dark:data-[state=checked]:border-orange-500 border-border dark:border-border"
                                                 />
                                                 <Label 
                                                     htmlFor={`espaco-${espaco.id}`}
-                                                    className="text-sm cursor-pointer flex-1"
+                                                    className="text-sm cursor-pointer flex-1 leading-relaxed group-hover:text-foreground dark:group-hover:text-foreground transition-colors"
                                                 >
-                                                    {espaco.nome}
-                                                    <span className="text-xs text-muted-foreground block">
-                                                        Cap: {espaco.capacidade} | {espaco.localizacao?.nome}
-                                                    </span>
+                                                    <div className="font-medium text-foreground dark:text-foreground mb-1">{espaco.nome}</div>
+                                                    <div className="text-xs text-muted-foreground dark:text-muted-foreground flex items-center gap-2">
+                                                        <span className="flex items-center gap-1 bg-muted/50 dark:bg-muted/30 px-2 py-0.5 rounded-full">
+                                                            <Users className="h-3 w-3" />
+                                                            <span className="font-medium">{espaco.capacidade}</span>
+                                                        </span>
+                                                        {espaco.localizacao?.nome && (
+                                                            <span className="bg-primary/10 dark:bg-primary/30 text-primary dark:text-primary-foreground px-2 py-0.5 rounded-full text-xs font-medium">
+                                                                {espaco.localizacao.nome}
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </Label>
                                             </div>
                                         ))}
                                         {filteredAndSortedEspacos.length === 0 && searchEspacos && (
-                                            <div className="text-sm text-muted-foreground italic text-center py-2">
-                                                Nenhum espaço encontrado
+                                            <div className="text-sm text-muted-foreground dark:text-muted-foreground text-center py-8 space-y-3">
+                                                <div className="p-3 bg-muted/30 dark:bg-muted/20 rounded-full w-fit mx-auto">
+                                                    <Search className="h-8 w-8 opacity-50" />
+                                                </div>
+                                                <p className="font-medium">Nenhum espaço encontrado</p>
+                                                <p className="text-xs opacity-75">Tente ajustar os termos de busca</p>
                                             </div>
                                         )}
                                     </div>
                                 </div>
 
-                                {/* Legenda */}
-                                <div>
-                                    <Label>Legenda</Label>
-                                    <StatusLegend className="mt-2" />
+                                {/* Legenda de Status */}
+                                <div className="space-y-4">
+                                    <Label className="text-sm font-semibold text-foreground dark:text-foreground flex items-center gap-2">
+                                        <Info className="h-4 w-4 text-primary" />
+                                        Legenda de Status
+                                    </Label>
+                                    <div className="bg-gradient-to-br from-muted/30 to-muted/50 dark:from-muted/20 dark:to-muted/40 rounded-lg p-4 border border-border/30 dark:border-border/20">
+                                        <StatusLegend className="space-y-3" />
+                                    </div>
                                 </div>
 
                             </CardContent>
@@ -1483,31 +1850,32 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                             </div>
 
                             {formData.recorrente && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-4">
                                     <div>
-                                        <Label htmlFor="tipo_recorrencia">Tipo de Recorrência</Label>
+                                        <Label htmlFor="tipo_recorrencia">Tipo de Recorrência *</Label>
                                         <Select
                                             value={formData.tipo_recorrencia}
                                             onValueChange={(value) => setFormData({ ...formData, tipo_recorrencia: value })}
                                         >
                                             <SelectTrigger>
-                                                <SelectValue />
+                                                <SelectValue placeholder="Selecione uma opção" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="diaria">Diária</SelectItem>
-                                                <SelectItem value="semanal">Semanal</SelectItem>
-                                                <SelectItem value="mensal">Mensal</SelectItem>
+                                                <SelectItem value="diaria">Diária (a cada dia)</SelectItem>
+                                                <SelectItem value="semanal">Semanal (a cada semana)</SelectItem>
+                                                <SelectItem value="mensal">Mensal (a cada mês)</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
 
                                     <div>
-                                        <Label htmlFor="data_fim_recorrencia">Fim da Recorrência</Label>
+                                        <Label htmlFor="data_fim_recorrencia">Data Fim da Recorrência *</Label>
                                         <Input
                                             id="data_fim_recorrencia"
                                             type="date"
                                             value={formData.data_fim_recorrencia}
                                             onChange={(e) => setFormData({ ...formData, data_fim_recorrencia: e.target.value })}
+                                            min={formData.data_fim}
                                         />
                                     </div>
                                 </div>
@@ -1536,7 +1904,6 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                             </DialogTitle>
                             <DialogDescription>
                                 Existe(m) agendamento(s) conflitante(s) no horário solicitado.
-                                Você pode solicitar prioridade para sobrepor os agendamentos existentes.
                             </DialogDescription>
                         </DialogHeader>
 
@@ -1556,7 +1923,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                         <div key={conflito.id} className="p-3 border rounded-lg bg-red-50 dark:bg-red-900/20">
                                             <div className="font-medium">{conflito.titulo}</div>
                                             <div className="text-sm text-muted-foreground">
-                                                {conflito.user?.name} - {conflito.data_inicio} {conflito.hora_inicio} às {conflito.hora_fim}
+                                                {conflito.user?.name} - {(() => { try { const dateOnly = conflito.data_inicio.split("T")[0]; const [year, month, day] = dateOnly.split("-"); return `${day}/${month}/${year}`; } catch { return conflito.data_inicio; } })()} {conflito.hora_inicio} às {conflito.hora_fim}
                                             </div>
                                             <Badge className="mt-1" variant="outline">
                                                 {conflito.status}
@@ -1729,6 +2096,116 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                 className="w-full"
                             >
                                 OK
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                {/* Modal de Conflito de Horário */}
+                <Dialog open={conflictTimeModal.open} onOpenChange={(open) => setConflictTimeModal({ open, message: "" })}>
+                    <DialogContent className="max-w-md">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                                <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                                Conflito de Horário
+                            </DialogTitle>
+                {/* Modal de Confirmação de Cancelamento */}
+                <Dialog open={deleteModal.open} onOpenChange={(open) => setDeleteModal({ open, agendamento: null })}>
+                    <DialogContent className="max-w-md">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                                <AlertTriangle className="h-5 w-5 text-red-600" />
+                                Confirmar Cancelamento
+                            </DialogTitle>
+                            <DialogDescription>
+                                Esta ação não pode ser desfeita.
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="py-4">
+                            <p className="text-center text-muted-foreground">
+                                Tem certeza que deseja cancelar este agendamento?
+                            </p>
+                            {deleteModal.agendamento && (
+                                <div className="mt-3 p-3 bg-muted/30 rounded-lg">
+                                    <p className="font-medium text-sm">{deleteModal.agendamento.titulo}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {deleteModal.agendamento.espaco?.nome} • {(() => { try { const dateOnly = deleteModal.agendamento.data_inicio.split("T")[0]; const [year, month, day] = dateOnly.split("-"); return `${day}/${month}/${year}`; } catch { return deleteModal.agendamento.data_inicio; } })()}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+
+                        <DialogFooter className="gap-2">
+                            <Button
+                                variant="outline"
+                                onClick={() => setDeleteModal({ open: false, agendamento: null })}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                onClick={confirmDelete}
+                            >
+                                Sim, Cancelar Agendamento
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+                        </DialogHeader>
+
+                        <div className="py-4">
+                            <p className="text-center text-muted-foreground">
+                                {conflictTimeModal.message}
+                            </p>
+                        </div>
+
+                        <DialogFooter>
+                            <Button
+                                onClick={() => setConflictTimeModal({ open: false, message: "" })}
+                                className="w-full"
+                            >
+                                OK
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+                </Dialog>
+
+                {/* Modal de Confirmação de Exclusão Permanente */}
+                <Dialog open={forceDeleteModal.open} onOpenChange={(open) => setForceDeleteModal({ open, agendamento: null })}>
+                    <DialogContent className="max-w-md">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                                <Trash2 className="h-5 w-5 text-red-600" />
+                                Excluir Agendamento Permanentemente
+                            </DialogTitle>
+                        </DialogHeader>
+
+                        <div className="py-4">
+                            <p className="text-muted-foreground mb-3">
+                                <strong>ATENÇÃO:</strong> Esta ação é irreversível! Tem certeza que deseja excluir permanentemente este agendamento?
+                            </p>
+                            {forceDeleteModal.agendamento && (
+                                <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                                    <p className="font-medium text-sm text-red-800 dark:text-red-200">{forceDeleteModal.agendamento.titulo}</p>
+                                    <p className="text-xs text-red-600 dark:text-red-300">
+                                        {forceDeleteModal.agendamento.espaco?.nome} • {(() => { try { const dateOnly = forceDeleteModal.agendamento.data_inicio.split("T")[0]; const [year, month, day] = dateOnly.split("-"); return `${day}/${month}/${year}`; } catch { return forceDeleteModal.agendamento.data_inicio; } })()}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+
+                        <DialogFooter className="gap-2">
+                            <Button
+                                variant="outline"
+                                onClick={() => setForceDeleteModal({ open: false, agendamento: null })}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                onClick={confirmForceDelete}
+                            >
+                                Sim, Excluir Permanentemente
                             </Button>
                         </DialogFooter>
                     </DialogContent>

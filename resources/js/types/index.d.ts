@@ -160,6 +160,18 @@ export interface Agendamento {
     tipo_recorrencia?: 'diaria' | 'semanal' | 'mensal';
     data_fim_recorrencia?: string;
     recursos_solicitados?: number[];
+    grupo_recorrencia?: string;
+    is_representante_grupo?: boolean;
+    total_grupo?: number;
+    info_grupo?: {
+        total: number;
+        data_inicio: string;
+        data_fim: string;
+        tipo_recorrencia: string;
+        pendentes: number;
+        aprovados: number;
+        rejeitados: number;
+    };
     created_at: string;
     updated_at: string;
     espaco?: Espaco;
