@@ -43,7 +43,8 @@ class AgendamentoController extends Controller
 
         // Se for visualização de lista, usar paginação
         if ($request->get('view') === 'list') {
-            $agendamentos = $query->orderBy('data_inicio', 'desc')
+            $agendamentos = $query->orderBy('created_at', 'desc')
+                                 ->orderBy('data_inicio', 'desc')
                                  ->orderBy('hora_inicio', 'desc')
                                  ->paginate(15);
         } else {

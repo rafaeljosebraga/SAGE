@@ -172,6 +172,12 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     open: boolean;
     agendamento: Agendamento | null;
     }>({ open: false, agendamento: null });
+    
+    // Estado para modal de confirmação de exclusão permanente
+    const [forceDeleteModal, setForceDeleteModal] = useState<{
+    open: boolean;
+    agendamento: Agendamento | null;
+    }>({ open: false, agendamento: null });
 
     // Atualizar viewMode quando filters.view mudar
     useEffect(() => {
@@ -617,6 +623,36 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                         title: "Erro ao cancelar agendamento",
                         description: "Ocorreu um erro ao tentar cancelar o agendamento. Tente novamente.",
                         variant: "destructive",
+                        duration: 5000, // 5 segundos
+                    });
+                }
+            });
+        }
+    };
+
+    const handleForceDelete = (agendamento: Agendamento) => {
+        setForceDeleteModal({ open: true, agendamento });
+    };
+
+    const confirmForceDelete = () => {
+        if (forceDeleteModal.agendamento) {
+            router.delete(`/agendamentos/${forceDeleteModal.agendamento.id}/force-delete`, {
+                onSuccess: () => {
+                    setForceDeleteModal({ open: false, agendamento: null });
+                    toast({
+                        title: "Agendamento excluído com sucesso!",
+                        // description: "O agendamento foi removido do sistema.",
+                        duration: 5000,
+                    });
+                    router.reload();
+                },
+                onError: () => {
+                    setForceDeleteModal({ open: false, agendamento: null });
+                    toast({
+                        title: "Erro ao excluir agendamento",
+                        description: "Ocorreu um erro ao tentar excluir o agendamento. Tente novamente.",
+                        variant: "destructive",
+                        duration: 5000,
                     });
                 }
             });
@@ -639,6 +675,11 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         return auth.user.perfil_acesso === 'diretor_geral' && 
                agendamento.status === 'cancelado';
         
+    };
+
+    const canForceDelete = (agendamento: Agendamento) => {
+        // Verificar se pode excluir permanentemente (apenas diretor geral pode excluir a qualquer momento)
+        return auth.user.perfil_acesso === 'diretor_geral';
     };
 
     // Função para validar se data e hora estão no passado
@@ -1444,44 +1485,27 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                             </Button>
                                         )}
 
-                                        {canDelete(agendamento) && (
+                                        {canForceDelete(agendamento) ? (
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleForceDelete(agendamento)}
+                                                className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                                                title="Excluir agendamento permanentemente"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        ) : canDelete(agendamento) ? (
                                             <Button
                                                 variant="outline"
                                                 size="sm"
                                                 onClick={() => handleDelete(agendamento)}
-                                                className="text-red-600 hover:text-red-700"
+                                                className="text-slate-600 hover:text-slate-700 hover:bg-slate-50"
+                                                title="Cancelar agendamento"
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>
-                                        )}
-
-                                        {canUncancel(agendamento) && (
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => {
-                                                    router.post(`/agendamentos/${agendamento.id}/descancelar`, {}, {
-                                                        onSuccess: () => {
-                                                            toast({
-                                                                title: "Agendamento voltado com sucesso!",
-                                                                description: "O status foi alterado para pendente.",
-                                                            });
-                                                            router.reload();
-                                                        },
-                                                        onError: () => {
-                                                            toast({
-                                                                title: "Erro ao voltar agendamento",
-                                                                description: "Ocorreu um erro ao tentar voltar o agendamento. Tente novamente.",
-                                                                variant: "destructive",
-                                                            });
-                                                        }
-                                                    });
-                                                }}
-                                                className="text-green-600 hover:text-green-700"
-                                            >
-                                                <RotateCcw className="h-4 w-4" />
-                                            </Button>
-                                        )}
+                                        ) : null}
                                     </div>
                                 </div>
                             </CardContent>
@@ -1874,7 +1898,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                         <div key={conflito.id} className="p-3 border rounded-lg bg-red-50 dark:bg-red-900/20">
                                             <div className="font-medium">{conflito.titulo}</div>
                                             <div className="text-sm text-muted-foreground">
-                                                {conflito.user?.name} - {conflito.data_inicio} {conflito.hora_inicio} às {conflito.hora_fim}
+                                                {conflito.user?.name} - {(() => { try { const dateOnly = conflito.data_inicio.split("T")[0]; const [year, month, day] = dateOnly.split("-"); return `${day}/${month}/${year}`; } catch { return conflito.data_inicio; } })()} {conflito.hora_inicio} às {conflito.hora_fim}
                                             </div>
                                             <Badge className="mt-1" variant="outline">
                                                 {conflito.status}
@@ -2079,7 +2103,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                 <div className="mt-3 p-3 bg-muted/30 rounded-lg">
                                     <p className="font-medium text-sm">{deleteModal.agendamento.titulo}</p>
                                     <p className="text-xs text-muted-foreground">
-                                        {deleteModal.agendamento.espaco?.nome} • {deleteModal.agendamento.data_inicio}
+                                        {deleteModal.agendamento.espaco?.nome} • {(() => { try { const dateOnly = deleteModal.agendamento.data_inicio.split("T")[0]; const [year, month, day] = dateOnly.split("-"); return `${day}/${month}/${year}`; } catch { return deleteModal.agendamento.data_inicio; } })()}
                                     </p>
                                 </div>
                             )}
@@ -2119,6 +2143,47 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
+                </Dialog>
+
+                {/* Modal de Confirmação de Exclusão Permanente */}
+                <Dialog open={forceDeleteModal.open} onOpenChange={(open) => setForceDeleteModal({ open, agendamento: null })}>
+                    <DialogContent className="max-w-md">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                                <Trash2 className="h-5 w-5 text-red-600" />
+                                Excluir Agendamento Permanentemente
+                            </DialogTitle>
+                        </DialogHeader>
+
+                        <div className="py-4">
+                            <p className="text-muted-foreground mb-3">
+                                <strong>ATENÇÃO:</strong> Esta ação é irreversível! Tem certeza que deseja excluir permanentemente este agendamento?
+                            </p>
+                            {forceDeleteModal.agendamento && (
+                                <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                                    <p className="font-medium text-sm text-red-800 dark:text-red-200">{forceDeleteModal.agendamento.titulo}</p>
+                                    <p className="text-xs text-red-600 dark:text-red-300">
+                                        {forceDeleteModal.agendamento.espaco?.nome} • {(() => { try { const dateOnly = forceDeleteModal.agendamento.data_inicio.split("T")[0]; const [year, month, day] = dateOnly.split("-"); return `${day}/${month}/${year}`; } catch { return forceDeleteModal.agendamento.data_inicio; } })()}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+
+                        <DialogFooter className="gap-2">
+                            <Button
+                                variant="outline"
+                                onClick={() => setForceDeleteModal({ open: false, agendamento: null })}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                onClick={confirmForceDelete}
+                            >
+                                Sim, Excluir Permanentemente
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
                 </Dialog>
 
             </div>

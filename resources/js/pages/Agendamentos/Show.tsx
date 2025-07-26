@@ -164,8 +164,8 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
             onSuccess: () => {
                 setForceDeleteModal({ open: false });
                 toast({
-                    title: "Agendamento excluído permanentemente!",
-                    description: "O agendamento foi removido do sistema.",
+                    title: "Agendamento excluído com sucesso!",
+                    // description: "O agendamento foi removido do sistema.",
                     duration: 5000,
                 });
                 // Redirecionar para a lista de agendamentos
@@ -366,7 +366,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                             </Button>
                         )}
 
-                        {/* Mostrar botão Voltar Evento apenas se estiver cancelado */}
+                        {/* Mostrar botão Voltar Agendamento apenas se estiver cancelado */}
                         {canUncancel && (
                             <Button
                                 variant="outline"
@@ -376,7 +376,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                                 className="text-green-600 hover:text-green-700"
                             >
                                 <RotateCcw className="h-4 w-4 mr-2" />
-                                Voltar Evento
+                                Voltar Agendamento
                             </Button>
                         )}
                     </div>
@@ -1051,7 +1051,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                             onClick={confirmUncancel}
                             className="bg-green-600 hover:bg-green-700"
                         >
-                            Sim, Voltar Evento
+                            Sim, Voltar Agendamento
                         </Button>
                     </DialogFooter>
                 </DialogContent>
