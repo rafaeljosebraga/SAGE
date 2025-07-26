@@ -118,8 +118,8 @@ class AgendamentoController extends Controller
             'recursos_solicitados' => 'nullable|array',
             'recursos_solicitados.*' => 'exists:recursos,id',
             'recorrente' => 'boolean',
-            'tipo_recorrencia' => 'nullable|in:diaria,semanal,mensal',
-            'data_fim_recorrencia' => 'nullable|date|after:data_fim',
+            'tipo_recorrencia' => 'nullable|in:diaria,semanal,mensal|required_if:recorrente,true',
+            'data_fim_recorrencia' => 'nullable|date|after:data_fim|required_if:recorrente,true',
             'return_view' => 'nullable|string',
             'force_create' => 'boolean',
         ]);
@@ -222,11 +222,21 @@ class AgendamentoController extends Controller
                 "\n\n[SOLICITAÇÃO DE PRIORIDADE] Este agendamento foi solicitado com prioridade sobre agendamentos conflitantes.";
         }
 
-        $agendamento = Agendamento::create($validated);
+        // Criar agendamentos (único ou recorrentes)
+        $agendamentos = $this->criarAgendamentos($validated);
+        $agendamento = $agendamentos->first(); // Para compatibilidade com o código existente
 
-        $message = 'Solicitação de agendamento criada com sucesso! Aguarde aprovação.';
+        // Personalizar mensagem baseada na quantidade de agendamentos criados
+        if ($agendamentos->count() > 1) {
+            $message = "Solicitações de agendamento criadas com sucesso! {$agendamentos->count()} agendamentos recorrentes foram criados. Aguarde aprovação.";
+        } else {
+            $message = 'Solicitação de agendamento criada com sucesso! Aguarde aprovação.';
+        }
+        
         if ($conflitos->isNotEmpty() && ($validated['force_create'] ?? false)) {
-            $message = 'Solicitação de agendamento com prioridade criada! O diretor analisará os conflitos.';
+            $message = $agendamentos->count() > 1 
+                ? "Solicitações de agendamento com prioridade criadas! {$agendamentos->count()} agendamentos recorrentes foram criados. O diretor analisará os conflitos."
+                : 'Solicitação de agendamento com prioridade criada! O diretor analisará os conflitos.';
         }
 
         // Verificar se deve voltar para o calendário
@@ -630,5 +640,76 @@ class AgendamentoController extends Controller
 
         return redirect()->route('agendamentos.index')
                         ->with('success', "Agendamento '{$titulo}' foi excluído permanentemente.");
+    }
+
+    /**
+     * Criar agendamentos (único ou recorrentes)
+     */
+    private function criarAgendamentos(array $validated)
+    {
+        $agendamentos = collect();
+
+        // Se não é recorrente, criar apenas um agendamento
+        if (!($validated['recorrente'] ?? false) || empty($validated['tipo_recorrencia']) || empty($validated['data_fim_recorrencia'])) {
+            $agendamento = Agendamento::create($validated);
+            $agendamentos->push($agendamento);
+            return $agendamentos;
+        }
+
+        // Para agendamentos recorrentes, calcular as datas e horários
+        $dataInicio = Carbon::parse($validated['data_inicio']);
+        $dataFim = Carbon::parse($validated['data_fim']);
+        $dataFimRecorrencia = Carbon::parse($validated['data_fim_recorrencia']);
+        
+        // Criar datetime completo com horários
+        $horaInicio = Carbon::parse($validated['hora_inicio']);
+        $horaFim = Carbon::parse($validated['hora_fim']);
+        
+        $dataHoraInicio = $dataInicio->copy()->setTime($horaInicio->hour, $horaInicio->minute);
+        $dataHoraFim = $dataFim->copy()->setTime($horaFim->hour, $horaFim->minute);
+        
+        // Calcular a duração do agendamento original
+        $duracaoEmMinutos = $dataHoraInicio->diffInMinutes($dataHoraFim);
+        
+        $dataHoraAtual = $dataHoraInicio->copy();
+        $contador = 0;
+        $maxAgendamentos = 8760; // Limite de segurança (365 dias * 24 horas)
+
+        while ($dataHoraAtual->toDateString() <= $dataFimRecorrencia->toDateString() && $contador < $maxAgendamentos) {
+            // Calcular data e hora fim para este agendamento
+            $dataHoraFimAtual = $dataHoraAtual->copy()->addMinutes($duracaoEmMinutos);
+
+            // Criar dados para este agendamento
+            $dadosAgendamento = $validated;
+            $dadosAgendamento['data_inicio'] = $dataHoraAtual->toDateString();
+            $dadosAgendamento['hora_inicio'] = $dataHoraAtual->format('H:i');
+            $dadosAgendamento['data_fim'] = $dataHoraFimAtual->toDateString();
+            $dadosAgendamento['hora_fim'] = $dataHoraFimAtual->format('H:i');
+
+            try {
+                $agendamento = Agendamento::create($dadosAgendamento);
+                $agendamentos->push($agendamento);
+            } catch (\Exception $e) {
+                // Log do erro mas continua criando os próximos agendamentos
+                \Log::warning("Erro ao criar agendamento recorrente para {$dataHoraAtual->format('Y-m-d H:i')}: " . $e->getMessage());
+            }
+
+            // Avançar para a próxima data/hora baseado no tipo de recorrência
+            switch ($validated['tipo_recorrencia']) {
+                case 'diaria':
+                    $dataHoraAtual->addDay();
+                    break;
+                case 'semanal':
+                    $dataHoraAtual->addWeek();
+                    break;
+                case 'mensal':
+                    $dataHoraAtual->addMonth();
+                    break;
+            }
+
+            $contador++;
+        }
+
+        return $agendamentos;
     }
 }

@@ -139,7 +139,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         justificativa: '',
         observacoes: '',
         recorrente: false,
-        tipo_recorrencia: 'semanal',
+        tipo_recorrencia: '',
         data_fim_recorrencia: '',
         recursos_solicitados: [] as string[]
     });
@@ -543,7 +543,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
             justificativa: '',
             observacoes: '',
             recorrente: false,
-            tipo_recorrencia: 'semanal',
+            tipo_recorrencia: '',
             data_fim_recorrencia: '',
             recursos_solicitados: []
         });
@@ -796,7 +796,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
             justificativa: '',
             observacoes: '',
             recorrente: false,
-            tipo_recorrencia: 'semanal',
+            tipo_recorrencia: '',
             data_fim_recorrencia: '',
             recursos_solicitados: []
         });
@@ -1825,31 +1825,32 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                             </div>
 
                             {formData.recorrente && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-4">
                                     <div>
-                                        <Label htmlFor="tipo_recorrencia">Tipo de Recorrência</Label>
+                                        <Label htmlFor="tipo_recorrencia">Tipo de Recorrência *</Label>
                                         <Select
                                             value={formData.tipo_recorrencia}
                                             onValueChange={(value) => setFormData({ ...formData, tipo_recorrencia: value })}
                                         >
                                             <SelectTrigger>
-                                                <SelectValue />
+                                                <SelectValue placeholder="Selecione uma opção" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="diaria">Diária</SelectItem>
-                                                <SelectItem value="semanal">Semanal</SelectItem>
-                                                <SelectItem value="mensal">Mensal</SelectItem>
+                                                <SelectItem value="diaria">Diária (a cada dia)</SelectItem>
+                                                <SelectItem value="semanal">Semanal (a cada semana)</SelectItem>
+                                                <SelectItem value="mensal">Mensal (a cada mês)</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
 
                                     <div>
-                                        <Label htmlFor="data_fim_recorrencia">Fim da Recorrência</Label>
+                                        <Label htmlFor="data_fim_recorrencia">Data Fim da Recorrência *</Label>
                                         <Input
                                             id="data_fim_recorrencia"
                                             type="date"
                                             value={formData.data_fim_recorrencia}
                                             onChange={(e) => setFormData({ ...formData, data_fim_recorrencia: e.target.value })}
+                                            min={formData.data_fim}
                                         />
                                     </div>
                                 </div>

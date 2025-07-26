@@ -158,18 +158,32 @@ export const useAgendamentoColors = () => {
     };
 
     // Função para obter cor de fundo do evento (para calendário)
+    // Função para gerar identificador único para série de agendamentos
+    const getEventSeriesId = (agendamento: Agendamento): string => {
+        // Para agendamentos recorrentes, usar uma combinação que seja igual para toda a série
+        const baseId = [
+            agendamento.titulo,
+            agendamento.espaco_id,
+            agendamento.user_id,
+            agendamento.hora_inicio,
+            agendamento.hora_fim,
+            agendamento.justificativa
+        ].join('|');
+        
+        return baseId;
+    };
+
     const getEventBackgroundColor = (agendamento: Agendamento): string => {
         // Se o evento já passou, usar cinza
         if (isEventPast(agendamento)) {
             return 'bg-gray-300 dark:bg-gray-600/80 text-gray-900 dark:text-gray-100';
         }
 
-        // Usar apenas o ID do agendamento para garantir unicidade absoluta
-        // Multiplicar por números primos para melhor distribuição
-        const idNumber = parseInt(agendamento.id.toString()) || 0;
-        const hash1 = generateHash(`primary_${idNumber * 7}`);
-        const hash2 = generateHash(`secondary_${idNumber * 11}`);
-        const hash3 = generateHash(`tertiary_${idNumber * 13}`);
+        // Usar identificador da série para que agendamentos recorrentes tenham a mesma cor
+        const seriesId = getEventSeriesId(agendamento);
+        const hash1 = generateHash(`primary_${seriesId}`);
+        const hash2 = generateHash(`secondary_${seriesId}`);
+        const hash3 = generateHash(`tertiary_${seriesId}`);
         
         // Combinar os hashes de forma única
         const combinedHash = Math.abs(hash1 + (hash2 * 17) + (hash3 * 23));
@@ -186,12 +200,11 @@ export const useAgendamentoColors = () => {
             return 'border-l-gray-500';
         }
 
-        // Usar apenas o ID do agendamento para garantir unicidade absoluta
-        // Multiplicar por números primos para melhor distribuição
-        const idNumber = parseInt(agendamento.id.toString()) || 0;
-        const hash1 = generateHash(`primary_${idNumber * 7}`);
-        const hash2 = generateHash(`secondary_${idNumber * 11}`);
-        const hash3 = generateHash(`tertiary_${idNumber * 13}`);
+        // Usar identificador da série para que agendamentos recorrentes tenham a mesma cor
+        const seriesId = getEventSeriesId(agendamento);
+        const hash1 = generateHash(`primary_${seriesId}`);
+        const hash2 = generateHash(`secondary_${seriesId}`);
+        const hash3 = generateHash(`tertiary_${seriesId}`);
         
         // Combinar os hashes de forma única
         const combinedHash = Math.abs(hash1 + (hash2 * 17) + (hash3 * 23));
