@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
-import { Calendar, Clock, MapPin, User, Filter, Plus, Eye, Edit, Trash2, Settings, AlertTriangle, ChevronLeft, ChevronRight, List, Search, ArrowUpDown, ArrowUp, ArrowDown, RotateCcw, X } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, Users, Filter, Plus, Eye, Edit, Trash2, Settings, AlertTriangle, ChevronLeft, ChevronRight, List, Search, ArrowUpDown, ArrowUp, ArrowDown, RotateCcw, X, Building, Info } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, addMonths, subMonths, startOfWeek, endOfWeek, addDays, isSameDay, parseISO, addHours, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -1578,41 +1578,47 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                 {viewMode !== 'list' ? (
                     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                         {/* Painel de Controle */}
-                        <Card className="lg:col-span-1">
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <Filter className="h-5 w-5" />
-                                    Controles
+                        <Card className="lg:col-span-1 shadow-sm bg-card dark:bg-card">
+                            <CardHeader className="pb-4">
+                                <CardTitle className="flex items-center gap-3 text-lg bg-gradient-to-r from-background to-muted/20 dark:from-background dark:to-muted/10 rounded-lg p-4 -m-4">
+                                    <div className="p-2.5 bg-primary/10 dark:bg-primary/20 rounded-lg ring-1 ring-primary/20 dark:ring-primary/30">
+                                        <Filter className="h-5 w-5 text-primary dark:text-primary" />
+                                    </div>
+                                    <span className="text-foreground dark:text-foreground">Controles</span>
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent className="space-y-4">
+                            <CardContent className="space-y-6 p-6">
                                 {/* Filtro de Espaços */}
-                                <div>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <Label>Espaços</Label>
-                                        <div className="flex gap-1">
+                                <div className="space-y-4">
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                        <Label className="text-sm font-semibold text-foreground dark:text-foreground flex items-center gap-2">
+                                            <Building className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
+                                            Espaços
+                                        </Label>
+                                        <div className="flex items-center gap-1 flex-wrap">
                                             <Button 
-                                                variant="outline" 
+                                                variant="ghost" 
                                                 size="sm" 
                                                 onClick={toggleSort}
-                                                className="text-xs h-6 px-1 bg-muted/50 hover:bg-muted border-border/50"
+                                                className="h-7 w-7 p-0 hover:bg-primary/10 dark:hover:bg-primary/20 text-muted-foreground hover:text-primary dark:text-muted-foreground dark:hover:text-primary transition-colors flex-shrink-0"
                                                 title={`Ordenar ${sortOrder === 'none' ? 'A-Z' : sortOrder === 'asc' ? 'Z-A' : 'padrão'}`}
                                             >
                                                 {getSortIcon()}
                                             </Button>
+                                            <div className="h-4 w-px bg-border dark:bg-border mx-1 flex-shrink-0" />
                                             <Button 
-                                                variant="outline" 
+                                                variant="ghost" 
                                                 size="sm" 
                                                 onClick={selectAllEspacos}
-                                                className="text-xs h-6 px-2 bg-muted/50 hover:bg-muted border-border/50"
+                                                className="text-xs h-7 px-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors flex-shrink-0"
                                             >
                                                 Todos
                                             </Button>
                                             <Button 
-                                                variant="outline" 
+                                                variant="ghost" 
                                                 size="sm" 
                                                 onClick={deselectAllEspacos}
-                                                className="text-xs h-6 px-2 bg-muted/50 hover:bg-muted border-border/50"
+                                                className="text-xs h-7 px-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 hover:text-red-700 dark:hover:text-red-300 transition-colors flex-shrink-0"
                                             >
                                                 Nenhum
                                             </Button>
@@ -1620,47 +1626,66 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                     </div>
                                     
                                     {/* Campo de busca */}
-                                    <div className="relative mb-3">
-                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <div className="relative">
+                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
                                         <Input
                                             placeholder="Buscar espaços..."
                                             value={searchEspacos}
                                             onChange={(e) => setSearchEspacos(e.target.value)}
-                                            className="pl-10 h-8 text-sm"
+                                            className="pl-10 h-9 text-sm bg-background dark:bg-background border-border/60 dark:border-border/40 focus:border-primary/60 dark:focus:border-primary/50 focus:ring-primary/20 dark:focus:ring-primary/30 placeholder:text-muted-foreground dark:placeholder:text-muted-foreground"
                                         />
                                     </div>
                                     
-                                    <div className="space-y-2 max-h-48 overflow-y-auto scrollbar-thin scrollbar-track-muted/30 scrollbar-thumb-muted-foreground/20 hover:scrollbar-thumb-muted-foreground/40">
+                                    {/* Lista de espaços */}
+                                    <div className="space-y-2 max-h-52 overflow-y-auto scrollbar-thin scrollbar-track-muted/20 dark:scrollbar-track-muted/10 scrollbar-thumb-muted-foreground/30 dark:scrollbar-thumb-muted-foreground/40 hover:scrollbar-thumb-muted-foreground/50 dark:hover:scrollbar-thumb-muted-foreground/60 pr-1">
                                         {filteredAndSortedEspacos.map((espaco) => (
-                                            <div key={espaco.id} className="flex items-center space-x-2">
+                                            <div key={espaco.id} className="group flex items-start space-x-3 p-3 rounded-lg hover:bg-muted/50 dark:hover:bg-muted/30 transition-all duration-200 border border-transparent hover:border-border/50 dark:hover:border-border/30">
                                                 <Checkbox
                                                     id={`espaco-${espaco.id}`}
                                                     checked={selectedEspacos.includes(espaco.id)}
                                                     onCheckedChange={() => toggleEspaco(espaco.id)}
+                                                    className="mt-0.5 data-[state=checked]:bg-primary dark:data-[state=checked]:bg-orange-500 data-[state=checked]:border-primary dark:data-[state=checked]:border-orange-500 border-border dark:border-border"
                                                 />
                                                 <Label 
                                                     htmlFor={`espaco-${espaco.id}`}
-                                                    className="text-sm cursor-pointer flex-1"
+                                                    className="text-sm cursor-pointer flex-1 leading-relaxed group-hover:text-foreground dark:group-hover:text-foreground transition-colors"
                                                 >
-                                                    {espaco.nome}
-                                                    <span className="text-xs text-muted-foreground block">
-                                                        Cap: {espaco.capacidade} | {espaco.localizacao?.nome}
-                                                    </span>
+                                                    <div className="font-medium text-foreground dark:text-foreground mb-1">{espaco.nome}</div>
+                                                    <div className="text-xs text-muted-foreground dark:text-muted-foreground flex items-center gap-2">
+                                                        <span className="flex items-center gap-1 bg-muted/50 dark:bg-muted/30 px-2 py-0.5 rounded-full">
+                                                            <Users className="h-3 w-3" />
+                                                            <span className="font-medium">{espaco.capacidade}</span>
+                                                        </span>
+                                                        {espaco.localizacao?.nome && (
+                                                            <span className="bg-primary/10 dark:bg-primary/30 text-primary dark:text-primary-foreground px-2 py-0.5 rounded-full text-xs font-medium">
+                                                                {espaco.localizacao.nome}
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </Label>
                                             </div>
                                         ))}
                                         {filteredAndSortedEspacos.length === 0 && searchEspacos && (
-                                            <div className="text-sm text-muted-foreground italic text-center py-2">
-                                                Nenhum espaço encontrado
+                                            <div className="text-sm text-muted-foreground dark:text-muted-foreground text-center py-8 space-y-3">
+                                                <div className="p-3 bg-muted/30 dark:bg-muted/20 rounded-full w-fit mx-auto">
+                                                    <Search className="h-8 w-8 opacity-50" />
+                                                </div>
+                                                <p className="font-medium">Nenhum espaço encontrado</p>
+                                                <p className="text-xs opacity-75">Tente ajustar os termos de busca</p>
                                             </div>
                                         )}
                                     </div>
                                 </div>
 
-                                {/* Legenda */}
-                                <div>
-                                    <Label>Legenda</Label>
-                                    <StatusLegend className="mt-2" />
+                                {/* Legenda de Status */}
+                                <div className="space-y-4">
+                                    <Label className="text-sm font-semibold text-foreground dark:text-foreground flex items-center gap-2">
+                                        <Info className="h-4 w-4 text-primary" />
+                                        Legenda de Status
+                                    </Label>
+                                    <div className="bg-gradient-to-br from-muted/30 to-muted/50 dark:from-muted/20 dark:to-muted/40 rounded-lg p-4 border border-border/30 dark:border-border/20">
+                                        <StatusLegend className="space-y-3" />
+                                    </div>
                                 </div>
 
                             </CardContent>
