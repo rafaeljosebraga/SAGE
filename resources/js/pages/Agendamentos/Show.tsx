@@ -300,7 +300,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Agendamento - ${agendamento.titulo}`} />
 
-            <div className="space-y-6">
+            <div className="space-y-4">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <Button variant="outline" size="sm" asChild>
@@ -310,8 +310,8 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                             </Link>
                         </Button>
                         <div>
-                            <h1 className="text-3xl font-bold tracking-tight">{agendamento.titulo}</h1>
-                            <p className="text-muted-foreground">
+                            <h1 className="text-2xl font-bold tracking-tight">{agendamento.titulo}</h1>
+                            <p className="text-muted-foreground text-sm">
                                 Detalhes do agendamento
                             </p>
                         </div>
@@ -382,9 +382,9 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                     {/* Informações Principais */}
-                    <div className="lg:col-span-2 space-y-6">
+                    <div className="lg:col-span-2 space-y-4">
                         {/* Detalhes do Agendamento */}
                         <Card className={`border-l-4 ${getEventBorderColor(agendamento)}`}>
                             <CardHeader>
@@ -577,7 +577,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                     </div>
 
                     {/* Sidebar */}
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                         {/* Informações do Espaço */}
                         {agendamento.espaco && (
                             <Card>
