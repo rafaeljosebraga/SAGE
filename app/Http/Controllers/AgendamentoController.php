@@ -36,7 +36,7 @@ class AgendamentoController extends Controller
         }
 
         if ($request->filled('nome')) {
-            $query->where('titulo', 'like', '%' . $request->nome . '%');
+            $query->whereRaw('LOWER(titulo) LIKE ?', ['%' . strtolower($request->nome) . '%']);
         }
 
         // Todos os usuários podem ver todos os agendamentos
@@ -363,6 +363,11 @@ class AgendamentoController extends Controller
 
         $agendamento->update($validated);
 
+        // Para requisições Inertia, retornar back() para permitir o redirecionamento pelo frontend
+        if (request()->header('X-Inertia')) {
+            return back()->with('success', 'Agendamento atualizado com sucesso!');
+        }
+
         return redirect()->route('agendamentos.index')
                         ->with('success', 'Agendamento atualizado com sucesso!');
     }
@@ -421,7 +426,7 @@ class AgendamentoController extends Controller
 
         if ($request->filled('solicitante')) {
             $query->whereHas('user', function ($userQuery) use ($request) {
-                $userQuery->where('name', 'like', '%' . $request->solicitante . '%');
+                $userQuery->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($request->solicitante) . '%']);
             });
         }
 

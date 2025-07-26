@@ -561,6 +561,25 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
             currentParams.set('espacos', selectedEspacos.join(','));
         }
         
+        // Preservar filtros da lista se estiver na visualização de lista
+        if (viewMode === 'list') {
+            if (filters.espaco_id) {
+                currentParams.set('espaco_id', filters.espaco_id);
+            }
+            if (filters.status) {
+                currentParams.set('status', filters.status);
+            }
+            if (filters.data_inicio) {
+                currentParams.set('data_inicio', filters.data_inicio);
+            }
+            if (filters.data_fim) {
+                currentParams.set('data_fim', filters.data_fim);
+            }
+            if (filters.nome) {
+                currentParams.set('nome', filters.nome);
+            }
+        }
+        
         router.get(`/agendamentos/${agendamento.id}?${currentParams.toString()}`);
     };
 
@@ -1376,17 +1395,52 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                     </div>
 
                                     <div className="flex items-center gap-2">
-                                        <Button variant="outline" size="sm" asChild>
-                                            <Link href={`/agendamentos/${agendamento.id}`}>
-                                                <Eye className="h-4 w-4" />
-                                            </Link>
+                                        <Button 
+                                            variant="outline" 
+                                            size="sm" 
+                                            onClick={() => handleEventClick(agendamento)}
+                                        >
+                                            <Eye className="h-4 w-4" />
                                         </Button>
 
                                         {canEdit(agendamento) && (
-                                            <Button variant="outline" size="sm" asChild>
-                                                <Link href={`/agendamentos/${agendamento.id}/editar`}>
-                                                    <Edit className="h-4 w-4" />
-                                                </Link>
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm" 
+                                                onClick={() => {
+                                                    // Preservar o estado atual da visualização na URL
+                                                    const currentParams = new URLSearchParams();
+                                                    currentParams.set('view', viewMode);
+                                                    currentParams.set('date', format(currentDate, 'yyyy-MM-dd'));
+                                                    
+                                                    // Adicionar filtros de espaços selecionados se não for todos
+                                                    if (selectedEspacos.length !== espacos.length) {
+                                                        currentParams.set('espacos', selectedEspacos.join(','));
+                                                    }
+                                                    
+                                                    // Preservar filtros da lista se estiver na visualização de lista
+                                                    if (viewMode === 'list') {
+                                                        if (filters.espaco_id) {
+                                                            currentParams.set('espaco_id', filters.espaco_id);
+                                                        }
+                                                        if (filters.status) {
+                                                            currentParams.set('status', filters.status);
+                                                        }
+                                                        if (filters.data_inicio) {
+                                                            currentParams.set('data_inicio', filters.data_inicio);
+                                                        }
+                                                        if (filters.data_fim) {
+                                                            currentParams.set('data_fim', filters.data_fim);
+                                                        }
+                                                        if (filters.nome) {
+                                                            currentParams.set('nome', filters.nome);
+                                                        }
+                                                    }
+                                                    
+                                                    router.get(`/agendamentos/${agendamento.id}/editar?${currentParams.toString()}`);
+                                                }}
+                                            >
+                                                <Edit className="h-4 w-4" />
                                             </Button>
                                         )}
 

@@ -54,20 +54,49 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
         const view = urlParams.get('view');
         const date = urlParams.get('date');
         const espacos = urlParams.get('espacos');
+        const espaco_id = urlParams.get('espaco_id');
+        const status = urlParams.get('status');
+        const data_inicio = urlParams.get('data_inicio');
+        const data_fim = urlParams.get('data_fim');
+        const nome = urlParams.get('nome');
         
         // Construir URL de retorno com os parâmetros preservados
         const backParams = new URLSearchParams();
         
-        if (view && view !== 'week') {
+        // Preservar visualização (se não especificada, usar 'week' como padrão)
+        if (view) {
             backParams.set('view', view);
         }
         
+        // Preservar data se especificada
         if (date) {
             backParams.set('date', date);
         }
         
+        // Preservar espaços selecionados (para visualizações de calendário)
         if (espacos) {
             backParams.set('espacos', espacos);
+        }
+        
+        // Preservar filtros da lista (para visualização de lista)
+        if (espaco_id) {
+            backParams.set('espaco_id', espaco_id);
+        }
+        
+        if (status) {
+            backParams.set('status', status);
+        }
+        
+        if (data_inicio) {
+            backParams.set('data_inicio', data_inicio);
+        }
+        
+        if (data_fim) {
+            backParams.set('data_fim', data_fim);
+        }
+        
+        if (nome) {
+            backParams.set('nome', nome);
         }
         
         const queryString = backParams.toString();
@@ -292,11 +321,20 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                         <StatusBadge status={agendamento.status} agendamento={agendamento} />
 
                         {canEdit && (
-                            <Button variant="outline" size="sm" asChild title="Editar agendamento">
-                                <Link href={`/agendamentos/${agendamento.id}/editar`}>
-                                    <Edit className="h-4 w-4 mr-2" />
-                                    Editar
-                                </Link>
+                            <Button 
+                                variant="outline" 
+                                size="sm" 
+                                title="Editar agendamento"
+                                onClick={() => {
+                                    // Preservar os parâmetros da URL atual e adicionar indicador de origem
+                                    const urlParams = new URLSearchParams(window.location.search);
+                                    urlParams.set('from', 'show'); // Indicar que veio da tela de detalhes
+                                    
+                                    router.get(`/agendamentos/${agendamento.id}/editar?${urlParams.toString()}`);
+                                }}
+                            >
+                                <Edit className="h-4 w-4 mr-2" />
+                                Editar
                             </Button>
                         )}
 

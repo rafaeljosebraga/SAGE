@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, router } from '@inertiajs/react';
 import { ArrowLeft, Calendar, Clock, MapPin, Users } from 'lucide-react';
 
 import AppLayout from '@/layouts/app-layout';
@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useAgendamentoColors } from '@/components/ui/agend-colors';
+import { useToast } from '@/hooks/use-toast';
 
 import type { PageProps, Agendamento, Espaco, Recurso, BreadcrumbItem } from '@/types';
 
@@ -25,9 +26,80 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
     // Usar o hook de cores
     const { getEventBorderColor } = useAgendamentoColors();
     
+    // Usar o hook de toast
+    const { toast } = useToast();
+    
     const [selectedEspaco, setSelectedEspaco] = useState<Espaco | null>(
         espacos.find(e => e.id === agendamento.espaco_id) || null
     );
+
+    // Função para obter URL de retorno baseada nos parâmetros da URL atual
+    const getBackUrl = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const from = urlParams.get('from');
+        
+        // Se veio da tela de detalhes, voltar para ela
+        if (from === 'show') {
+            // Preservar os parâmetros originais (exceto o 'from')
+            const backParams = new URLSearchParams(urlParams);
+            backParams.delete('from'); // Remover o indicador de origem
+            
+            const queryString = backParams.toString();
+            return queryString ? `/agendamentos/${agendamento.id}?${queryString}` : `/agendamentos/${agendamento.id}`;
+        }
+        
+        // Caso contrário, voltar para a lista/calendário
+        const view = urlParams.get('view');
+        const date = urlParams.get('date');
+        const espacos = urlParams.get('espacos');
+        const espaco_id = urlParams.get('espaco_id');
+        const status = urlParams.get('status');
+        const data_inicio = urlParams.get('data_inicio');
+        const data_fim = urlParams.get('data_fim');
+        const nome = urlParams.get('nome');
+        
+        // Construir URL de retorno com os parâmetros preservados
+        const backParams = new URLSearchParams();
+        
+        // Preservar visualização (se não especificada, usar 'week' como padrão)
+        if (view) {
+            backParams.set('view', view);
+        }
+        
+        // Preservar data se especificada
+        if (date) {
+            backParams.set('date', date);
+        }
+        
+        // Preservar espaços selecionados (para visualizações de calendário)
+        if (espacos) {
+            backParams.set('espacos', espacos);
+        }
+        
+        // Preservar filtros da lista (para visualização de lista)
+        if (espaco_id) {
+            backParams.set('espaco_id', espaco_id);
+        }
+        
+        if (status) {
+            backParams.set('status', status);
+        }
+        
+        if (data_inicio) {
+            backParams.set('data_inicio', data_inicio);
+        }
+        
+        if (data_fim) {
+            backParams.set('data_fim', data_fim);
+        }
+        
+        if (nome) {
+            backParams.set('nome', nome);
+        }
+        
+        const queryString = backParams.toString();
+        return queryString ? `/agendamentos?${queryString}` : '/agendamentos';
+    };
 
     // Função para formatar data no formato YYYY-MM-DD
     const formatDateForInput = (dateString: string) => {
@@ -95,8 +167,16 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
 
         put(`/agendamentos/${agendamento.id}`, {
             onSuccess: () => {
-                // Redirecionar para a página de detalhes do agendamento
-                window.location.href = `/agendamentos/${agendamento.id}`;
+                // Mostrar toast de sucesso
+                toast({
+                    title: "Agendamento atualizado com sucesso!",
+                    description: "As alterações foram salvas.",
+                });
+                
+                // Aguardar 1 segundo e redirecionar para a tela anterior
+                setTimeout(() => {
+                    router.get(getBackUrl());
+                }, 1000);
             }
         });
     };
@@ -120,7 +200,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
             <div className="space-y-6">
                 <div className="flex items-center gap-4">
                     <Button variant="outline" size="sm" asChild>
-                        <Link href={`/agendamentos/${agendamento.id}`}>
+                        <Link href={getBackUrl()}>
                             <ArrowLeft className="h-4 w-4 mr-2" />
                             Voltar
                         </Link>
@@ -402,7 +482,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                         </Button>
 
                                         <Button variant="outline" className="w-full" asChild>
-                                            <Link href={`/agendamentos/${agendamento.id}`}>
+                                            <Link href={getBackUrl()}>
                                                 Cancelar
                                             </Link>
                                         </Button>
