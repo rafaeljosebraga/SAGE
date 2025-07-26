@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Head, Link, useForm, router } from '@inertiajs/react';
-import { ArrowLeft, Calendar, Clock, MapPin, Users } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, MapPin, Users, AlertTriangle } from 'lucide-react';
 
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAgendamentoColors } from '@/components/ui/agend-colors';
 import { useToast } from '@/hooks/use-toast';
 
@@ -32,6 +33,12 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
     const [selectedEspaco, setSelectedEspaco] = useState<Espaco | null>(
         espacos.find(e => e.id === agendamento.espaco_id) || null
     );
+
+    // Estado para modal de conflito de horário
+    const [conflictTimeModal, setConflictTimeModal] = useState<{
+        open: boolean;
+        message: string;
+    }>({ open: false, message: "" });
 
     // Função para obter URL de retorno baseada nos parâmetros da URL atual
     const getBackUrl = () => {
@@ -177,6 +184,17 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                 setTimeout(() => {
                     router.get(getBackUrl());
                 }, 1000);
+            },
+            onError: (errors) => {
+                console.error('Erro ao atualizar agendamento:', errors);
+                
+                // Verificar se há conflitos de horário
+                if (errors.horario) {
+                    setConflictTimeModal({ 
+                        open: true, 
+                        message: errors.horario 
+                    });
+                }
             }
         });
     };
@@ -207,9 +225,6 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                     </Button>
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight">Editar Agendamento</h1>
-                        <p className="text-muted-foreground">
-                            Modifique os dados do seu agendamento
-                        </p>
                     </div>
                 </div>
 
@@ -227,9 +242,6 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                             })}`}>
                                 <CardHeader>
                                     <CardTitle>Informações do Agendamento</CardTitle>
-                                    <CardDescription>
-                                        Modifique os dados básicos do seu agendamento
-                                    </CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <div>
@@ -499,6 +511,29 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                         </div>
                     </div>
                 </form>
+
+                {/* Modal de Conflito de Horário */}
+                <Dialog open={conflictTimeModal.open} onOpenChange={(open) => setConflictTimeModal({ open, message: "" })}>
+                    <DialogContent className="max-w-md">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                                <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                                Conflito de Horário
+                            </DialogTitle>
+                            <DialogDescription className="py-4 text-base">
+                                Existe(m) agendamento(s) conflitante(s) no horário solicitado.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                            <Button
+                                onClick={() => setConflictTimeModal({ open: false, message: "" })}
+                                className="w-full"
+                            >
+                                OK
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
         </AppLayout>
     );

@@ -1878,7 +1878,6 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                             </DialogTitle>
                             <DialogDescription>
                                 Existe(m) agendamento(s) conflitante(s) no horário solicitado.
-                                Você pode solicitar prioridade para sobrepor os agendamentos existentes.
                             </DialogDescription>
                         </DialogHeader>
 
