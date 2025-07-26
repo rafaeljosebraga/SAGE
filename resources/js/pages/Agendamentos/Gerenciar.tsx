@@ -70,7 +70,14 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
     ];
 
     const handleApprove = (agendamento: Agendamento) => {
-        if (confirm(`Tem certeza que deseja aprovar o agendamento "${agendamento.titulo}"?`)) {
+        const isRecorrente = agendamento.grupo_recorrencia;
+        const totalAgendamentos = agendamento.total_grupo || agendamento.info_grupo?.total || 1;
+        
+        const confirmMessage = isRecorrente 
+            ? `Tem certeza que deseja aprovar o grupo de agendamentos recorrentes "${agendamento.titulo}"?\n\nTodos os ${totalAgendamentos} agendamentos deste grupo serão aprovados.`
+            : `Tem certeza que deseja aprovar o agendamento "${agendamento.titulo}"?`;
+            
+        if (confirm(confirmMessage)) {
             router.post(`/agendamentos/${agendamento.id}/aprovar`, {}, {
                 onSuccess: () => {
                     router.reload();
@@ -354,15 +361,22 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                     ) : (
                         agendamentos.data.map((agendamento) => {
                             const priority = getPriorityLevel(agendamento);
+                            const isRecorrente = agendamento.grupo_recorrencia;
+                            const infoGrupo = agendamento.info_grupo;
                             
                             return (
                                 <Card key={agendamento.id} className={`border-l-4 ${getEventBorderColor(agendamento)}`}>
                                     <CardContent className="p-6">
                                         <div className="flex items-start justify-between">
                                             <div className="space-y-3 flex-1">
-                                                <div className="flex items-center gap-3">
+                                                <div className="flex items-center gap-3 flex-wrap">
                                                     <h3 className="font-semibold text-lg">{agendamento.titulo}</h3>
                                                     <StatusBadge status={agendamento.status} agendamento={agendamento} />
+                                                    {isRecorrente && (
+                                                        <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                                                            Recorrente ({agendamento.total_grupo || infoGrupo?.total || 1} agendamentos)
+                                                        </Badge>
+                                                    )}
                                                     {agendamento.status === 'pendente' && (
                                                         <Badge variant="outline" className={getPriorityColor(priority)}>
                                                             Prioridade {getPriorityText(priority)}
@@ -493,8 +507,20 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                         <DialogHeader>
                             <DialogTitle>Rejeitar Agendamento</DialogTitle>
                             <DialogDescription>
-                                Informe o motivo da rejeição para o agendamento "{rejectionDialog.agendamento?.titulo}".
-                                Esta informação será enviada ao solicitante.
+                                {rejectionDialog.agendamento?.grupo_recorrencia ? (
+                                    <>
+                                        Informe o motivo da rejeição para o grupo de agendamentos recorrentes "{rejectionDialog.agendamento?.titulo}".
+                                        <br />
+                                        <strong>Atenção:</strong> Todos os {rejectionDialog.agendamento?.total_grupo || rejectionDialog.agendamento?.info_grupo?.total || 1} agendamentos deste grupo serão rejeitados.
+                                        <br />
+                                        Esta informação será enviada ao solicitante.
+                                    </>
+                                ) : (
+                                    <>
+                                        Informe o motivo da rejeição para o agendamento "{rejectionDialog.agendamento?.titulo}".
+                                        Esta informação será enviada ao solicitante.
+                                    </>
+                                )}
                             </DialogDescription>
                         </DialogHeader>
                         
@@ -523,7 +549,7 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                                 onClick={confirmReject}
                                 disabled={!rejectionReason.trim()}
                             >
-                                Rejeitar Agendamento
+                                {rejectionDialog.agendamento?.grupo_recorrencia ? 'Rejeitar Grupo' : 'Rejeitar Agendamento'}
                             </Button>
                         </DialogFooter>
                     </DialogContent>

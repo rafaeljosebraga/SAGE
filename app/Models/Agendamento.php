@@ -28,6 +28,8 @@ class Agendamento extends Model
         'tipo_recorrencia',
         'data_fim_recorrencia',
         'recursos_solicitados',
+        'grupo_recorrencia',
+        'is_representante_grupo',
     ];
 
     protected $casts = [
@@ -36,6 +38,7 @@ class Agendamento extends Model
         'aprovado_em' => 'datetime',
         'data_fim_recorrencia' => 'date',
         'recorrente' => 'boolean',
+        'is_representante_grupo' => 'boolean',
         'recursos_solicitados' => 'array',
     ];
 
@@ -202,5 +205,65 @@ class Agendamento extends Model
     public function getAtivoAttribute()
     {
         return in_array($this->status, ['pendente', 'aprovado']);
+    }
+
+    // Métodos para trabalhar com grupos de recorrência
+    public function agendamentosDoGrupo()
+    {
+        if (!$this->grupo_recorrencia) {
+            return collect([$this]);
+        }
+        
+        return self::where('grupo_recorrencia', $this->grupo_recorrencia)->get();
+    }
+
+    public function countAgendamentosDoGrupo()
+    {
+        if (!$this->grupo_recorrencia) {
+            return 1;
+        }
+        
+        return self::where('grupo_recorrencia', $this->grupo_recorrencia)->count();
+    }
+
+    public function scopeRepresentantesDeGrupo($query)
+    {
+        return $query->where(function ($q) {
+            $q->where('is_representante_grupo', true)
+              ->orWhereNull('grupo_recorrencia');
+        });
+    }
+
+    public function scopeComContadorGrupo($query)
+    {
+        return $query->selectRaw('*, (
+            CASE 
+                WHEN grupo_recorrencia IS NOT NULL 
+                THEN (SELECT COUNT(*) FROM agendamentos a2 WHERE a2.grupo_recorrencia = agendamentos.grupo_recorrencia)
+                ELSE 1 
+            END
+        ) as total_grupo');
+    }
+
+    // Método para obter informações do grupo
+    public function getInfoGrupoAttribute()
+    {
+        if (!$this->grupo_recorrencia) {
+            return null;
+        }
+
+        $agendamentos = $this->agendamentosDoGrupo();
+        $primeiro = $agendamentos->sortBy('data_inicio')->first();
+        $ultimo = $agendamentos->sortBy('data_inicio')->last();
+
+        return [
+            'total' => $agendamentos->count(),
+            'data_inicio' => $primeiro->data_inicio,
+            'data_fim' => $ultimo->data_fim,
+            'tipo_recorrencia' => $this->tipo_recorrencia,
+            'pendentes' => $agendamentos->where('status', 'pendente')->count(),
+            'aprovados' => $agendamentos->where('status', 'aprovado')->count(),
+            'rejeitados' => $agendamentos->where('status', 'rejeitado')->count(),
+        ];
     }
 }

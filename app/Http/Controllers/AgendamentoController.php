@@ -413,7 +413,9 @@ class AgendamentoController extends Controller
      */
     public function gerenciar(Request $request)
     {
-        $query = Agendamento::with(['espaco.localizacao', 'user', 'aprovadoPor']);
+        $query = Agendamento::with(['espaco.localizacao', 'user', 'aprovadoPor'])
+                           ->representantesDeGrupo()
+                           ->comContadorGrupo();
 
         // Filtros
         if ($request->filled('espaco_id')) {
@@ -444,21 +446,30 @@ class AgendamentoController extends Controller
         $agendamentos = $query->orderBy('created_at', 'desc')
                              ->paginate(15);
 
+        // Adicionar informações do grupo para cada agendamento
+        $agendamentos->getCollection()->transform(function ($agendamento) {
+            $agendamento->info_grupo = $agendamento->info_grupo;
+            return $agendamento;
+        });
+
         $espacos = Espaco::where('disponivel_reserva', true)
                          ->where('status', 'ativo')
                          ->orderBy('nome')
                          ->get(['id', 'nome']);
 
-        // Estatísticas
+        // Estatísticas - contar apenas representantes de grupo para evitar duplicação
         $estatisticas = [
-            'pendentes' => Agendamento::where('status', 'pendente')->count(),
-            'aprovados_hoje' => Agendamento::where('status', 'aprovado')
+            'pendentes' => Agendamento::representantesDeGrupo()->where('status', 'pendente')->count(),
+            'aprovados_hoje' => Agendamento::representantesDeGrupo()
+                                          ->where('status', 'aprovado')
                                           ->whereDate('aprovado_em', today())
                                           ->count(),
-            'rejeitados_hoje' => Agendamento::where('status', 'rejeitado')
+            'rejeitados_hoje' => Agendamento::representantesDeGrupo()
+                                           ->where('status', 'rejeitado')
                                            ->whereDate('aprovado_em', today())
                                            ->count(),
-            'total_mes' => Agendamento::whereMonth('created_at', now()->month)
+            'total_mes' => Agendamento::representantesDeGrupo()
+                                     ->whereMonth('created_at', now()->month)
                                      ->whereYear('created_at', now()->year)
                                      ->count(),
         ];
@@ -472,7 +483,7 @@ class AgendamentoController extends Controller
     }
 
     /**
-     * Aprovar agendamento
+     * Aprovar agendamento (individual ou grupo completo)
      */
     public function aprovar(Agendamento $agendamento)
     {
@@ -485,17 +496,41 @@ class AgendamentoController extends Controller
             return back()->withErrors(['status' => 'Apenas agendamentos pendentes podem ser aprovados.']);
         }
 
-        $agendamento->update([
-            'status' => 'aprovado',
-            'aprovado_por' => auth()->id(),
-            'aprovado_em' => now(),
-        ]);
+        // Se faz parte de um grupo de recorrência, aprovar todos os agendamentos do grupo
+        if ($agendamento->grupo_recorrencia) {
+            $agendamentosDoGrupo = Agendamento::where('grupo_recorrencia', $agendamento->grupo_recorrencia)
+                                             ->where('status', 'pendente')
+                                             ->get();
 
-        return back()->with('success', 'Agendamento aprovado com sucesso!');
+            $totalAprovados = $agendamentosDoGrupo->count();
+            
+            foreach ($agendamentosDoGrupo as $agendamentoGrupo) {
+                $agendamentoGrupo->update([
+                    'status' => 'aprovado',
+                    'aprovado_por' => auth()->id(),
+                    'aprovado_em' => now(),
+                ]);
+            }
+
+            $message = $totalAprovados > 1 
+                ? "Grupo de agendamentos recorrentes aprovado com sucesso! {$totalAprovados} agendamentos foram aprovados."
+                : 'Agendamento aprovado com sucesso!';
+        } else {
+            // Agendamento individual
+            $agendamento->update([
+                'status' => 'aprovado',
+                'aprovado_por' => auth()->id(),
+                'aprovado_em' => now(),
+            ]);
+
+            $message = 'Agendamento aprovado com sucesso!';
+        }
+
+        return back()->with('success', $message);
     }
 
     /**
-     * Rejeitar agendamento
+     * Rejeitar agendamento (individual ou grupo completo)
      */
     public function rejeitar(Request $request, Agendamento $agendamento)
     {
@@ -512,14 +547,39 @@ class AgendamentoController extends Controller
             'motivo_rejeicao' => 'required|string|max:500',
         ]);
 
-        $agendamento->update([
-            'status' => 'rejeitado',
-            'motivo_rejeicao' => $validated['motivo_rejeicao'],
-            'aprovado_por' => auth()->id(),
-            'aprovado_em' => now(),
-        ]);
+        // Se faz parte de um grupo de recorrência, rejeitar todos os agendamentos do grupo
+        if ($agendamento->grupo_recorrencia) {
+            $agendamentosDoGrupo = Agendamento::where('grupo_recorrencia', $agendamento->grupo_recorrencia)
+                                             ->where('status', 'pendente')
+                                             ->get();
 
-        return back()->with('success', 'Agendamento rejeitado.');
+            $totalRejeitados = $agendamentosDoGrupo->count();
+            
+            foreach ($agendamentosDoGrupo as $agendamentoGrupo) {
+                $agendamentoGrupo->update([
+                    'status' => 'rejeitado',
+                    'motivo_rejeicao' => $validated['motivo_rejeicao'],
+                    'aprovado_por' => auth()->id(),
+                    'aprovado_em' => now(),
+                ]);
+            }
+
+            $message = $totalRejeitados > 1 
+                ? "Grupo de agendamentos recorrentes rejeitado. {$totalRejeitados} agendamentos foram rejeitados."
+                : 'Agendamento rejeitado.';
+        } else {
+            // Agendamento individual
+            $agendamento->update([
+                'status' => 'rejeitado',
+                'motivo_rejeicao' => $validated['motivo_rejeicao'],
+                'aprovado_por' => auth()->id(),
+                'aprovado_em' => now(),
+            ]);
+
+            $message = 'Agendamento rejeitado.';
+        }
+
+        return back()->with('success', $message);
     }
 
     /**
@@ -656,6 +716,9 @@ class AgendamentoController extends Controller
             return $agendamentos;
         }
 
+        // Para agendamentos recorrentes, gerar um ID único para o grupo
+        $grupoRecorrencia = 'rec_' . uniqid() . '_' . time();
+
         // Para agendamentos recorrentes, calcular as datas e horários
         $dataInicio = Carbon::parse($validated['data_inicio']);
         $dataFim = Carbon::parse($validated['data_fim']);
@@ -674,6 +737,7 @@ class AgendamentoController extends Controller
         $dataHoraAtual = $dataHoraInicio->copy();
         $contador = 0;
         $maxAgendamentos = 8760; // Limite de segurança (365 dias * 24 horas)
+        $primeiroAgendamento = true;
 
         while ($dataHoraAtual->toDateString() <= $dataFimRecorrencia->toDateString() && $contador < $maxAgendamentos) {
             // Calcular data e hora fim para este agendamento
@@ -685,10 +749,13 @@ class AgendamentoController extends Controller
             $dadosAgendamento['hora_inicio'] = $dataHoraAtual->format('H:i');
             $dadosAgendamento['data_fim'] = $dataHoraFimAtual->toDateString();
             $dadosAgendamento['hora_fim'] = $dataHoraFimAtual->format('H:i');
+            $dadosAgendamento['grupo_recorrencia'] = $grupoRecorrencia;
+            $dadosAgendamento['is_representante_grupo'] = $primeiroAgendamento;
 
             try {
                 $agendamento = Agendamento::create($dadosAgendamento);
                 $agendamentos->push($agendamento);
+                $primeiroAgendamento = false;
             } catch (\Exception $e) {
                 // Log do erro mas continua criando os próximos agendamentos
                 \Log::warning("Erro ao criar agendamento recorrente para {$dataHoraAtual->format('Y-m-d H:i')}: " . $e->getMessage());
