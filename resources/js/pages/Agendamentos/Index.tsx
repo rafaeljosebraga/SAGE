@@ -473,7 +473,16 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         return dayEvents.filter(event => {
             const eventStart = event.hora_inicio.substring(0, 5);
             const eventEnd = event.hora_fim.substring(0, 5);
-            return eventStart <= timeSlot && eventEnd > timeSlot;
+            // Extrair a hora do slot (ex: "19:00" -> 19)
+            const slotHour = parseInt(timeSlot.split(":")[0]);
+            const nextSlotTime = `${(slotHour + 1).toString().padStart(2, "0")}:00`;
+            
+            // Verificar se o evento começa dentro deste slot de hora
+            // ou se está ativo durante este slot
+            const startsInSlot = eventStart >= timeSlot && eventStart < nextSlotTime;
+            const isActiveInSlot = eventStart <= timeSlot && eventEnd > timeSlot;
+            
+            return startsInSlot || isActiveInSlot;
         });
     };
 
