@@ -1246,33 +1246,31 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-                        <div className="md:col-span-2">
+                    <div className="flex flex-wrap items-end gap-3">
+                        <div className="flex-1 min-w-[200px]">
                             <Label htmlFor="nome_agendamento">Nome do Agendamento</Label>
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <div className="relative">
-                                    <Input
-                                        id="nome_agendamento"
-                                        placeholder="Buscar por nome..."
-                                        value={nomeFilter}
-                                        onChange={(e) => setNomeFilter(e.target.value)}
-                                        className="pl-10 pr-10"
-                                    />
-                                    <Button 
-                                        variant="ghost" 
-                                        size="sm" 
-                                        onClick={toggleNomeSort}
-                                        className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
-                                        title={`Ordenar por nome ${nomeSortOrder === 'none' ? 'crescente' : nomeSortOrder === 'asc' ? 'decrescente' : 'padrão'}`}
-                                    >
-                                        {getNomeSortIcon()}
-                                    </Button>
-                                </div>
+                                <Input
+                                    id="nome_agendamento"
+                                    placeholder="Buscar por nome..."
+                                    value={nomeFilter}
+                                    onChange={(e) => setNomeFilter(e.target.value)}
+                                    className="pl-10 pr-10"
+                                />
+                                <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={toggleNomeSort}
+                                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
+                                    title={`Ordenar por nome ${nomeSortOrder === 'none' ? 'crescente' : nomeSortOrder === 'asc' ? 'decrescente' : 'padrão'}`}
+                                >
+                                    {getNomeSortIcon()}
+                                </Button>
                             </div>
                         </div>
 
-                        <div>
+                        <div className="min-w-[140px]">
                             <Label htmlFor="espaco">Espaço</Label>
                             <Select
                                 value={filters.espaco_id || 'all'}
@@ -1295,7 +1293,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                             </Select>
                         </div>
 
-                        <div>
+                        <div className="min-w-[120px]">
                             <Label htmlFor="status">Status</Label>
                             <Select
                                 value={filters.status || 'all'}
@@ -1317,78 +1315,76 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                             </Select>
                         </div>
 
-                        <div className="flex gap-2">
-                            <div className="flex-1">
-                                <Label htmlFor="data_inicio">Início</Label>
-                                <div className="relative">
-                                    <Input
-                                        type="date"
-                                        value={filters.data_inicio || ''}
-                                        onChange={(e) => {
-                                            router.get('/agendamentos', { ...filters, data_inicio: e.target.value || undefined, view: 'list' });
-                                        }}
-                                        className="pr-8 text-sm"
-                                    />
-                                    <Button 
-                                        variant="ghost" 
-                                        size="sm" 
-                                        onClick={() => toggleDateSort('inicio')}
-                                        className="absolute right-1 top-1/2 transform -translate-y-1/2 h-5 w-5 p-0 hover:bg-muted"
-                                        title={`Ordenar por data de início ${dateSortOrder.inicio === 'none' ? 'crescente' : dateSortOrder.inicio === 'asc' ? 'decrescente' : 'padrão'}`}
-                                    >
-                                        {getDateSortIcon('inicio')}
-                                    </Button>
-                                </div>
+                        <div className="min-w-[140px]">
+                            <Label htmlFor="data_inicio">Data Início</Label>
+                            <div className="relative">
+                                <Input
+                                    type="date"
+                                    value={filters.data_inicio || ''}
+                                    onChange={(e) => {
+                                        router.get('/agendamentos', { ...filters, data_inicio: e.target.value || undefined, view: 'list' });
+                                    }}
+                                    className="pr-8 text-sm"
+                                />
+                                <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={() => toggleDateSort('inicio')}
+                                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-5 w-5 p-0 hover:bg-muted"
+                                    title={`Ordenar por data de início ${dateSortOrder.inicio === 'none' ? 'crescente' : dateSortOrder.inicio === 'asc' ? 'decrescente' : 'padrão'}`}
+                                >
+                                    {getDateSortIcon('inicio')}
+                                </Button>
                             </div>
-
-                            <div className="flex-1">
-                                <Label htmlFor="data_fim">Fim</Label>
-                                <div className="relative">
-                                    <Input
-                                        type="date"
-                                        value={filters.data_fim || ''}
-                                        onChange={(e) => {
-                                            router.get('/agendamentos', { ...filters, data_fim: e.target.value || undefined, view: 'list' });
-                                        }}
-                                        className="pr-8 text-sm"
-                                    />
-                                    <Button 
-                                        variant="ghost" 
-                                        size="sm" 
-                                        onClick={() => toggleDateSort('fim')}
-                                        className="absolute right-1 top-1/2 transform -translate-y-1/2 h-5 w-5 p-0 hover:bg-muted"
-                                        title={`Ordenar por data de fim ${dateSortOrder.fim === 'none' ? 'crescente' : dateSortOrder.fim === 'asc' ? 'decrescente' : 'padrão'}`}
-                                    >
-                                        {getDateSortIcon('fim')}
-                                    </Button>
-                                </div>
-                            </div>
-
-                            {/* Botão Limpar Filtros - só aparece quando há filtros ativos */}
-                            {(filters.nome || filters.espaco_id || filters.status || filters.data_inicio || filters.data_fim || 
-                              nomeSortOrder !== 'none' || dateSortOrder.inicio !== 'none' || dateSortOrder.fim !== 'none') && (
-                                <div className="flex flex-col">
-                                    <Label className="mb-2 opacity-0">Ações</Label>
-                                    <Button 
-                                        variant="outline" 
-                                        size="sm"
-                                        onClick={() => {
-                                            // Limpar todos os filtros e ordenações
-                                            setNomeFilter('');
-                                            setNomeSortOrder('none');
-                                            setDateSortOrder({ inicio: 'none', fim: 'none' });
-                                            
-                                            // Redirecionar para a página sem filtros
-                                            router.get('/agendamentos', { view: 'list' });
-                                        }}
-                                        className="flex items-center gap-2 whitespace-nowrap h-10"
-                                    >
-                                        <X className="h-4 w-4" />
-                                        Limpar
-                                    </Button>
-                                </div>
-                            )}
                         </div>
+
+                        <div className="min-w-[140px]">
+                            <Label htmlFor="data_fim">Data Fim</Label>
+                            <div className="relative">
+                                <Input
+                                    type="date"
+                                    value={filters.data_fim || ''}
+                                    onChange={(e) => {
+                                        router.get('/agendamentos', { ...filters, data_fim: e.target.value || undefined, view: 'list' });
+                                    }}
+                                    className="pr-8 text-sm"
+                                />
+                                <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={() => toggleDateSort('fim')}
+                                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-5 w-5 p-0 hover:bg-muted"
+                                    title={`Ordenar por data de fim ${dateSortOrder.fim === 'none' ? 'crescente' : dateSortOrder.fim === 'asc' ? 'decrescente' : 'padrão'}`}
+                                >
+                                    {getDateSortIcon('fim')}
+                                </Button>
+                            </div>
+                        </div>
+
+                        {/* Botão Limpar Filtros - só aparece quando há filtros ativos */}
+                        {(filters.nome || filters.espaco_id || filters.status || filters.data_inicio || filters.data_fim || 
+                          nomeSortOrder !== 'none' || dateSortOrder.inicio !== 'none' || dateSortOrder.fim !== 'none') && (
+                            <div className="flex flex-col">
+                                <Label className="mb-2 opacity-0">Ações</Label>
+                                <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => {
+                                        // Limpar todos os filtros e ordenações
+                                        setNomeFilter('');
+                                        setNomeSortOrder('none');
+                                        setDateSortOrder({ inicio: 'none', fim: 'none' });
+                                        
+                                        // Redirecionar para a página sem filtros
+                                        router.get('/agendamentos', { view: 'list' });
+                                    }}
+                                    className="h-10 w-10 p-0"
+                                    title="Limpar filtros"
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 </CardContent>
             </Card>

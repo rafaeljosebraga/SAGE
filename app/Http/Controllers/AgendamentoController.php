@@ -443,6 +443,10 @@ class AgendamentoController extends Controller
             });
         }
 
+
+        if ($request->filled('nome_agendamento')) {
+            $query->whereRaw('LOWER(titulo) LIKE ?', ['%' . strtolower($request->nome_agendamento) . '%']);
+        }
         $agendamentos = $query->orderBy('created_at', 'desc')
                              ->paginate(15);
 
@@ -478,7 +482,7 @@ class AgendamentoController extends Controller
             'agendamentos' => $agendamentos,
             'espacos' => $espacos,
             'estatisticas' => $estatisticas,
-            'filters' => $request->only(['espaco_id', 'status', 'data_inicio', 'data_fim', 'solicitante']),
+            'filters' => $request->only(['espaco_id', 'status', 'data_inicio', 'data_fim', 'solicitante', 'nome_agendamento']),
         ]);
     }
 

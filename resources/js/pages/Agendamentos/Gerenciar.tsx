@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import { 
     Calendar, 
@@ -14,7 +14,10 @@ import {
     Users,
     CheckCircle,
     XCircle,
-    Search
+    Search,
+    ArrowUpDown,
+    ArrowUp,
+    ArrowDown
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -52,6 +55,7 @@ interface Props extends PageProps {
         data_inicio?: string;
         data_fim?: string;
         solicitante?: string;
+        nome_agendamento?: string;
     };
 }
 
@@ -64,6 +68,269 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
         agendamento: null
     });
     const [rejectionReason, setRejectionReason] = useState('');
+    
+    // Estados locais para os campos de busca
+    const safeFilters = Array.isArray(filters) ? {} : filters;
+    const [searchValues, setSearchValues] = useState({
+        solicitante: safeFilters.solicitante || '',
+        nome_agendamento: safeFilters.nome_agendamento || ''
+    });
+    
+    // Estados para ordenação
+    const [nomeSortOrder, setNomeSortOrder] = useState<'asc' | 'desc' | 'none'>('none');
+    const [solicitanteSortOrder, setSolicitanteSortOrder] = useState<'asc' | 'desc' | 'none'>('none');
+    const [dataInicioSortOrder, setDataInicioSortOrder] = useState<'asc' | 'desc' | 'none'>('none');
+    const [dataFimSortOrder, setDataFimSortOrder] = useState<'asc' | 'desc' | 'none'>('none');
+    
+    // Refs para controlar os timers
+    const timersRef = useRef<{
+        solicitante?: NodeJS.Timeout;
+        nome_agendamento?: NodeJS.Timeout;
+    }>({});
+    
+    // Função para fazer a busca
+    const performSearch = (newFilters: any, searchType: string) => {
+        try {
+            router.get('/gerenciar-agendamentos', newFilters, {
+                preserveState: true,
+                preserveScroll: true,
+                onError: (errors) => {
+                    console.error(`Erro na busca - ${searchType}:`, errors);
+                }
+            });
+        } catch (error) {
+            console.error(`Erro ao executar busca - ${searchType}:`, error);
+        }
+    };
+    
+    // Função para lidar com mudanças nos campos de busca
+    const handleSearchChange = (field: 'solicitante' | 'nome_agendamento', value: string) => {
+        // Atualizar o estado local imediatamente
+        setSearchValues(prev => ({
+            ...prev,
+            [field]: value
+        }));
+        
+        // Limpar timer anterior se existir
+        if (timersRef.current[field]) {
+            clearTimeout(timersRef.current[field]);
+        }
+        
+        // Configurar novo timer
+        timersRef.current[field] = setTimeout(() => {
+            const currentValue = safeFilters[field] || '';
+            const newValue = value.trim();
+            
+            if (newValue !== currentValue) {
+                const newFilters = {
+                    ...safeFilters,
+                    [field]: newValue || undefined
+                };
+                performSearch(newFilters, field === 'solicitante' ? 'Solicitante' : 'Nome do Agendamento');
+            }
+        }, 800);
+    };
+    
+    // Sincronizar com filtros externos apenas quando necessário
+    useEffect(() => {
+        const newSolicitante = safeFilters.solicitante || '';
+        const newNomeAgendamento = safeFilters.nome_agendamento || '';
+        
+        // Só atualizar se realmente mudou externamente
+        if (newSolicitante !== searchValues.solicitante || newNomeAgendamento !== searchValues.nome_agendamento) {
+            setSearchValues({
+                solicitante: newSolicitante,
+                nome_agendamento: newNomeAgendamento
+            });
+        }
+    }, [safeFilters.solicitante, safeFilters.nome_agendamento]);
+    
+    // Cleanup dos timers
+    useEffect(() => {
+        return () => {
+            Object.values(timersRef.current).forEach(timer => {
+                if (timer) clearTimeout(timer);
+            });
+        };
+    }, []);
+
+    // Função para alternar ordenação de nome
+    const toggleNomeSort = () => {
+        if (nomeSortOrder === 'none') {
+            setNomeSortOrder('asc');
+            setSolicitanteSortOrder('none');
+            setDataInicioSortOrder('none');
+            setDataFimSortOrder('none');
+        } else if (nomeSortOrder === 'asc') {
+            setNomeSortOrder('desc');
+        } else {
+            setNomeSortOrder('none');
+        }
+    };
+
+    // Função para obter ícone de ordenação de nome
+    const getNomeSortIcon = () => {
+        switch (nomeSortOrder) {
+            case 'asc':
+                return <ArrowUp className="h-3 w-3" />;
+            case 'desc':
+                return <ArrowDown className="h-3 w-3" />;
+            default:
+                return <ArrowUpDown className="h-3 w-3" />;
+        }
+    };
+
+    // Função para alternar ordenação de solicitante
+    const toggleSolicitanteSort = () => {
+        if (solicitanteSortOrder === 'none') {
+            setSolicitanteSortOrder('asc');
+            setNomeSortOrder('none');
+            setDataInicioSortOrder('none');
+            setDataFimSortOrder('none');
+        } else if (solicitanteSortOrder === 'asc') {
+            setSolicitanteSortOrder('desc');
+        } else {
+            setSolicitanteSortOrder('none');
+        }
+    };
+
+    // Função para obter ícone de ordenação de solicitante
+    const getSolicitanteSortIcon = () => {
+        switch (solicitanteSortOrder) {
+            case 'asc':
+                return <ArrowUp className="h-3 w-3" />;
+            case 'desc':
+                return <ArrowDown className="h-3 w-3" />;
+            default:
+                return <ArrowUpDown className="h-3 w-3" />;
+        }
+    };
+
+    // Função para alternar ordenação de data início
+    const toggleDataInicioSort = () => {
+        if (dataInicioSortOrder === 'none') {
+            setDataInicioSortOrder('asc');
+            setNomeSortOrder('none');
+            setSolicitanteSortOrder('none');
+            setDataFimSortOrder('none');
+        } else if (dataInicioSortOrder === 'asc') {
+            setDataInicioSortOrder('desc');
+        } else {
+            setDataInicioSortOrder('none');
+        }
+    };
+
+    // Função para obter ícone de ordenação de data início
+    const getDataInicioSortIcon = () => {
+        switch (dataInicioSortOrder) {
+            case 'asc':
+                return <ArrowUp className="h-3 w-3" />;
+            case 'desc':
+                return <ArrowDown className="h-3 w-3" />;
+            default:
+                return <ArrowUpDown className="h-3 w-3" />;
+        }
+    };
+
+    // Função para alternar ordenação de data fim
+    const toggleDataFimSort = () => {
+        if (dataFimSortOrder === 'none') {
+            setDataFimSortOrder('asc');
+            setNomeSortOrder('none');
+            setSolicitanteSortOrder('none');
+            setDataInicioSortOrder('none');
+        } else if (dataFimSortOrder === 'asc') {
+            setDataFimSortOrder('desc');
+        } else {
+            setDataFimSortOrder('none');
+        }
+    };
+
+    // Função para obter ícone de ordenação de data fim
+    const getDataFimSortIcon = () => {
+        switch (dataFimSortOrder) {
+            case 'asc':
+                return <ArrowUp className="h-3 w-3" />;
+            case 'desc':
+                return <ArrowDown className="h-3 w-3" />;
+            default:
+                return <ArrowUpDown className="h-3 w-3" />;
+        }
+    };
+
+    // Filtrar e ordenar agendamentos
+    const filteredAndSortedAgendamentos = (() => {
+        let filtered = [...agendamentos.data];
+
+        // Aplicar ordenação por nome se ativa
+        if (nomeSortOrder !== 'none') {
+            filtered.sort((a, b) => {
+                const nomeA = a.titulo.toLowerCase();
+                const nomeB = b.titulo.toLowerCase();
+                return nomeSortOrder === 'asc'
+                    ? nomeA.localeCompare(nomeB)
+                    : nomeB.localeCompare(nomeA);
+            });
+        }
+        // Aplicar ordenação por solicitante se ativa
+        else if (solicitanteSortOrder !== 'none') {
+            filtered.sort((a, b) => {
+                const solicitanteA = (a.user?.name || 'Usuário não encontrado').toLowerCase();
+                const solicitanteB = (b.user?.name || 'Usuário não encontrado').toLowerCase();
+                return solicitanteSortOrder === 'asc'
+                    ? solicitanteA.localeCompare(solicitanteB)
+                    : solicitanteB.localeCompare(solicitanteA);
+            });
+        }
+        // Aplicar ordenação por data início se ativa
+        else if (dataInicioSortOrder !== 'none') {
+            filtered.sort((a, b) => {
+                // Normalizar as datas para garantir formato correto
+                const dateStrA = a.data_inicio.split('T')[0]; // Pegar apenas YYYY-MM-DD
+                const timeStrA = a.hora_inicio.split(':').slice(0, 2).join(':'); // Pegar apenas HH:MM
+                const dateStrB = b.data_inicio.split('T')[0];
+                const timeStrB = b.hora_inicio.split(':').slice(0, 2).join(':');
+                
+                const dateA = new Date(`${dateStrA}T${timeStrA}:00`);
+                const dateB = new Date(`${dateStrB}T${timeStrB}:00`);
+                
+                // Verificar se as datas são válidas
+                if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+                    console.warn('Data inválida encontrada:', { a: a.data_inicio, b: b.data_inicio });
+                    return 0;
+                }
+                
+                return dataInicioSortOrder === 'asc' 
+                    ? dateA.getTime() - dateB.getTime()
+                    : dateB.getTime() - dateA.getTime();
+            });
+        }
+        // Aplicar ordenação por data fim se ativa
+        else if (dataFimSortOrder !== 'none') {
+            filtered.sort((a, b) => {
+                // Normalizar as datas para garantir formato correto
+                const dateStrA = a.data_fim.split('T')[0]; // Pegar apenas YYYY-MM-DD
+                const timeStrA = a.hora_fim.split(':').slice(0, 2).join(':'); // Pegar apenas HH:MM
+                const dateStrB = b.data_fim.split('T')[0];
+                const timeStrB = b.hora_fim.split(':').slice(0, 2).join(':');
+                
+                const dateA = new Date(`${dateStrA}T${timeStrA}:00`);
+                const dateB = new Date(`${dateStrB}T${timeStrB}:00`);
+                
+                // Verificar se as datas são válidas
+                if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+                    console.warn('Data inválida encontrada:', { a: a.data_fim, b: b.data_fim });
+                    return 0;
+                }
+                
+                return dataFimSortOrder === 'asc' 
+                    ? dateA.getTime() - dateB.getTime()
+                    : dateB.getTime() - dateA.getTime();
+            });
+        }
+
+        return filtered;
+    })();
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Gerenciar Agendamentos', href: '/gerenciar-agendamentos' }
@@ -167,8 +434,6 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
         }
     };
 
-
-    // Função para obter o badge do perfil do usuário
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Gerenciar Agendamentos" />
@@ -251,8 +516,30 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                            <div>
+                        <div className="flex flex-wrap items-end gap-3">
+                            <div className="flex-1 min-w-[200px]">
+                                <Label htmlFor="nome_agendamento">Nome do Agendamento</Label>
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                                    <Input
+                                        placeholder="Buscar por nome..."
+                                        value={searchValues.nome_agendamento}
+                                        onChange={(e) => handleSearchChange('nome_agendamento', e.target.value)}
+                                        className="pl-8 pr-10"
+                                    />
+                                    <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        onClick={toggleNomeSort}
+                                        className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
+                                        title={`Ordenar por nome ${nomeSortOrder === 'none' ? 'crescente' : nomeSortOrder === 'asc' ? 'decrescente' : 'padrão'}`}
+                                    >
+                                        {getNomeSortIcon()}
+                                    </Button>
+                                </div>
+                            </div>
+
+                            <div className="min-w-[120px]">
                                 <Label htmlFor="status">Status</Label>
                                 <Select
                                     value={filters.status || 'pendente'}
@@ -273,7 +560,7 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                                 </Select>
                             </div>
 
-                            <div>
+                            <div className="min-w-[140px]">
                                 <Label htmlFor="espaco">Espaço</Label>
                                 <Select
                                     value={filters.espaco_id || 'all'}
@@ -296,52 +583,114 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                                 </Select>
                             </div>
 
-                            <div>
+                            <div className="flex-1 min-w-[180px]">
                                 <Label htmlFor="solicitante">Solicitante</Label>
                                 <div className="relative">
                                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         placeholder="Nome do solicitante"
-                                        value={filters.solicitante || ''}
-                                        onChange={(e) => {
-                                            const solicitante = e.target.value || undefined;
-                                            router.get('/gerenciar-agendamentos', { ...filters, solicitante });
-                                        }}
-                                        className="pl-8"
+                                        value={searchValues.solicitante}
+                                        onChange={(e) => handleSearchChange('solicitante', e.target.value)}
+                                        className="pl-8 pr-10"
                                     />
+                                    <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        onClick={toggleSolicitanteSort}
+                                        className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
+                                        title={`Ordenar por solicitante ${solicitanteSortOrder === 'none' ? 'crescente' : solicitanteSortOrder === 'asc' ? 'decrescente' : 'padrão'}`}
+                                    >
+                                        {getSolicitanteSortIcon()}
+                                    </Button>
                                 </div>
                             </div>
 
-                            <div>
+                            <div className="min-w-[140px]">
                                 <Label htmlFor="data_inicio">Data Início</Label>
-                                <Input
-                                    type="date"
-                                    value={filters.data_inicio || ''}
-                                    onChange={(e) => {
-                                        const dataInicio = e.target.value || undefined;
-                                        router.get('/gerenciar-agendamentos', { ...filters, data_inicio: dataInicio });
-                                    }}
-                                />
+                                <div className="relative">
+                                    <Input
+                                        type="date"
+                                        value={filters.data_inicio || ''}
+                                        onChange={(e) => {
+                                            const dataInicio = e.target.value || undefined;
+                                            router.get('/gerenciar-agendamentos', { ...filters, data_inicio: dataInicio });
+                                        }}
+                                        className="pr-8"
+                                    />
+                                    <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        onClick={toggleDataInicioSort}
+                                        className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
+                                        title={`Ordenar por data início ${dataInicioSortOrder === 'none' ? 'crescente' : dataInicioSortOrder === 'asc' ? 'decrescente' : 'padrão'}`}
+                                    >
+                                        {getDataInicioSortIcon()}
+                                    </Button>
+                                </div>
                             </div>
 
-                            <div>
+                            <div className="min-w-[140px]">
                                 <Label htmlFor="data_fim">Data Fim</Label>
-                                <Input
-                                    type="date"
-                                    value={filters.data_fim || ''}
-                                    onChange={(e) => {
-                                        const dataFim = e.target.value || undefined;
-                                        router.get('/gerenciar-agendamentos', { ...filters, data_fim: dataFim });
-                                    }}
-                                />
+                                <div className="relative">
+                                    <Input
+                                        type="date"
+                                        value={filters.data_fim || ''}
+                                        onChange={(e) => {
+                                            const dataFim = e.target.value || undefined;
+                                            router.get('/gerenciar-agendamentos', { ...filters, data_fim: dataFim });
+                                        }}
+                                        className="pr-8"
+                                    />
+                                    <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        onClick={toggleDataFimSort}
+                                        className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
+                                        title={`Ordenar por data fim ${dataFimSortOrder === 'none' ? 'crescente' : dataFimSortOrder === 'asc' ? 'decrescente' : 'padrão'}`}
+                                    >
+                                        {getDataFimSortIcon()}
+                                    </Button>
+                                </div>
                             </div>
+
+                            {/* Botão Limpar Filtros - só aparece quando há filtros ativos */}
+                            {(searchValues.nome_agendamento || searchValues.solicitante || filters.espaco_id || 
+                              (filters.status && filters.status !== 'pendente') || filters.data_inicio || filters.data_fim || 
+                              nomeSortOrder !== 'none' || solicitanteSortOrder !== 'none' || 
+                              dataInicioSortOrder !== 'none' || dataFimSortOrder !== 'none') && (
+                                <div className="flex flex-col">
+                                    <Label className="mb-2 opacity-0">Ações</Label>
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        onClick={() => {
+                                            // Limpar todos os filtros e ordenações
+                                            setSearchValues({
+                                                solicitante: '',
+                                                nome_agendamento: ''
+                                            });
+                                            setNomeSortOrder('none');
+                                            setSolicitanteSortOrder('none');
+                                            setDataInicioSortOrder('none');
+                                            setDataFimSortOrder('none');
+                                            
+                                            // Redirecionar para a página sem filtros (mantendo apenas status pendente como padrão)
+                                            router.get('/gerenciar-agendamentos', { status: 'pendente' });
+                                        }}
+                                        className="h-10 w-10 p-0"
+                                        title="Limpar filtros"
+                                        >
+                                        <X className="h-4 w-4" />
+                                        </Button>
+                                </div>
+                            )}
                         </div>
                     </CardContent>
                 </Card>
 
                 {/* Lista de Agendamentos */}
                 <div className="space-y-4">
-                    {agendamentos.data.length === 0 ? (
+                    {filteredAndSortedAgendamentos.length === 0 ? (
                         <Card>
                             <CardContent className="p-6 text-center">
                                 <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -349,7 +698,7 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                             </CardContent>
                         </Card>
                     ) : (
-                        agendamentos.data.map((agendamento) => {
+                        filteredAndSortedAgendamentos.map((agendamento) => {
                             const isRecorrente = agendamento.grupo_recorrencia;
                             const infoGrupo = agendamento.info_grupo;
                             
