@@ -143,42 +143,6 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
         return `${dataInicio} até ${dataFim}`;
     };
 
-    const getPriorityLevel = (agendamento: Agendamento) => {
-        const dataInicio = new Date(agendamento.data_inicio);
-        const hoje = new Date();
-        const diffDays = Math.ceil((dataInicio.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
-        
-        if (diffDays <= 1) return 'alta';
-        if (diffDays <= 3) return 'media';
-        return 'baixa';
-    };
-
-    const getPriorityColor = (priority: string) => {
-        switch (priority) {
-            case 'alta':
-                return 'text-red-600';
-            case 'media':
-                return 'text-yellow-600';
-            case 'baixa':
-                return 'text-green-600';
-            default:
-                return 'text-gray-600';
-        }
-    };
-
-    const getPriorityText = (priority: string) => {
-        switch (priority) {
-            case 'alta':
-                return 'Alta';
-            case 'media':
-                return 'Média';
-            case 'baixa':
-                return 'Baixa';
-            default:
-                return 'Normal';
-        }
-    };
-
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Gerenciar Agendamentos" />
@@ -360,7 +324,6 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                         </Card>
                     ) : (
                         agendamentos.data.map((agendamento) => {
-                            const priority = getPriorityLevel(agendamento);
                             const isRecorrente = agendamento.grupo_recorrencia;
                             const infoGrupo = agendamento.info_grupo;
                             
@@ -375,11 +338,6 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                                                     {isRecorrente && (
                                                         <Badge variant="secondary" className="bg-blue-100 text-blue-800">
                                                             Recorrente ({agendamento.total_grupo || infoGrupo?.total || 1} agendamentos)
-                                                        </Badge>
-                                                    )}
-                                                    {agendamento.status === 'pendente' && (
-                                                        <Badge variant="outline" className={getPriorityColor(priority)}>
-                                                            Prioridade {getPriorityText(priority)}
                                                         </Badge>
                                                     )}
                                                 </div>
