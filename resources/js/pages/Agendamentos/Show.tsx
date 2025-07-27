@@ -537,19 +537,57 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
-                                    <div className="flex items-center gap-2">
-                                        <User className="h-4 w-4 text-muted-foreground" />
-                                        <div>
-                                            <p className="text-sm font-medium">
-                                                {agendamento.status === 'aprovado' ? 'Aprovado por' : 
-                                                 agendamento.status === 'rejeitado' ? 'Rejeitado por' : 
-                                                 'Cancelado por'}
-                                            </p>
-                                            <p className="text-sm text-muted-foreground">
-                                                {(agendamento.aprovadoPor?.name || (agendamento as any).aprovado_por?.name) || 'Não informado'}
-                                            </p>
-                                        </div>
-                                    </div>
+                                    {(() => {
+                                        const aprovador = agendamento.aprovadoPor || (agendamento as any).aprovado_por;
+                                        return aprovador ? (
+                                            <div>
+                                                <p className="text-sm font-medium mb-3">
+                                                    {agendamento.status === 'aprovado' ? 'Aprovado por' : 
+                                                     agendamento.status === 'rejeitado' ? 'Rejeitado por' : 
+                                                     'Cancelado por'}
+                                                </p>
+                                                <div className="flex items-start gap-3">
+                                                    <div className="w-8 h-8 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center flex-shrink-0">
+                                                        <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                                                            {aprovador.name.charAt(0).toUpperCase()}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center gap-2 flex-wrap">
+                                                            <p className="font-medium">{aprovador.name}</p>
+                                                            {aprovador.perfil_acesso && (
+                                                                <Badge 
+                                                                    variant="outline" 
+                                                                    className={`${getPerfilColor(aprovador.perfil_acesso)}`}
+                                                                >
+                                                                    {formatPerfil(aprovador.perfil_acesso)}
+                                                                </Badge>
+                                                            )}
+                                                        </div>
+                                                        {aprovador.email && (
+                                                            <p className="text-sm text-muted-foreground">
+                                                                {aprovador.email}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-2">
+                                                <User className="h-4 w-4 text-muted-foreground" />
+                                                <div>
+                                                    <p className="text-sm font-medium">
+                                                        {agendamento.status === 'aprovado' ? 'Aprovado por' : 
+                                                         agendamento.status === 'rejeitado' ? 'Rejeitado por' : 
+                                                         'Cancelado por'}
+                                                    </p>
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Não informado
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
 
                                     {agendamento.aprovado_em && (
                                         <div className="flex items-center gap-2">
@@ -641,19 +679,28 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div>
-                                        <p className="font-medium">{agendamento.user.name}</p>
-                                        <p className="text-sm text-muted-foreground">
-                                            {agendamento.user.email}
-                                        </p>
-                                        {agendamento.user.perfil_acesso && (
-                                            <Badge 
-                                                variant="outline" 
-                                                className={`mt-2 ${getPerfilColor(agendamento.user.perfil_acesso)}`}
-                                            >
-                                                {formatPerfil(agendamento.user.perfil_acesso)}
-                                            </Badge>
-                                        )}
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-10 h-10 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center flex-shrink-0">
+                                            <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                                                {agendamento.user.name.charAt(0).toUpperCase()}
+                                            </span>
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                <p className="font-medium">{agendamento.user.name}</p>
+                                                {agendamento.user.perfil_acesso && (
+                                                    <Badge 
+                                                        variant="outline" 
+                                                        className={`${getPerfilColor(agendamento.user.perfil_acesso)}`}
+                                                    >
+                                                        {formatPerfil(agendamento.user.perfil_acesso)}
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                            <p className="text-sm text-muted-foreground">
+                                                {agendamento.user.email}
+                                            </p>
+                                        </div>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -782,8 +829,8 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                                             {responsaveis.map((responsavel, index) => (
                                                 <div key={responsavel.id} className="bg-background/50 p-3 rounded-md border border-border">
                                                     <div className="flex items-start gap-2">
-                                                        <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                                                            <span className="text-sm font-medium text-primary">
+                                                        <div className="w-8 h-8 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center flex-shrink-0">
+                                                            <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
                                                                 {responsavel.name.charAt(0).toUpperCase()}
                                                             </span>
                                                         </div>

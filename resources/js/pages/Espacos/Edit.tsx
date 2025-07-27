@@ -486,8 +486,8 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                                         {responsaveis.map((responsavel, index) => (
                                             <div key={responsavel.id} className="bg-muted/30 p-4 rounded-lg border border-border">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                                                        <span className="text-lg font-medium text-primary">
+                                                    <div className="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center">
+                                                        <span className="text-lg font-medium text-slate-700 dark:text-slate-200">
                                                             {responsavel.name.charAt(0).toUpperCase()}
                                                         </span>
                                                     </div>

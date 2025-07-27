@@ -321,6 +321,30 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         }
     };
 
+    // Função para formatar o perfil do usuário (igual aos responsáveis)
+    const formatPerfil = (perfil: string | undefined) => {
+        if (!perfil) return "Não definido";
+        return perfil.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+    };
+
+    // Função para obter as cores do perfil (igual aos responsáveis)
+    const getPerfilColor = (perfil: string | undefined) => {
+        if (!perfil) return "bg-gray-100 text-gray-800 border-gray-200";
+        
+        switch (perfil.toLowerCase()) {
+            case "administrador":
+                return "bg-[#EF7D4C] text-white border-transparent";
+            case "coordenador":
+                return "bg-[#957157] text-white border-transparent";
+            case "diretor_geral":
+                return "bg-[#F1DEC5] text-gray-600 border-transparent";
+            case "servidores":
+                return "bg-[#285355] text-white border-transparent";
+            default:
+                return "bg-gray-100 text-gray-800 border-gray-200";
+        }
+    };
+
     // Extrair dados dos agendamentos (pode ser array ou objeto paginado)
     const agendamentosData = Array.isArray(agendamentos) ? agendamentos : agendamentos.data;
 
@@ -1388,63 +1412,88 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                         <Card key={agendamento.id} className={`border-l-4 ${getEventBorderColor(agendamento)}`}>
                             <CardContent className="p-6">
                                 <div className="flex items-start justify-between">
-                                    <div className="space-y-2">
+                                    <div className="space-y-2 flex-1">
                                         <div className="flex items-center gap-2">
                                             <h3 className="font-semibold text-lg">{agendamento.titulo}</h3>
                                             <StatusBadge status={agendamento.status} agendamento={agendamento} />
                                         </div>
 
-                                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                            <div className="flex items-center gap-1">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-1 text-sm text-muted-foreground">
+                                            <div className="flex items-center gap-2">
                                                 <MapPin className="h-4 w-4" />
-                                                {agendamento.espaco?.nome || 'Espaço não encontrado'}
+                                                <span>{agendamento.espaco?.nome || 'Espaço não encontrado'}</span>
                                             </div>
-                                            <div className="flex items-center gap-1">
+                                            <div className="flex items-center gap-2">
                                                 <User className="h-4 w-4" />
-                                                {agendamento.user?.name || 'Usuário não encontrado'}
+                                                <div className="flex items-center gap-2">
+                                                    {agendamento.user ? (
+                                                        <>
+                                                            <div className="w-6 h-6 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center">
+                                                                <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
+                                                                    {agendamento.user.name.charAt(0).toUpperCase()}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex flex-col">
+                                                                <span className="text-sm font-medium">{agendamento.user.name}</span>
+                                                                {agendamento.user.email && (
+                                                                    <span className="text-xs text-muted-foreground">{agendamento.user.email}</span>
+                                                                )}
+                                                            </div>
+                                                            {agendamento.user.perfil_acesso && (
+                                                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPerfilColor(agendamento.user.perfil_acesso)}`}>
+                                                                    {formatPerfil(agendamento.user.perfil_acesso)}
+                                                                </span>
+                                                            )}
+                                                        </>
+                                                    ) : (
+                                                        <span>Usuário não encontrado</span>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <div className="flex items-center gap-1">
+                                            <div className="flex items-center gap-2">
                                                 <Clock className="h-4 w-4" />
-                                                {(() => {
-                                                    // Formatar período de forma mais legível
-                                                    const formatDate = (dateStr: string) => {
-                                                        try {
-                                                            // Extrair apenas a parte da data (YYYY-MM-DD) se vier com timezone
-                                                            const dateOnly = dateStr.split('T')[0];
-                                                            const [year, month, day] = dateOnly.split('-');
-                                                            return `${day}/${month}/${year}`;
-                                                        } catch {
-                                                            return dateStr;
+                                                <span>
+                                                    {(() => {
+                                                        // Formatar período de forma mais legível
+                                                        const formatDate = (dateStr: string) => {
+                                                            try {
+                                                                // Extrair apenas a parte da data (YYYY-MM-DD) se vier com timezone
+                                                                const dateOnly = dateStr.split('T')[0];
+                                                                const [year, month, day] = dateOnly.split('-');
+                                                                return `${day}/${month}/${year}`;
+                                                            } catch {
+                                                                return dateStr;
+                                                            }
+                                                        };
+                                                        
+                                                        const formatTime = (timeStr: string) => {
+                                                            try {
+                                                                // Extrair apenas HH:MM se vier com segundos
+                                                                return timeStr.split(':').slice(0, 2).join(':');
+                                                            } catch {
+                                                                return timeStr;
+                                                            }
+                                                        };
+                                                        
+                                                        const dataInicioFormatted = formatDate(agendamento.data_inicio);
+                                                        const dataFimFormatted = formatDate(agendamento.data_fim);
+                                                        const horaInicioFormatted = formatTime(agendamento.hora_inicio);
+                                                        const horaFimFormatted = formatTime(agendamento.hora_fim);
+                                                        
+                                                        if (agendamento.data_inicio === agendamento.data_fim) {
+                                                            return `${dataInicioFormatted} das ${horaInicioFormatted} às ${horaFimFormatted}`;
+                                                        } else {
+                                                            return `${dataInicioFormatted} ${horaInicioFormatted} até ${dataFimFormatted} ${horaFimFormatted}`;
                                                         }
-                                                    };
-                                                    
-                                                    const formatTime = (timeStr: string) => {
-                                                        try {
-                                                            // Extrair apenas HH:MM se vier com segundos
-                                                            return timeStr.split(':').slice(0, 2).join(':');
-                                                        } catch {
-                                                            return timeStr;
-                                                        }
-                                                    };
-                                                    
-                                                    const dataInicioFormatted = formatDate(agendamento.data_inicio);
-                                                    const dataFimFormatted = formatDate(agendamento.data_fim);
-                                                    const horaInicioFormatted = formatTime(agendamento.hora_inicio);
-                                                    const horaFimFormatted = formatTime(agendamento.hora_fim);
-                                                    
-                                                    if (agendamento.data_inicio === agendamento.data_fim) {
-                                                        return `${dataInicioFormatted} das ${horaInicioFormatted} às ${horaFimFormatted}`;
-                                                    } else {
-                                                        return `${dataInicioFormatted} ${horaInicioFormatted} até ${dataFimFormatted} ${horaFimFormatted}`;
-                                                    }
-                                                })()}
+                                                    })()}
+                                                </span>
                                             </div>
                                         </div>
 
                                         <p className="text-sm">{agendamento.justificativa}</p>
                                     </div>
 
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 ml-4">
                                         <Button 
                                             variant="outline" 
                                             size="sm" 
