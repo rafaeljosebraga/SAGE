@@ -55,52 +55,25 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     // Usar o hook de toast
     const { toast } = useToast();
 
-    // Detectar se deve iniciar no modo calendário baseado na URL
+    // Estado inicial simples sem dependência da URL
     const getInitialState = () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const viewParam = urlParams.get('view') || filters.view;
-        const dateParam = urlParams.get('date');
-        const espacosParam = urlParams.get('espacos');
-        
-        // Determinar visualização inicial
-        const initialView: ViewMode = viewParam === 'list' ? 'list' : 
-                                     viewParam === 'month' ? 'month' :
-                                     viewParam === 'day' ? 'day' :
-                                     viewParam === 'timeline' ? 'timeline' : 'week';
-        
-        // Determinar data inicial
-        let initialDate = new Date();
-        if (dateParam) {
-            try {
-                const parsedDate = new Date(dateParam);
-                if (!isNaN(parsedDate.getTime())) {
-                    initialDate = parsedDate;
-                }
-            } catch (error) {
-                console.warn('Data inválida na URL:', dateParam);
-            }
-        }
-        
-        // Determinar espaços selecionados
-        let initialEspacos = espacos.map(e => e.id);
-        if (espacosParam) {
-            try {
-                const espacosIds = espacosParam.split(',').map(id => parseInt(id)).filter(id => !isNaN(id));
-                if (espacosIds.length > 0) {
-                    initialEspacos = espacosIds.filter(id => espacos.some(e => e.id === id));
-                }
-            } catch (error) {
-                console.warn('Espaços inválidos na URL:', espacosParam);
-            }
-        } else if (filters.espaco_id) {
-            initialEspacos = [parseInt(filters.espaco_id)];
-        }
-        
-        return {
-            view: initialView,
-            date: initialDate,
-            espacos: initialEspacos
-        };
+    // Determinar visualização inicial baseada apenas nos filtros do servidor
+    const initialView: ViewMode = filters.view === 'list' ? 'list' : 'day';
+    
+    // Data inicial sempre hoje
+    const initialDate = new Date();
+    
+    // Espaços iniciais - todos selecionados por padrão, ou filtro específico se houver
+    let initialEspacos = espacos.map(e => e.id);
+    if (filters.espaco_id) {
+    initialEspacos = [parseInt(filters.espaco_id)];
+    }
+    
+    return {
+    view: initialView,
+    date: initialDate,
+    espacos: initialEspacos
+    };
     };
     
     const initialState = getInitialState();
@@ -590,36 +563,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     };
 
     const handleEventClick = (agendamento: Agendamento) => {
-        // Preservar o estado atual da visualização na URL
-        const currentParams = new URLSearchParams();
-        currentParams.set('view', viewMode);
-        currentParams.set('date', format(currentDate, 'yyyy-MM-dd'));
-        
-        // Adicionar filtros de espaços selecionados se não for todos
-        if (selectedEspacos.length !== espacos.length) {
-            currentParams.set('espacos', selectedEspacos.join(','));
-        }
-        
-        // Preservar filtros da lista se estiver na visualização de lista
-        if (viewMode === 'list') {
-            if (filters.espaco_id) {
-                currentParams.set('espaco_id', filters.espaco_id);
-            }
-            if (filters.status) {
-                currentParams.set('status', filters.status);
-            }
-            if (filters.data_inicio) {
-                currentParams.set('data_inicio', filters.data_inicio);
-            }
-            if (filters.data_fim) {
-                currentParams.set('data_fim', filters.data_fim);
-            }
-            if (filters.nome) {
-                currentParams.set('nome', filters.nome);
-            }
-        }
-        
-        router.get(`/agendamentos/${agendamento.id}?${currentParams.toString()}`);
+        router.get(`/agendamentos/${agendamento.id}`);
     };
 
     // Função para abrir modal de visualização do dia
@@ -1499,44 +1443,13 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                         </Button>
 
                                         {canEdit(agendamento) && (
-                                            <Button 
-                                                variant="outline" 
-                                                size="sm" 
-                                                onClick={() => {
-                                                    // Preservar o estado atual da visualização na URL
-                                                    const currentParams = new URLSearchParams();
-                                                    currentParams.set('view', viewMode);
-                                                    currentParams.set('date', format(currentDate, 'yyyy-MM-dd'));
-                                                    
-                                                    // Adicionar filtros de espaços selecionados se não for todos
-                                                    if (selectedEspacos.length !== espacos.length) {
-                                                        currentParams.set('espacos', selectedEspacos.join(','));
-                                                    }
-                                                    
-                                                    // Preservar filtros da lista se estiver na visualização de lista
-                                                    if (viewMode === 'list') {
-                                                        if (filters.espaco_id) {
-                                                            currentParams.set('espaco_id', filters.espaco_id);
-                                                        }
-                                                        if (filters.status) {
-                                                            currentParams.set('status', filters.status);
-                                                        }
-                                                        if (filters.data_inicio) {
-                                                            currentParams.set('data_inicio', filters.data_inicio);
-                                                        }
-                                                        if (filters.data_fim) {
-                                                            currentParams.set('data_fim', filters.data_fim);
-                                                        }
-                                                        if (filters.nome) {
-                                                            currentParams.set('nome', filters.nome);
-                                                        }
-                                                    }
-                                                    
-                                                    router.get(`/agendamentos/${agendamento.id}/editar?${currentParams.toString()}`);
-                                                }}
-                                            >
-                                                <Edit className="h-4 w-4" />
-                                            </Button>
+                                        <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => router.get(`/agendamentos/${agendamento.id}/editar`)}
+                                        >
+                                        <Edit className="h-4 w-4" />
+                                        </Button>
                                         )}
 
                                         {canForceDelete(agendamento) ? (
@@ -2078,11 +1991,13 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                                     </Button>
 
                                                     {canEdit(event) && (
-                                                        <Button variant="outline" size="sm" asChild>
-                                                            <Link href={`/agendamentos/${event.id}/editar`}>
-                                                                <Edit className="h-4 w-4" />
-                                                            </Link>
-                                                        </Button>
+                                                    <Button 
+                                                    variant="outline" 
+                                                    size="sm" 
+                                                    onClick={() => router.get(`/agendamentos/${event.id}/editar`)}
+                                                    >
+                                                    <Edit className="h-4 w-4" />
+                                                    </Button>
                                                     )}
 
                                                     {canDelete(event) && (
