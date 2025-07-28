@@ -284,27 +284,30 @@ export default function AgendamentosCreate({ espacos, recursos, espacoSelecionad
                                         </div>
 
                                         {data.recorrente && (
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pl-6">
+                                            <div className="space-y-4 pl-6">
                                                 <div>
-                                                    <Label htmlFor="tipo_recorrencia">Tipo de Recorrência</Label>
+                                                    <Label htmlFor="tipo_recorrencia">Tipo de Recorrência *</Label>
                                                     <Select
                                                         value={data.tipo_recorrencia}
                                                         onValueChange={(value) => setData('tipo_recorrencia', value)}
                                                         disabled={isFormDisabled}
                                                     >
                                                         <SelectTrigger>
-                                                            <SelectValue placeholder="Selecione" />
+                                                            <SelectValue placeholder="Selecione uma opção" />
                                                         </SelectTrigger>
                                                         <SelectContent>
-                                                            <SelectItem value="diaria">Diária</SelectItem>
-                                                            <SelectItem value="semanal">Semanal</SelectItem>
-                                                            <SelectItem value="mensal">Mensal</SelectItem>
+                                                            <SelectItem value="diaria">Diária (a cada dia)</SelectItem>
+                                                            <SelectItem value="semanal">Semanal (a cada semana)</SelectItem>
+                                                            <SelectItem value="mensal">Mensal (a cada mês)</SelectItem>
                                                         </SelectContent>
                                                     </Select>
+                                                    {errors.tipo_recorrencia && (
+                                                        <p className="text-sm text-red-600 mt-1">{errors.tipo_recorrencia}</p>
+                                                    )}
                                                 </div>
 
                                                 <div>
-                                                    <Label htmlFor="data_fim_recorrencia">Fim da Recorrência</Label>
+                                                    <Label htmlFor="data_fim_recorrencia">Data Fim da Recorrência *</Label>
                                                     <Input
                                                         id="data_fim_recorrencia"
                                                         type="date"
@@ -313,6 +316,9 @@ export default function AgendamentosCreate({ espacos, recursos, espacoSelecionad
                                                         min={data.data_fim}
                                                         disabled={isFormDisabled}
                                                     />
+                                                    {errors.data_fim_recorrencia && (
+                                                        <p className="text-sm text-red-600 mt-1">{errors.data_fim_recorrencia}</p>
+                                                    )}
                                                 </div>
                                             </div>
                                         )}

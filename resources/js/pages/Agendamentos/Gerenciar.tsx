@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import { 
     Calendar, 
@@ -14,7 +14,10 @@ import {
     Users,
     CheckCircle,
     XCircle,
-    Search
+    Search,
+    ArrowUpDown,
+    ArrowUp,
+    ArrowDown
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -52,6 +55,11 @@ interface Props extends PageProps {
         data_inicio?: string;
         data_fim?: string;
         solicitante?: string;
+        nome_agendamento?: string;
+        page?: string;
+        mes_atual?: string;
+        aprovado_hoje?: string;
+        rejeitado_hoje?: string;
     };
 }
 
@@ -64,13 +72,377 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
         agendamento: null
     });
     const [rejectionReason, setRejectionReason] = useState('');
+    
+    // Estados locais para os filtros
+    const safeFilters = Array.isArray(filters) ? {} : filters;
+    const [nomeAgendamentoFilter, setNomeAgendamentoFilter] = useState('');
+    const [solicitanteFilter, setSolicitanteFilter] = useState('');
+    const [statusFilter, setStatusFilter] = useState('pendente');
+    const [espacoFilter, setEspacoFilter] = useState('all');
+    const [dataInicioFilter, setDataInicioFilter] = useState('');
+    const [dataFimFilter, setDataFimFilter] = useState('');
+    const [aprovadoHojeFilter, setAprovadoHojeFilter] = useState(false);
+    const [rejeitadoHojeFilter, setRejeitadoHojeFilter] = useState(false);
+    
+    // Estado para paginação client-side
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 15;
+    
+    // Estados para ordenação
+    const [nomeSortOrder, setNomeSortOrder] = useState<'asc' | 'desc' | 'none'>('none');
+    const [solicitanteSortOrder, setSolicitanteSortOrder] = useState<'asc' | 'desc' | 'none'>('none');
+    const [dataInicioSortOrder, setDataInicioSortOrder] = useState<'asc' | 'desc' | 'none'>('none');
+    const [dataFimSortOrder, setDataFimSortOrder] = useState<'asc' | 'desc' | 'none'>('none');
+    
+    // Remover lógica de busca via URL - agora os filtros são apenas locais
+
+    // Função para alternar ordenação de nome
+    const toggleNomeSort = () => {
+        if (nomeSortOrder === 'none') {
+            setNomeSortOrder('asc');
+            setSolicitanteSortOrder('none');
+            setDataInicioSortOrder('none');
+            setDataFimSortOrder('none');
+        } else if (nomeSortOrder === 'asc') {
+            setNomeSortOrder('desc');
+        } else {
+            setNomeSortOrder('none');
+        }
+    };
+
+    // Função para obter ícone de ordenação de nome
+    const getNomeSortIcon = () => {
+        switch (nomeSortOrder) {
+            case 'asc':
+                return <ArrowUp className="h-3 w-3" />;
+            case 'desc':
+                return <ArrowDown className="h-3 w-3" />;
+            default:
+                return <ArrowUpDown className="h-3 w-3" />;
+        }
+    };
+
+    // Função para alternar ordenação de solicitante
+    const toggleSolicitanteSort = () => {
+        if (solicitanteSortOrder === 'none') {
+            setSolicitanteSortOrder('asc');
+            setNomeSortOrder('none');
+            setDataInicioSortOrder('none');
+            setDataFimSortOrder('none');
+        } else if (solicitanteSortOrder === 'asc') {
+            setSolicitanteSortOrder('desc');
+        } else {
+            setSolicitanteSortOrder('none');
+        }
+    };
+
+    // Função para obter ícone de ordenação de solicitante
+    const getSolicitanteSortIcon = () => {
+        switch (solicitanteSortOrder) {
+            case 'asc':
+                return <ArrowUp className="h-3 w-3" />;
+            case 'desc':
+                return <ArrowDown className="h-3 w-3" />;
+            default:
+                return <ArrowUpDown className="h-3 w-3" />;
+        }
+    };
+
+    // Função para alternar ordenação de data início
+    const toggleDataInicioSort = () => {
+        if (dataInicioSortOrder === 'none') {
+            setDataInicioSortOrder('asc');
+            setNomeSortOrder('none');
+            setSolicitanteSortOrder('none');
+            setDataFimSortOrder('none');
+        } else if (dataInicioSortOrder === 'asc') {
+            setDataInicioSortOrder('desc');
+        } else {
+            setDataInicioSortOrder('none');
+        }
+    };
+
+    // Função para obter ícone de ordenação de data início
+    const getDataInicioSortIcon = () => {
+        switch (dataInicioSortOrder) {
+            case 'asc':
+                return <ArrowUp className="h-3 w-3" />;
+            case 'desc':
+                return <ArrowDown className="h-3 w-3" />;
+            default:
+                return <ArrowUpDown className="h-3 w-3" />;
+        }
+    };
+
+    // Função para alternar ordenação de data fim
+    const toggleDataFimSort = () => {
+        if (dataFimSortOrder === 'none') {
+            setDataFimSortOrder('asc');
+            setNomeSortOrder('none');
+            setSolicitanteSortOrder('none');
+            setDataInicioSortOrder('none');
+        } else if (dataFimSortOrder === 'asc') {
+            setDataFimSortOrder('desc');
+        } else {
+            setDataFimSortOrder('none');
+        }
+    };
+
+    // Função para obter ícone de ordenação de data fim
+    const getDataFimSortIcon = () => {
+        switch (dataFimSortOrder) {
+            case 'asc':
+                return <ArrowUp className="h-3 w-3" />;
+            case 'desc':
+                return <ArrowDown className="h-3 w-3" />;
+            default:
+                return <ArrowUpDown className="h-3 w-3" />;
+        }
+    };
+
+    // Filtrar e ordenar agendamentos
+    const filteredAndSortedAgendamentos = (() => {
+        let filtered = [...agendamentos.data];
+
+        // Aplicar filtro de nome do agendamento se especificado
+        if (nomeAgendamentoFilter.trim()) {
+            filtered = filtered.filter(agendamento => 
+                agendamento.titulo.toLowerCase().includes(nomeAgendamentoFilter.toLowerCase()) ||
+                agendamento.justificativa?.toLowerCase().includes(nomeAgendamentoFilter.toLowerCase())
+            );
+        }
+
+        // Aplicar filtro de solicitante se especificado
+        if (solicitanteFilter.trim()) {
+            filtered = filtered.filter(agendamento => 
+                agendamento.user?.name.toLowerCase().includes(solicitanteFilter.toLowerCase()) ||
+                agendamento.user?.email?.toLowerCase().includes(solicitanteFilter.toLowerCase())
+            );
+        }
+
+        // Aplicar filtro de status se especificado
+        if (statusFilter && statusFilter !== 'all') {
+            filtered = filtered.filter(agendamento => 
+                agendamento.status === statusFilter
+            );
+        }
+
+        // Aplicar filtro de espaço se especificado
+        if (espacoFilter !== 'all') {
+            filtered = filtered.filter(agendamento => 
+                agendamento.espaco_id.toString() === espacoFilter
+            );
+        }
+
+        // Aplicar filtros de data se especificados
+        if (dataInicioFilter) {
+            filtered = filtered.filter(agendamento => {
+                const agendamentoDataInicio = agendamento.data_inicio.split('T')[0]; // YYYY-MM-DD
+                return agendamentoDataInicio >= dataInicioFilter;
+            });
+        }
+
+        if (dataFimFilter) {
+            filtered = filtered.filter(agendamento => {
+                const agendamentoDataFim = agendamento.data_fim.split('T')[0]; // YYYY-MM-DD
+                return agendamentoDataFim <= dataFimFilter;
+            });
+        }
+
+        // Aplicar filtro de aprovados hoje se especificado
+        if (aprovadoHojeFilter) {
+            filtered = filtered.filter(agendamento => {
+                if (agendamento.status === 'aprovado' && agendamento.aprovado_em) {
+                    const dataAprovacao = agendamento.aprovado_em.split('T')[0]; // YYYY-MM-DD
+                    const hoje = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+                    return dataAprovacao === hoje;
+                }
+                return false;
+            });
+        }
+
+        // Aplicar filtro de rejeitados hoje se especificado
+        if (rejeitadoHojeFilter) {
+            filtered = filtered.filter(agendamento => {
+                if (agendamento.status === 'rejeitado' && agendamento.aprovado_em) {
+                    const dataRejeicao = agendamento.aprovado_em.split('T')[0]; // YYYY-MM-DD
+                    const hoje = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+                    return dataRejeicao === hoje;
+                }
+                return false;
+            });
+        }
+
+        // Aplicar ordenação por nome se ativa
+        if (nomeSortOrder !== 'none') {
+            filtered.sort((a, b) => {
+                const nomeA = a.titulo.toLowerCase();
+                const nomeB = b.titulo.toLowerCase();
+                return nomeSortOrder === 'asc'
+                    ? nomeA.localeCompare(nomeB)
+                    : nomeB.localeCompare(nomeA);
+            });
+        }
+        // Aplicar ordenação por solicitante se ativa
+        else if (solicitanteSortOrder !== 'none') {
+            filtered.sort((a, b) => {
+                const solicitanteA = (a.user?.name || 'Usuário não encontrado').toLowerCase();
+                const solicitanteB = (b.user?.name || 'Usuário não encontrado').toLowerCase();
+                return solicitanteSortOrder === 'asc'
+                    ? solicitanteA.localeCompare(solicitanteB)
+                    : solicitanteB.localeCompare(solicitanteA);
+            });
+        }
+        // Aplicar ordenação por data início se ativa
+        else if (dataInicioSortOrder !== 'none') {
+            filtered.sort((a, b) => {
+                // Normalizar as datas para garantir formato correto
+                const dateStrA = a.data_inicio.split('T')[0]; // Pegar apenas YYYY-MM-DD
+                const timeStrA = a.hora_inicio.split(':').slice(0, 2).join(':'); // Pegar apenas HH:MM
+                const dateStrB = b.data_inicio.split('T')[0];
+                const timeStrB = b.hora_inicio.split(':').slice(0, 2).join(':');
+                
+                const dateA = new Date(`${dateStrA}T${timeStrA}:00`);
+                const dateB = new Date(`${dateStrB}T${timeStrB}:00`);
+                
+                // Verificar se as datas são válidas
+                if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+                    console.warn('Data inválida encontrada:', { a: a.data_inicio, b: b.data_inicio });
+                    return 0;
+                }
+                
+                return dataInicioSortOrder === 'asc' 
+                    ? dateA.getTime() - dateB.getTime()
+                    : dateB.getTime() - dateA.getTime();
+            });
+        }
+        // Aplicar ordenação por data fim se ativa
+        else if (dataFimSortOrder !== 'none') {
+            filtered.sort((a, b) => {
+                // Normalizar as datas para garantir formato correto
+                const dateStrA = a.data_fim.split('T')[0]; // Pegar apenas YYYY-MM-DD
+                const timeStrA = a.hora_fim.split(':').slice(0, 2).join(':'); // Pegar apenas HH:MM
+                const dateStrB = b.data_fim.split('T')[0];
+                const timeStrB = b.hora_fim.split(':').slice(0, 2).join(':');
+                
+                const dateA = new Date(`${dateStrA}T${timeStrA}:00`);
+                const dateB = new Date(`${dateStrB}T${timeStrB}:00`);
+                
+                // Verificar se as datas são válidas
+                if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+                    console.warn('Data inválida encontrada:', { a: a.data_fim, b: b.data_fim });
+                    return 0;
+                }
+                
+                return dataFimSortOrder === 'asc' 
+                    ? dateA.getTime() - dateB.getTime()
+                    : dateB.getTime() - dateA.getTime();
+            });
+        }
+        // Ordenação padrão: priorizar agendamentos futuros mais recentes, depois os que já passaram
+        else {
+            filtered.sort((a, b) => {
+                const now = new Date();
+                
+                // Criar datas de início dos agendamentos
+                const dateStrA = a.data_inicio.split('T')[0];
+                const timeStrA = a.hora_inicio.split(':').slice(0, 2).join(':');
+                const dateStrB = b.data_inicio.split('T')[0];
+                const timeStrB = b.hora_inicio.split(':').slice(0, 2).join(':');
+                
+                const dateA = new Date(`${dateStrA}T${timeStrA}:00`);
+                const dateB = new Date(`${dateStrB}T${timeStrB}:00`);
+                
+                // Verificar se as datas são válidas
+                if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+                    return 0;
+                }
+                
+                // Verificar se os agendamentos já passaram
+                const aPassou = dateA < now;
+                const bPassou = dateB < now;
+                
+                // Se um passou e outro não, priorizar o que não passou
+                if (aPassou && !bPassou) return 1;
+                if (!aPassou && bPassou) return -1;
+                
+                // Se ambos não passaram, ordenar por data mais próxima primeiro
+                if (!aPassou && !bPassou) {
+                    return dateA.getTime() - dateB.getTime();
+                }
+                
+                // Se ambos já passaram, ordenar por mais recente primeiro
+                if (aPassou && bPassou) {
+                    return dateB.getTime() - dateA.getTime();
+                }
+                
+                return 0;
+            });
+        }
+
+        return filtered;
+    })();
+
+    // Resetar página atual quando filtros mudarem
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [nomeAgendamentoFilter, solicitanteFilter, statusFilter, espacoFilter, dataInicioFilter, dataFimFilter, aprovadoHojeFilter, rejeitadoHojeFilter, nomeSortOrder, solicitanteSortOrder, dataInicioSortOrder, dataFimSortOrder]);
+
+    // Calcular paginação client-side
+    const totalItems = filteredAndSortedAgendamentos.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentItems = filteredAndSortedAgendamentos.slice(startIndex, endIndex);
+
+    // Gerar links de paginação
+    const generatePaginationLinks = () => {
+        const links = [];
+        
+        // Botão "Anterior"
+        links.push({
+            label: '« Anterior',
+            active: false,
+            disabled: currentPage === 1,
+            page: currentPage - 1
+        });
+
+        // Páginas numeradas
+        for (let i = 1; i <= totalPages; i++) {
+            links.push({
+                label: i.toString(),
+                active: i === currentPage,
+                disabled: false,
+                page: i
+            });
+        }
+
+        // Botão "Próximo"
+        links.push({
+            label: 'Próximo »',
+            active: false,
+            disabled: currentPage === totalPages,
+            page: currentPage + 1
+        });
+
+        return links;
+    };
+
+    const paginationLinks = generatePaginationLinks();
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Gerenciar Agendamentos', href: '/gerenciar-agendamentos' }
     ];
 
     const handleApprove = (agendamento: Agendamento) => {
-        if (confirm(`Tem certeza que deseja aprovar o agendamento "${agendamento.titulo}"?`)) {
+        const isRecorrente = agendamento.grupo_recorrencia;
+        const totalAgendamentos = agendamento.total_grupo || agendamento.info_grupo?.total || 1;
+        
+        const confirmMessage = isRecorrente 
+            ? `Tem certeza que deseja aprovar o grupo de agendamentos recorrentes "${agendamento.titulo}"?\n\nTodos os ${totalAgendamentos} agendamentos deste grupo serão aprovados.`
+            : `Tem certeza que deseja aprovar o agendamento "${agendamento.titulo}"?`;
+            
+        if (confirm(confirmMessage)) {
             router.post(`/agendamentos/${agendamento.id}/aprovar`, {}, {
                 onSuccess: () => {
                     router.reload();
@@ -134,41 +506,29 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
         }
         
         return `${dataInicio} até ${dataFim}`;
+    }
+
+    // Função para formatar o perfil do usuário (igual aos responsáveis)
+    const formatPerfil = (perfil: string | undefined) => {
+        if (!perfil) return "Não definido";
+        return perfil.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
     };
 
-    const getPriorityLevel = (agendamento: Agendamento) => {
-        const dataInicio = new Date(agendamento.data_inicio);
-        const hoje = new Date();
-        const diffDays = Math.ceil((dataInicio.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
+    // Função para obter as cores do perfil (igual aos responsáveis)
+    const getPerfilColor = (perfil: string | undefined) => {
+        if (!perfil) return "bg-gray-100 text-gray-800 border-gray-200";
         
-        if (diffDays <= 1) return 'alta';
-        if (diffDays <= 3) return 'media';
-        return 'baixa';
-    };
-
-    const getPriorityColor = (priority: string) => {
-        switch (priority) {
-            case 'alta':
-                return 'text-red-600';
-            case 'media':
-                return 'text-yellow-600';
-            case 'baixa':
-                return 'text-green-600';
+        switch (perfil.toLowerCase()) {
+            case "administrador":
+                return "bg-[#EF7D4C] text-white border-transparent";
+            case "coordenador":
+                return "bg-[#957157] text-white border-transparent";
+            case "diretor_geral":
+                return "bg-[#F1DEC5] text-gray-600 border-transparent";
+            case "servidores":
+                return "bg-[#285355] text-white border-transparent";
             default:
-                return 'text-gray-600';
-        }
-    };
-
-    const getPriorityText = (priority: string) => {
-        switch (priority) {
-            case 'alta':
-                return 'Alta';
-            case 'media':
-                return 'Média';
-            case 'baixa':
-                return 'Baixa';
-            default:
-                return 'Normal';
+                return "bg-gray-100 text-gray-800 border-gray-200";
         }
     };
 
@@ -192,10 +552,33 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
 
                 {/* Estatísticas */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <Card>
+                    <Card 
+                        className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:bg-yellow-100/60 dark:hover:bg-yellow-900/20 hover:border-yellow-200 dark:hover:border-yellow-800 group"
+                        onClick={() => {
+                            // Limpar outros filtros e aplicar apenas o filtro de pendentes
+                            setNomeAgendamentoFilter('');
+                            setSolicitanteFilter('');
+                            setStatusFilter('pendente');
+                            setEspacoFilter('all');
+                            setDataInicioFilter('');
+                            setDataFimFilter('');
+                            setAprovadoHojeFilter(false);
+                            setRejeitadoHojeFilter(false);
+                            setNomeSortOrder('none');
+                            setSolicitanteSortOrder('none');
+                            setDataInicioSortOrder('none');
+                            setDataFimSortOrder('none');
+                        }}
+                    >
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Pendentes</CardTitle>
-                            <AlertCircle className="h-4 w-4 text-yellow-600" />
+                            <AlertCircle 
+                                className={`h-4 w-4 text-yellow-600 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg group-hover:text-yellow-500 ${
+                                    estatisticas.pendentes > 0 
+                                        ? 'animate-bounce duration-[0.4s] scale-110 drop-shadow-lg' 
+                                        : ''
+                                }`} 
+                            />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold text-yellow-600">{estatisticas.pendentes}</div>
@@ -205,10 +588,27 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card 
+                        className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:bg-green-100/60 dark:hover:bg-green-900/20 hover:border-green-200 dark:hover:border-green-800 group"
+                        onClick={() => {
+                            // Limpar outros filtros e aplicar filtro de aprovados hoje
+                            setNomeAgendamentoFilter('');
+                            setSolicitanteFilter('');
+                            setStatusFilter('all'); // Não filtrar por status, deixar o filtro específico fazer isso
+                            setEspacoFilter('all');
+                            setDataInicioFilter('');
+                            setDataFimFilter('');
+                            setAprovadoHojeFilter(true);
+                            setRejeitadoHojeFilter(false);
+                            setNomeSortOrder('none');
+                            setSolicitanteSortOrder('none');
+                            setDataInicioSortOrder('none');
+                            setDataFimSortOrder('none');
+                        }}
+                    >
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Aprovados Hoje</CardTitle>
-                            <CheckCircle className="h-4 w-4 text-green-600" />
+                            <CheckCircle className="h-4 w-4 text-green-600 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg group-hover:text-green-500" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold text-green-600">{estatisticas.aprovados_hoje}</div>
@@ -218,10 +618,27 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card 
+                        className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:bg-red-100/60 dark:hover:bg-red-900/20 hover:border-red-200 dark:hover:border-red-800 group"
+                        onClick={() => {
+                            // Limpar outros filtros e aplicar filtro de rejeitados hoje
+                            setNomeAgendamentoFilter('');
+                            setSolicitanteFilter('');
+                            setStatusFilter('all'); // Não filtrar por status, deixar o filtro específico fazer isso
+                            setEspacoFilter('all');
+                            setDataInicioFilter('');
+                            setDataFimFilter('');
+                            setAprovadoHojeFilter(false);
+                            setRejeitadoHojeFilter(true);
+                            setNomeSortOrder('none');
+                            setSolicitanteSortOrder('none');
+                            setDataInicioSortOrder('none');
+                            setDataFimSortOrder('none');
+                        }}
+                    >
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Rejeitados Hoje</CardTitle>
-                            <XCircle className="h-4 w-4 text-red-600" />
+                            <XCircle className="h-4 w-4 text-red-600 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg group-hover:text-red-500" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold text-red-600">{estatisticas.rejeitados_hoje}</div>
@@ -231,10 +648,27 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card 
+                        className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:bg-blue-100/60 dark:hover:bg-blue-900/20 hover:border-blue-200 dark:hover:border-blue-800 group"
+                        onClick={() => {
+                            // Limpar outros filtros e aplicar filtro do mês atual com status "all"
+                            setNomeAgendamentoFilter('');
+                            setSolicitanteFilter('');
+                            setStatusFilter('all');
+                            setEspacoFilter('all');
+                            setDataInicioFilter('');
+                            setDataFimFilter('');
+                            setAprovadoHojeFilter(false);
+                            setRejeitadoHojeFilter(false);
+                            setNomeSortOrder('none');
+                            setSolicitanteSortOrder('none');
+                            setDataInicioSortOrder('none');
+                            setDataFimSortOrder('none');
+                        }}
+                    >
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Total do Mês</CardTitle>
-                            <TrendingUp className="h-4 w-4 text-blue-600" />
+                            <TrendingUp className="h-4 w-4 text-blue-600 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg group-hover:text-blue-500" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold text-blue-600">{estatisticas.total_mes}</div>
@@ -254,36 +688,52 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                            <div>
+                        <div className="flex flex-wrap items-end gap-3">
+                            <div className="flex-1 min-w-[200px]">
+                                <Label htmlFor="nome_agendamento">Nome do Agendamento</Label>
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                                    <Input
+                                        placeholder="Buscar por nome..."
+                                        value={nomeAgendamentoFilter}
+                                        onChange={(e) => setNomeAgendamentoFilter(e.target.value)}
+                                        className="pl-8 pr-10"
+                                    />
+                                    <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        onClick={toggleNomeSort}
+                                        className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
+                                        title={`Ordenar por nome ${nomeSortOrder === 'none' ? 'crescente' : nomeSortOrder === 'asc' ? 'decrescente' : 'padrão'}`}
+                                    >
+                                        {getNomeSortIcon()}
+                                    </Button>
+                                </div>
+                            </div>
+
+                            <div className="min-w-[120px]">
                                 <Label htmlFor="status">Status</Label>
                                 <Select
-                                    value={filters.status || 'pendente'}
-                                    onValueChange={(value) => {
-                                        const status = value === 'all' ? undefined : value;
-                                        router.get('/gerenciar-agendamentos', { ...filters, status });
-                                    }}
+                                    value={statusFilter}
+                                    onValueChange={(value) => setStatusFilter(value)}
                                 >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Status" />
                                     </SelectTrigger>
                                     <SelectContent>
+                                        <SelectItem value="all">Todos</SelectItem>
                                         <SelectItem value="pendente">Pendente</SelectItem>
                                         <SelectItem value="aprovado">Aprovado</SelectItem>
                                         <SelectItem value="rejeitado">Rejeitado</SelectItem>
-                                        <SelectItem value="all">Todos</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
 
-                            <div>
+                            <div className="min-w-[140px]">
                                 <Label htmlFor="espaco">Espaço</Label>
                                 <Select
-                                    value={filters.espaco_id || 'all'}
-                                    onValueChange={(value) => {
-                                        const espacoId = value === 'all' ? undefined : value;
-                                        router.get('/gerenciar-agendamentos', { ...filters, espaco_id: espacoId });
-                                    }}
+                                    value={espacoFilter}
+                                    onValueChange={(value) => setEspacoFilter(value)}
                                 >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Todos os espaços" />
@@ -299,52 +749,111 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                                 </Select>
                             </div>
 
-                            <div>
+                            <div className="flex-1 min-w-[180px]">
                                 <Label htmlFor="solicitante">Solicitante</Label>
                                 <div className="relative">
                                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         placeholder="Nome do solicitante"
-                                        value={filters.solicitante || ''}
-                                        onChange={(e) => {
-                                            const solicitante = e.target.value || undefined;
-                                            router.get('/gerenciar-agendamentos', { ...filters, solicitante });
-                                        }}
-                                        className="pl-8"
+                                        value={solicitanteFilter}
+                                        onChange={(e) => setSolicitanteFilter(e.target.value)}
+                                        className="pl-8 pr-10"
                                     />
+                                    <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        onClick={toggleSolicitanteSort}
+                                        className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
+                                        title={`Ordenar por solicitante ${solicitanteSortOrder === 'none' ? 'crescente' : solicitanteSortOrder === 'asc' ? 'decrescente' : 'padrão'}`}
+                                    >
+                                        {getSolicitanteSortIcon()}
+                                    </Button>
                                 </div>
                             </div>
 
-                            <div>
+                            <div className="min-w-[140px]">
                                 <Label htmlFor="data_inicio">Data Início</Label>
-                                <Input
-                                    type="date"
-                                    value={filters.data_inicio || ''}
-                                    onChange={(e) => {
-                                        const dataInicio = e.target.value || undefined;
-                                        router.get('/gerenciar-agendamentos', { ...filters, data_inicio: dataInicio });
-                                    }}
-                                />
+                                <div className="relative">
+                                    <Input
+                                        type="date"
+                                        value={dataInicioFilter}
+                                        onChange={(e) => setDataInicioFilter(e.target.value)}
+                                        className="pr-10"
+                                    />
+                                    <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        onClick={toggleDataInicioSort}
+                                        className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted pointer-events-auto z-10"
+                                        title={`Ordenar por data início ${dataInicioSortOrder === 'none' ? 'crescente' : dataInicioSortOrder === 'asc' ? 'decrescente' : 'padrão'}`}
+                                        onMouseDown={(e) => e.preventDefault()}
+                                    >
+                                        {getDataInicioSortIcon()}
+                                    </Button>
+                                </div>
                             </div>
 
-                            <div>
+                            <div className="min-w-[140px]">
                                 <Label htmlFor="data_fim">Data Fim</Label>
-                                <Input
-                                    type="date"
-                                    value={filters.data_fim || ''}
-                                    onChange={(e) => {
-                                        const dataFim = e.target.value || undefined;
-                                        router.get('/gerenciar-agendamentos', { ...filters, data_fim: dataFim });
-                                    }}
-                                />
+                                <div className="relative">
+                                    <Input
+                                        type="date"
+                                        value={dataFimFilter}
+                                        onChange={(e) => setDataFimFilter(e.target.value)}
+                                        className="pr-10"
+                                    />
+                                    <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        onClick={toggleDataFimSort}
+                                        className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted pointer-events-auto z-10"
+                                        title={`Ordenar por data fim ${dataFimSortOrder === 'none' ? 'crescente' : dataFimSortOrder === 'asc' ? 'decrescente' : 'padrão'}`}
+                                        onMouseDown={(e) => e.preventDefault()}
+                                    >
+                                        {getDataFimSortIcon()}
+                                    </Button>
+                                </div>
                             </div>
+
+                            {/* Botão Limpar Filtros - só aparece quando há filtros ativos */}
+                            {(nomeAgendamentoFilter || solicitanteFilter || espacoFilter !== 'all' || 
+                              statusFilter !== 'pendente' || dataInicioFilter || dataFimFilter || aprovadoHojeFilter || rejeitadoHojeFilter || 
+                              nomeSortOrder !== 'none' || solicitanteSortOrder !== 'none' || 
+                              dataInicioSortOrder !== 'none' || dataFimSortOrder !== 'none') && (
+                                <div className="flex flex-col">
+                                    <Label className="mb-2 opacity-0">Ações</Label>
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        onClick={() => {
+                                            // Limpar todos os filtros e ordenações
+                                            setNomeAgendamentoFilter('');
+                                            setSolicitanteFilter('');
+                                            setStatusFilter('pendente');
+                                            setEspacoFilter('all');
+                                            setDataInicioFilter('');
+                                            setDataFimFilter('');
+                            setAprovadoHojeFilter(false);
+                            setRejeitadoHojeFilter(false);
+                                            setNomeSortOrder('none');
+                                            setSolicitanteSortOrder('none');
+                                            setDataInicioSortOrder('none');
+                                            setDataFimSortOrder('none');
+                                        }}
+                                        className="h-10 w-10 p-0"
+                                        title="Limpar filtros"
+                                        >
+                                        <X className="h-4 w-4" />
+                                        </Button>
+                                </div>
+                            )}
                         </div>
                     </CardContent>
                 </Card>
 
                 {/* Lista de Agendamentos */}
                 <div className="space-y-4">
-                    {agendamentos.data.length === 0 ? (
+                    {currentItems.length === 0 ? (
                         <Card>
                             <CardContent className="p-6 text-center">
                                 <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -352,20 +861,21 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                             </CardContent>
                         </Card>
                     ) : (
-                        agendamentos.data.map((agendamento) => {
-                            const priority = getPriorityLevel(agendamento);
+                        currentItems.map((agendamento) => {
+                            const isRecorrente = agendamento.grupo_recorrencia;
+                            const infoGrupo = agendamento.info_grupo;
                             
                             return (
                                 <Card key={agendamento.id} className={`border-l-4 ${getEventBorderColor(agendamento)}`}>
                                     <CardContent className="p-6">
                                         <div className="flex items-start justify-between">
                                             <div className="space-y-3 flex-1">
-                                                <div className="flex items-center gap-3">
+                                                <div className="flex items-center gap-3 flex-wrap">
                                                     <h3 className="font-semibold text-lg">{agendamento.titulo}</h3>
-                                                    <StatusBadge status={agendamento.status} />
-                                                    {agendamento.status === 'pendente' && (
-                                                        <Badge variant="outline" className={getPriorityColor(priority)}>
-                                                            Prioridade {getPriorityText(priority)}
+                                                    <StatusBadge status={agendamento.status} agendamento={agendamento} />
+                                                    {isRecorrente && (
+                                                        <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                                                            Recorrente ({agendamento.total_grupo || infoGrupo?.total || 1} agendamentos)
                                                         </Badge>
                                                     )}
                                                 </div>
@@ -377,7 +887,24 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                                                     </div>
                                                     <div className="flex items-center gap-2">
                                                         <User className="h-4 w-4" />
-                                                        <span>{agendamento.user?.name || 'Usuário não encontrado'}</span>
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="w-6 h-6 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center">
+                                                                <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
+                                                                    {agendamento.user?.name?.charAt(0).toUpperCase() || 'U'}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex flex-col">
+                                                                <span className="text-sm font-medium">{agendamento.user?.name || 'Usuário não encontrado'}</span>
+                                                                {agendamento.user?.email && (
+                                                                    <span className="text-xs text-muted-foreground">{agendamento.user.email}</span>
+                                                                )}
+                                                            </div>
+                                                            {agendamento.user?.perfil_acesso && (
+                                                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPerfilColor(agendamento.user.perfil_acesso)}`}>
+                                                                    {formatPerfil(agendamento.user.perfil_acesso)}
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                     <div className="flex items-center gap-2">
                                                         <Clock className="h-4 w-4" />
@@ -434,7 +961,7 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
 
                                             <div className="flex items-center gap-2 ml-4">
                                                 <Button variant="outline" size="sm" asChild>
-                                                    <Link href={`/agendamentos/${agendamento.id}`}>
+                                                    <Link href={`/agendamentos/${agendamento.id}?from=gerenciar&${new URLSearchParams(filters).toString()}`}>
                                                         <Eye className="h-4 w-4" />
                                                     </Link>
                                                 </Button>
@@ -469,17 +996,21 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                     )}
                 </div>
 
-                {/* Paginação */}
-                {agendamentos.links && agendamentos.links.length > 3 && (
+                {/* Paginação Client-side */}
+                {totalPages > 1 && (
                     <div className="flex justify-center">
                         <div className="flex gap-2">
-                            {agendamentos.links.map((link: any, index: number) => (
+                            {paginationLinks.map((link, index) => (
                                 <Button
                                     key={index}
                                     variant={link.active ? "default" : "outline"}
                                     size="sm"
-                                    disabled={!link.url}
-                                    onClick={() => link.url && router.get(link.url)}
+                                    disabled={link.disabled}
+                                    onClick={() => {
+                                        if (!link.disabled) {
+                                            setCurrentPage(link.page);
+                                        }
+                                    }}
                                     dangerouslySetInnerHTML={{ __html: link.label }}
                                 />
                             ))}
@@ -493,8 +1024,20 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                         <DialogHeader>
                             <DialogTitle>Rejeitar Agendamento</DialogTitle>
                             <DialogDescription>
-                                Informe o motivo da rejeição para o agendamento "{rejectionDialog.agendamento?.titulo}".
-                                Esta informação será enviada ao solicitante.
+                                {rejectionDialog.agendamento?.grupo_recorrencia ? (
+                                    <>
+                                        Informe o motivo da rejeição para o grupo de agendamentos recorrentes "{rejectionDialog.agendamento?.titulo}".
+                                        <br />
+                                        <strong>Atenção:</strong> Todos os {rejectionDialog.agendamento?.total_grupo || rejectionDialog.agendamento?.info_grupo?.total || 1} agendamentos deste grupo serão rejeitados.
+                                        <br />
+                                        Esta informação será enviada ao solicitante.
+                                    </>
+                                ) : (
+                                    <>
+                                        Informe o motivo da rejeição para o agendamento "{rejectionDialog.agendamento?.titulo}".
+                                        Esta informação será enviada ao solicitante.
+                                    </>
+                                )}
                             </DialogDescription>
                         </DialogHeader>
                         
@@ -523,7 +1066,7 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                                 onClick={confirmReject}
                                 disabled={!rejectionReason.trim()}
                             >
-                                Rejeitar Agendamento
+                                {rejectionDialog.agendamento?.grupo_recorrencia ? 'Rejeitar Grupo' : 'Rejeitar Agendamento'}
                             </Button>
                         </DialogFooter>
                     </DialogContent>

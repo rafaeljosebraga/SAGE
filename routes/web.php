@@ -83,6 +83,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get("agendamentos/{agendamento}/editar", [AgendamentoController::class, "edit"])->name("agendamentos.edit");
     Route::put("agendamentos/{agendamento}", [AgendamentoController::class, "update"])->name("agendamentos.update");
     Route::delete("agendamentos/{agendamento}", [AgendamentoController::class, "destroy"])->name("agendamentos.destroy");
+    Route::post("agendamentos/{agendamento}/descancelar", [AgendamentoController::class, "descancelar"])->name("agendamentos.descancelar");
+    Route::delete("agendamentos/{agendamento}/force-delete", [AgendamentoController::class, "forceDelete"])->name("agendamentos.force-delete");
 
     // Rotas de Gerenciamento de Agendamentos (APENAS para Diretor Geral)
     Route::middleware(['diretor-geral'])->group(function () {

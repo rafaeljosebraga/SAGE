@@ -35,11 +35,16 @@ class AgendamentoController extends Controller
             $query->whereDate('data_fim', '<=', $request->data_fim);
         }
 
+        if ($request->filled('nome')) {
+            $query->whereRaw('LOWER(titulo) LIKE ?', ['%' . strtolower($request->nome) . '%']);
+        }
+
         // Todos os usuários podem ver todos os agendamentos
 
         // Se for visualização de lista, usar paginação
         if ($request->get('view') === 'list') {
-            $agendamentos = $query->orderBy('data_inicio', 'desc')
+            $agendamentos = $query->orderBy('created_at', 'desc')
+                                 ->orderBy('data_inicio', 'desc')
                                  ->orderBy('hora_inicio', 'desc')
                                  ->paginate(15);
         } else {
@@ -63,7 +68,7 @@ class AgendamentoController extends Controller
         return Inertia::render('Agendamentos/Index', [
             'agendamentos' => $agendamentos,
             'espacos' => $espacos,
-            'filters' => $request->only(['espaco_id', 'status', 'data_inicio', 'data_fim', 'view']),
+            'filters' => $request->only(['espaco_id', 'status', 'data_inicio', 'data_fim', 'nome', 'view']),
         ]);
     }
 
@@ -113,8 +118,8 @@ class AgendamentoController extends Controller
             'recursos_solicitados' => 'nullable|array',
             'recursos_solicitados.*' => 'exists:recursos,id',
             'recorrente' => 'boolean',
-            'tipo_recorrencia' => 'nullable|in:diaria,semanal,mensal',
-            'data_fim_recorrencia' => 'nullable|date|after:data_fim',
+            'tipo_recorrencia' => 'nullable|in:diaria,semanal,mensal|required_if:recorrente,true',
+            'data_fim_recorrencia' => 'nullable|date|after:data_fim|required_if:recorrente,true',
             'return_view' => 'nullable|string',
             'force_create' => 'boolean',
         ]);
@@ -204,7 +209,7 @@ class AgendamentoController extends Controller
         // Se há conflitos e não foi forçado, retornar erro com os conflitos
         if ($conflitos->isNotEmpty() && !($validated['force_create'] ?? false)) {
             return back()->withErrors([
-                'conflitos' => $conflitos->toArray()
+                'conflitos' => 'Existe(m) agendamento(s) conflitante(s) no horário solicitado.'
             ])->withInput();
         }
 
@@ -217,11 +222,21 @@ class AgendamentoController extends Controller
                 "\n\n[SOLICITAÇÃO DE PRIORIDADE] Este agendamento foi solicitado com prioridade sobre agendamentos conflitantes.";
         }
 
-        $agendamento = Agendamento::create($validated);
+        // Criar agendamentos (único ou recorrentes)
+        $agendamentos = $this->criarAgendamentos($validated);
+        $agendamento = $agendamentos->first(); // Para compatibilidade com o código existente
 
-        $message = 'Solicitação de agendamento criada com sucesso! Aguarde aprovação.';
+        // Personalizar mensagem baseada na quantidade de agendamentos criados
+        if ($agendamentos->count() > 1) {
+            $message = "Solicitações de agendamento criadas com sucesso! {$agendamentos->count()} agendamentos recorrentes foram criados. Aguarde aprovação.";
+        } else {
+            $message = 'Solicitação de agendamento criada com sucesso! Aguarde aprovação.';
+        }
+        
         if ($conflitos->isNotEmpty() && ($validated['force_create'] ?? false)) {
-            $message = 'Solicitação de agendamento com prioridade criada! O diretor analisará os conflitos.';
+            $message = $agendamentos->count() > 1 
+                ? "Solicitações de agendamento com prioridade criadas! {$agendamentos->count()} agendamentos recorrentes foram criados. O diretor analisará os conflitos."
+                : 'Solicitação de agendamento com prioridade criada! O diretor analisará os conflitos.';
         }
 
         // Verificar se deve voltar para o calendário
@@ -269,8 +284,8 @@ class AgendamentoController extends Controller
      */
     public function edit(Agendamento $agendamento)
     {
-        // Apenas o solicitante pode editar agendamentos pendentes
-        if ($agendamento->user_id !== auth()->id() || $agendamento->status !== 'pendente') {
+        // Diretor geral pode editar qualquer agendamento, usuários comuns só podem editar seus próprios agendamentos pendentes
+        if (auth()->user()->perfil_acesso !== 'diretor_geral' && ($agendamento->user_id !== auth()->id() || $agendamento->status !== 'pendente')) {
             abort(403, 'Você não pode editar este agendamento.');
         }
 
@@ -305,8 +320,8 @@ class AgendamentoController extends Controller
      */
     public function update(Request $request, Agendamento $agendamento)
     {
-        // Apenas o solicitante pode editar agendamentos pendentes
-        if ($agendamento->user_id !== auth()->id() || $agendamento->status !== 'pendente') {
+        // Diretor geral pode editar qualquer agendamento, usuários comuns só podem editar seus próprios agendamentos pendentes
+        if (auth()->user()->perfil_acesso !== 'diretor_geral' && ($agendamento->user_id !== auth()->id() || $agendamento->status !== 'pendente')) {
             abort(403, 'Você não pode editar este agendamento.');
         }
 
@@ -359,6 +374,11 @@ class AgendamentoController extends Controller
 
         $agendamento->update($validated);
 
+        // Para requisições Inertia, retornar back() para permitir o redirecionamento pelo frontend
+        if (request()->header('X-Inertia')) {
+            return back()->with('success', 'Agendamento atualizado com sucesso!');
+        }
+
         return redirect()->route('agendamentos.index')
                         ->with('success', 'Agendamento atualizado com sucesso!');
     }
@@ -369,12 +389,20 @@ class AgendamentoController extends Controller
     public function destroy(Agendamento $agendamento)
     {
         // Verificar permissão
-        if (auth()->user()->perfil_acesso !== 'diretor_geral' && 
-            $agendamento->user_id !== auth()->id()) {
+        if (auth()->user()->perfil_acesso !== 'diretor_geral') { 
             abort(403, 'Você não tem permissão para cancelar este agendamento.');
         }
 
-        $agendamento->update(['status' => 'cancelado']);
+        $agendamento->update([
+            'status' => 'cancelado',
+            'aprovado_por' => auth()->id(),
+            'aprovado_em' => now(),
+        ]);
+
+        // Para requisições Inertia, retornar back() para permanecer na mesma página
+        if (request()->header('X-Inertia')) {
+            return back()->with('success', 'Agendamento cancelado com sucesso!');
+        }
 
         return redirect()->route('agendamentos.index')
                         ->with('success', 'Agendamento cancelado com sucesso!');
@@ -385,7 +413,9 @@ class AgendamentoController extends Controller
      */
     public function gerenciar(Request $request)
     {
-        $query = Agendamento::with(['espaco.localizacao', 'user', 'aprovadoPor']);
+        $query = Agendamento::with(['espaco.localizacao', 'user', 'aprovadoPor'])
+                           ->representantesDeGrupo()
+                           ->comContadorGrupo();
 
         // Filtros
         if ($request->filled('espaco_id')) {
@@ -393,10 +423,10 @@ class AgendamentoController extends Controller
         }
 
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        } else {
-            // Por padrão, mostrar apenas pendentes
-            $query->where('status', 'pendente');
+            // Se status for 'all', não aplicar filtro de status (mostrar todos)
+            if ($request->status !== 'all') {
+                $query->where('status', $request->status);
+            }
         }
 
         if ($request->filled('data_inicio')) {
@@ -409,42 +439,89 @@ class AgendamentoController extends Controller
 
         if ($request->filled('solicitante')) {
             $query->whereHas('user', function ($userQuery) use ($request) {
-                $userQuery->where('name', 'like', '%' . $request->solicitante . '%');
+                $userQuery->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($request->solicitante) . '%']);
             });
         }
 
+
+        if ($request->filled('nome_agendamento')) {
+            $query->whereRaw('LOWER(titulo) LIKE ?', ['%' . strtolower($request->nome_agendamento) . '%']);
+        }
+
+        // Filtro específico para aprovados hoje
+        if ($request->filled('aprovado_hoje') && $request->aprovado_hoje === 'true') {
+            $query->where('status', 'aprovado')
+                  ->whereDate('aprovado_em', today());
+        }
+
+        // Filtro específico para rejeitados hoje
+        if ($request->filled('rejeitado_hoje') && $request->rejeitado_hoje === 'true') {
+            $query->where('status', 'rejeitado')
+                  ->whereDate('aprovado_em', today());
+        }
+
+        // Filtro específico para agendamentos do mês atual
+        if ($request->filled('mes_atual') && $request->mes_atual === 'true') {
+            $query->whereMonth('created_at', now()->month)
+                  ->whereYear('created_at', now()->year);
+        }
+
+        // Para garantir que todos os agendamentos sejam carregados, usar get() em vez de paginate()
+        // quando não há filtros específicos ou quando o frontend precisa de todos os dados
         $agendamentos = $query->orderBy('created_at', 'desc')
-                             ->paginate(15);
+                             ->get();
+
+        // Simular estrutura de paginação para compatibilidade com o frontend
+        $paginatedAgendamentos = new \Illuminate\Pagination\LengthAwarePaginator(
+            $agendamentos,
+            $agendamentos->count(),
+            $agendamentos->count(), // Todos os itens em uma página
+            1,
+            ['path' => request()->url()]
+        );
+
+        // Adicionar informações do grupo para cada agendamento
+        $paginatedAgendamentos->getCollection()->transform(function ($agendamento) {
+            $agendamento->info_grupo = $agendamento->info_grupo;
+            return $agendamento;
+        });
 
         $espacos = Espaco::where('disponivel_reserva', true)
                          ->where('status', 'ativo')
                          ->orderBy('nome')
                          ->get(['id', 'nome']);
 
-        // Estatísticas
+        // Estatísticas - contar apenas representantes de grupo para evitar duplicação
+        $hoje = now()->format('Y-m-d');
+        
         $estatisticas = [
-            'pendentes' => Agendamento::where('status', 'pendente')->count(),
-            'aprovados_hoje' => Agendamento::where('status', 'aprovado')
-                                          ->whereDate('aprovado_em', today())
+            'pendentes' => Agendamento::representantesDeGrupo()->where('status', 'pendente')->count(),
+            'aprovados_hoje' => Agendamento::representantesDeGrupo()
+                                          ->where('status', 'aprovado')
+                                          ->whereNotNull('aprovado_em')
+                                          ->whereRaw('DATE(aprovado_em) = ?', [$hoje])
                                           ->count(),
-            'rejeitados_hoje' => Agendamento::where('status', 'rejeitado')
-                                           ->whereDate('aprovado_em', today())
+            'rejeitados_hoje' => Agendamento::representantesDeGrupo()
+                                           ->where('status', 'rejeitado')
+                                           ->whereNotNull('aprovado_em')
+                                           ->whereRaw('DATE(aprovado_em) = ?', [$hoje])
                                            ->count(),
-            'total_mes' => Agendamento::whereMonth('created_at', now()->month)
+            'total_mes' => Agendamento::representantesDeGrupo()
+                                     ->whereMonth('created_at', now()->month)
                                      ->whereYear('created_at', now()->year)
                                      ->count(),
         ];
 
         return Inertia::render('Agendamentos/Gerenciar', [
-            'agendamentos' => $agendamentos,
+            'agendamentos' => $paginatedAgendamentos,
             'espacos' => $espacos,
             'estatisticas' => $estatisticas,
-            'filters' => $request->only(['espaco_id', 'status', 'data_inicio', 'data_fim', 'solicitante']),
+            'filters' => $request->only(['espaco_id', 'status', 'data_inicio', 'data_fim', 'solicitante', 'nome_agendamento']),
         ]);
     }
 
     /**
-     * Aprovar agendamento
+     * Aprovar agendamento (individual ou grupo completo)
      */
     public function aprovar(Agendamento $agendamento)
     {
@@ -457,17 +534,41 @@ class AgendamentoController extends Controller
             return back()->withErrors(['status' => 'Apenas agendamentos pendentes podem ser aprovados.']);
         }
 
-        $agendamento->update([
-            'status' => 'aprovado',
-            'aprovado_por' => auth()->id(),
-            'aprovado_em' => now(),
-        ]);
+        // Se faz parte de um grupo de recorrência, aprovar todos os agendamentos do grupo
+        if ($agendamento->grupo_recorrencia) {
+            $agendamentosDoGrupo = Agendamento::where('grupo_recorrencia', $agendamento->grupo_recorrencia)
+                                             ->where('status', 'pendente')
+                                             ->get();
 
-        return back()->with('success', 'Agendamento aprovado com sucesso!');
+            $totalAprovados = $agendamentosDoGrupo->count();
+            
+            foreach ($agendamentosDoGrupo as $agendamentoGrupo) {
+                $agendamentoGrupo->update([
+                    'status' => 'aprovado',
+                    'aprovado_por' => auth()->id(),
+                    'aprovado_em' => now(),
+                ]);
+            }
+
+            $message = $totalAprovados > 1 
+                ? "Grupo de agendamentos recorrentes aprovado com sucesso! {$totalAprovados} agendamentos foram aprovados."
+                : 'Agendamento aprovado com sucesso!';
+        } else {
+            // Agendamento individual
+            $agendamento->update([
+                'status' => 'aprovado',
+                'aprovado_por' => auth()->id(),
+                'aprovado_em' => now(),
+            ]);
+
+            $message = 'Agendamento aprovado com sucesso!';
+        }
+
+        return back()->with('success', $message);
     }
 
     /**
-     * Rejeitar agendamento
+     * Rejeitar agendamento (individual ou grupo completo)
      */
     public function rejeitar(Request $request, Agendamento $agendamento)
     {
@@ -484,14 +585,39 @@ class AgendamentoController extends Controller
             'motivo_rejeicao' => 'required|string|max:500',
         ]);
 
-        $agendamento->update([
-            'status' => 'rejeitado',
-            'motivo_rejeicao' => $validated['motivo_rejeicao'],
-            'aprovado_por' => auth()->id(),
-            'aprovado_em' => now(),
-        ]);
+        // Se faz parte de um grupo de recorrência, rejeitar todos os agendamentos do grupo
+        if ($agendamento->grupo_recorrencia) {
+            $agendamentosDoGrupo = Agendamento::where('grupo_recorrencia', $agendamento->grupo_recorrencia)
+                                             ->where('status', 'pendente')
+                                             ->get();
 
-        return back()->with('success', 'Agendamento rejeitado.');
+            $totalRejeitados = $agendamentosDoGrupo->count();
+            
+            foreach ($agendamentosDoGrupo as $agendamentoGrupo) {
+                $agendamentoGrupo->update([
+                    'status' => 'rejeitado',
+                    'motivo_rejeicao' => $validated['motivo_rejeicao'],
+                    'aprovado_por' => auth()->id(),
+                    'aprovado_em' => now(),
+                ]);
+            }
+
+            $message = $totalRejeitados > 1 
+                ? "Grupo de agendamentos recorrentes rejeitado. {$totalRejeitados} agendamentos foram rejeitados."
+                : 'Agendamento rejeitado.';
+        } else {
+            // Agendamento individual
+            $agendamento->update([
+                'status' => 'rejeitado',
+                'motivo_rejeicao' => $validated['motivo_rejeicao'],
+                'aprovado_por' => auth()->id(),
+                'aprovado_em' => now(),
+            ]);
+
+            $message = 'Agendamento rejeitado.';
+        }
+
+        return back()->with('success', $message);
     }
 
     /**
@@ -554,5 +680,141 @@ class AgendamentoController extends Controller
             'disponivel' => $disponivel,
             'espaco' => $espaco->nome,
         ]);
+    }
+
+    /**
+     * Descancelar agendamento (voltar de cancelado para pendente)
+     */
+    public function descancelar(Agendamento $agendamento)
+    {
+        // Verificar permissão
+        if (auth()->user()->perfil_acesso !== 'diretor_geral') { 
+            abort(403, 'Você não tem permissão para descancelar este agendamento.');
+        }
+
+        // Verificar se o agendamento está cancelado
+        if ($agendamento->status !== 'cancelado') {
+            return back()->withErrors(['status' => 'Apenas agendamentos cancelados podem ser descancelados.']);
+        }
+
+        $agendamento->update([
+            'status' => 'pendente',
+            'aprovado_por' => null,
+            'aprovado_em' => null,
+            'motivo_rejeicao' => null,
+        ]);
+
+        // Para requisições Inertia, retornar back() para permanecer na mesma página
+        if (request()->header('X-Inertia')) {
+            return back()->with('success', 'Agendamento descancelado com sucesso! Status alterado para pendente.');
+        }
+
+        return redirect()->route('agendamentos.index')
+                        ->with('success', 'Agendamento descancelado com sucesso! Status alterado para pendente.');
+    }
+
+    /**
+     * Excluir agendamento permanentemente (apenas diretor geral)
+     */
+    public function forceDelete(Agendamento $agendamento)
+    {
+        // Verificar permissão - apenas diretor geral pode excluir permanentemente
+        if (auth()->user()->perfil_acesso !== 'diretor_geral') { 
+            abort(403, 'Você não tem permissão para excluir este agendamento.');
+        }
+
+        // Salvar informações para a mensagem
+        $titulo = $agendamento->titulo;
+        $espaco = $agendamento->espaco->nome ?? 'Espaço não encontrado';
+
+        // Excluir permanentemente o agendamento
+        $agendamento->delete();
+
+        // Para requisições Inertia, redirecionar para a lista de agendamentos
+        if (request()->header('X-Inertia')) {
+            return redirect()->route('agendamentos.index')
+                           ->with('success', "Agendamento '{$titulo}' foi excluído permanentemente.");
+        }
+
+        return redirect()->route('agendamentos.index')
+                        ->with('success', "Agendamento '{$titulo}' foi excluído permanentemente.");
+    }
+
+    /**
+     * Criar agendamentos (único ou recorrentes)
+     */
+    private function criarAgendamentos(array $validated)
+    {
+        $agendamentos = collect();
+
+        // Se não é recorrente, criar apenas um agendamento
+        if (!($validated['recorrente'] ?? false) || empty($validated['tipo_recorrencia']) || empty($validated['data_fim_recorrencia'])) {
+            $agendamento = Agendamento::create($validated);
+            $agendamentos->push($agendamento);
+            return $agendamentos;
+        }
+
+        // Para agendamentos recorrentes, gerar um ID único para o grupo
+        $grupoRecorrencia = 'rec_' . uniqid() . '_' . time();
+
+        // Para agendamentos recorrentes, calcular as datas e horários
+        $dataInicio = Carbon::parse($validated['data_inicio']);
+        $dataFim = Carbon::parse($validated['data_fim']);
+        $dataFimRecorrencia = Carbon::parse($validated['data_fim_recorrencia']);
+        
+        // Criar datetime completo com horários
+        $horaInicio = Carbon::parse($validated['hora_inicio']);
+        $horaFim = Carbon::parse($validated['hora_fim']);
+        
+        $dataHoraInicio = $dataInicio->copy()->setTime($horaInicio->hour, $horaInicio->minute);
+        $dataHoraFim = $dataFim->copy()->setTime($horaFim->hour, $horaFim->minute);
+        
+        // Calcular a duração do agendamento original
+        $duracaoEmMinutos = $dataHoraInicio->diffInMinutes($dataHoraFim);
+        
+        $dataHoraAtual = $dataHoraInicio->copy();
+        $contador = 0;
+        $maxAgendamentos = 8760; // Limite de segurança (365 dias * 24 horas)
+        $primeiroAgendamento = true;
+
+        while ($dataHoraAtual->toDateString() <= $dataFimRecorrencia->toDateString() && $contador < $maxAgendamentos) {
+            // Calcular data e hora fim para este agendamento
+            $dataHoraFimAtual = $dataHoraAtual->copy()->addMinutes($duracaoEmMinutos);
+
+            // Criar dados para este agendamento
+            $dadosAgendamento = $validated;
+            $dadosAgendamento['data_inicio'] = $dataHoraAtual->toDateString();
+            $dadosAgendamento['hora_inicio'] = $dataHoraAtual->format('H:i');
+            $dadosAgendamento['data_fim'] = $dataHoraFimAtual->toDateString();
+            $dadosAgendamento['hora_fim'] = $dataHoraFimAtual->format('H:i');
+            $dadosAgendamento['grupo_recorrencia'] = $grupoRecorrencia;
+            $dadosAgendamento['is_representante_grupo'] = $primeiroAgendamento;
+
+            try {
+                $agendamento = Agendamento::create($dadosAgendamento);
+                $agendamentos->push($agendamento);
+                $primeiroAgendamento = false;
+            } catch (\Exception $e) {
+                // Log do erro mas continua criando os próximos agendamentos
+                \Log::warning("Erro ao criar agendamento recorrente para {$dataHoraAtual->format('Y-m-d H:i')}: " . $e->getMessage());
+            }
+
+            // Avançar para a próxima data/hora baseado no tipo de recorrência
+            switch ($validated['tipo_recorrencia']) {
+                case 'diaria':
+                    $dataHoraAtual->addDay();
+                    break;
+                case 'semanal':
+                    $dataHoraAtual->addWeek();
+                    break;
+                case 'mensal':
+                    $dataHoraAtual->addMonth();
+                    break;
+            }
+
+            $contador++;
+        }
+
+        return $agendamentos;
     }
 }

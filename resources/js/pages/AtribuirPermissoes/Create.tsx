@@ -606,8 +606,8 @@ const handleSubmit = (e: React.FormEvent) => {
                                             {responsaveis.map((responsavel, index) => (
                                                 <div key={responsavel.id} className="bg-background/50 p-3 rounded-md border border-border">
                                                     <div className="flex items-start gap-2">
-                                                        <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                                                            <span className="text-sm font-medium text-primary">
+                                                        <div className="w-8 h-8 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center flex-shrink-0">
+                                                            <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
                                                                 {responsavel.name.charAt(0).toUpperCase()}
                                                             </span>
                                                         </div>

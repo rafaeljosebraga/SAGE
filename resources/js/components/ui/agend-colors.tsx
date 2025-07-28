@@ -1,5 +1,5 @@
 import React from 'react';
-import { Clock3, CheckCircle, XCircle, Ban } from 'lucide-react';
+import { Clock3, CheckCircle, XCircle, Ban, Clock } from 'lucide-react';
 import type { Agendamento } from '@/types';
 
 // Paleta de cores para agendamentos
@@ -158,18 +158,32 @@ export const useAgendamentoColors = () => {
     };
 
     // Função para obter cor de fundo do evento (para calendário)
+    // Função para gerar identificador único para série de agendamentos
+    const getEventSeriesId = (agendamento: Agendamento): string => {
+        // Para agendamentos recorrentes, usar uma combinação que seja igual para toda a série
+        const baseId = [
+            agendamento.titulo,
+            agendamento.espaco_id,
+            agendamento.user_id,
+            agendamento.hora_inicio,
+            agendamento.hora_fim,
+            agendamento.justificativa
+        ].join('|');
+        
+        return baseId;
+    };
+
     const getEventBackgroundColor = (agendamento: Agendamento): string => {
         // Se o evento já passou, usar cinza
         if (isEventPast(agendamento)) {
             return 'bg-gray-300 dark:bg-gray-600/80 text-gray-900 dark:text-gray-100';
         }
 
-        // Usar apenas o ID do agendamento para garantir unicidade absoluta
-        // Multiplicar por números primos para melhor distribuição
-        const idNumber = parseInt(agendamento.id.toString()) || 0;
-        const hash1 = generateHash(`primary_${idNumber * 7}`);
-        const hash2 = generateHash(`secondary_${idNumber * 11}`);
-        const hash3 = generateHash(`tertiary_${idNumber * 13}`);
+        // Usar identificador da série para que agendamentos recorrentes tenham a mesma cor
+        const seriesId = getEventSeriesId(agendamento);
+        const hash1 = generateHash(`primary_${seriesId}`);
+        const hash2 = generateHash(`secondary_${seriesId}`);
+        const hash3 = generateHash(`tertiary_${seriesId}`);
         
         // Combinar os hashes de forma única
         const combinedHash = Math.abs(hash1 + (hash2 * 17) + (hash3 * 23));
@@ -186,12 +200,11 @@ export const useAgendamentoColors = () => {
             return 'border-l-gray-500';
         }
 
-        // Usar apenas o ID do agendamento para garantir unicidade absoluta
-        // Multiplicar por números primos para melhor distribuição
-        const idNumber = parseInt(agendamento.id.toString()) || 0;
-        const hash1 = generateHash(`primary_${idNumber * 7}`);
-        const hash2 = generateHash(`secondary_${idNumber * 11}`);
-        const hash3 = generateHash(`tertiary_${idNumber * 13}`);
+        // Usar identificador da série para que agendamentos recorrentes tenham a mesma cor
+        const seriesId = getEventSeriesId(agendamento);
+        const hash1 = generateHash(`primary_${seriesId}`);
+        const hash2 = generateHash(`secondary_${seriesId}`);
+        const hash3 = generateHash(`tertiary_${seriesId}`);
         
         // Combinar os hashes de forma única
         const combinedHash = Math.abs(hash1 + (hash2 * 17) + (hash3 * 23));
@@ -316,28 +329,48 @@ interface StatusBadgeProps {
     status: string;
     showText?: boolean;
     className?: string;
+    agendamento?: Agendamento;
 }
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ 
     status, 
     showText = true, 
-    className = "" 
+    className = "",
+    agendamento
 }) => {
-    const { getStatusIcon, getStatusText, getStatusColor } = useAgendamentoColors();
+    const { getStatusIcon, getStatusText, getStatusColor, isEventPast } = useAgendamentoColors();
+
+    // Verificar se o evento já passou
+    const eventPast = agendamento ? isEventPast(agendamento) : false;
 
     if (showText) {
         return (
-            <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border text-sm font-medium ${getStatusColor(status)} ${className}`}>
-                {getStatusIcon(status)}
-                {getStatusText(status)}
+            <div className={`inline-flex items-center gap-2 ${className}`}>
+                {eventPast && (
+                    <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-sm font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-600">
+                        <div className="w-4 h-4 rounded-full bg-gray-500 dark:bg-gray-400 flex items-center justify-center shadow-sm shrink-0">
+                            <Clock className="h-2.5 w-2.5 text-white dark:text-gray-900" />
+                        </div>
+                        Já Passou
+                    </div>
+                )}
+                <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border text-sm font-medium ${getStatusColor(status)}`}>
+                    {getStatusIcon(status)}
+                    {getStatusText(status)}
+                </div>
             </div>
         );
     }
 
     return (
-        <div className={className}>
+        <div className={`inline-flex items-center gap-2 ${className}`}>
+            {eventPast && (
+                <div className="w-4 h-4 rounded-full bg-gray-500 dark:bg-gray-400 flex items-center justify-center shadow-sm shrink-0" title="Evento já passou">
+                    <Clock className="h-2.5 w-2.5 text-white dark:text-gray-900" />
+                </div>
+            )}
             {getStatusIcon(status)}
-        </div>
+i        </div>
     );
 };
 
