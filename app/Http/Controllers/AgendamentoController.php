@@ -423,9 +423,12 @@ class AgendamentoController extends Controller
         }
 
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            // Se status for 'all', não aplicar filtro de status (mostrar todos)
+            if ($request->status !== 'all') {
+                $query->where('status', $request->status);
+            }
         } else {
-            // Por padrão, mostrar apenas pendentes
+            // Filtro padrão: mostrar apenas pendentes quando nenhum status é especificado
             $query->where('status', 'pendente');
         }
 
@@ -447,6 +450,25 @@ class AgendamentoController extends Controller
         if ($request->filled('nome_agendamento')) {
             $query->whereRaw('LOWER(titulo) LIKE ?', ['%' . strtolower($request->nome_agendamento) . '%']);
         }
+
+        // Filtro específico para aprovados hoje
+        if ($request->filled('aprovado_hoje') && $request->aprovado_hoje === 'true') {
+            $query->where('status', 'aprovado')
+                  ->whereDate('aprovado_em', today());
+        }
+
+        // Filtro específico para rejeitados hoje
+        if ($request->filled('rejeitado_hoje') && $request->rejeitado_hoje === 'true') {
+            $query->where('status', 'rejeitado')
+                  ->whereDate('aprovado_em', today());
+        }
+
+        // Filtro específico para agendamentos do mês atual
+        if ($request->filled('mes_atual') && $request->mes_atual === 'true') {
+            $query->whereMonth('created_at', now()->month)
+                  ->whereYear('created_at', now()->year);
+        }
+
         $agendamentos = $query->orderBy('created_at', 'desc')
                              ->paginate(15);
 

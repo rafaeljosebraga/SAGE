@@ -56,6 +56,10 @@ interface Props extends PageProps {
         data_fim?: string;
         solicitante?: string;
         nome_agendamento?: string;
+        page?: string;
+        mes_atual?: string;
+        aprovado_hoje?: string;
+        rejeitado_hoje?: string;
     };
 }
 
@@ -328,6 +332,46 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                     : dateB.getTime() - dateA.getTime();
             });
         }
+        // Ordenação padrão: priorizar agendamentos futuros mais recentes, depois os que já passaram
+        else {
+            filtered.sort((a, b) => {
+                const now = new Date();
+                
+                // Criar datas de início dos agendamentos
+                const dateStrA = a.data_inicio.split('T')[0];
+                const timeStrA = a.hora_inicio.split(':').slice(0, 2).join(':');
+                const dateStrB = b.data_inicio.split('T')[0];
+                const timeStrB = b.hora_inicio.split(':').slice(0, 2).join(':');
+                
+                const dateA = new Date(`${dateStrA}T${timeStrA}:00`);
+                const dateB = new Date(`${dateStrB}T${timeStrB}:00`);
+                
+                // Verificar se as datas são válidas
+                if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+                    return 0;
+                }
+                
+                // Verificar se os agendamentos já passaram
+                const aPassou = dateA < now;
+                const bPassou = dateB < now;
+                
+                // Se um passou e outro não, priorizar o que não passou
+                if (aPassou && !bPassou) return 1;
+                if (!aPassou && bPassou) return -1;
+                
+                // Se ambos não passaram, ordenar por data mais próxima primeiro
+                if (!aPassou && !bPassou) {
+                    return dateA.getTime() - dateB.getTime();
+                }
+                
+                // Se ambos já passaram, ordenar por mais recente primeiro
+                if (aPassou && bPassou) {
+                    return dateB.getTime() - dateA.getTime();
+                }
+                
+                return 0;
+            });
+        }
 
         return filtered;
     })();
@@ -454,10 +498,31 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
 
                 {/* Estatísticas */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <Card>
+                    <Card 
+                        className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:bg-yellow-100/60 dark:hover:bg-yellow-900/20 hover:border-yellow-200 dark:hover:border-yellow-800 group"
+                        onClick={() => {
+                            // Limpar outros filtros e aplicar apenas o filtro de pendentes
+                            setSearchValues({
+                                solicitante: '',
+                                nome_agendamento: ''
+                            });
+                            setNomeSortOrder('none');
+                            setSolicitanteSortOrder('none');
+                            setDataInicioSortOrder('none');
+                            setDataFimSortOrder('none');
+                            
+                            router.get('/gerenciar-agendamentos', { status: 'pendente' });
+                        }}
+                    >
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Pendentes</CardTitle>
-                            <AlertCircle className="h-4 w-4 text-yellow-600" />
+                            <AlertCircle 
+                                className={`h-4 w-4 text-yellow-600 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg group-hover:text-yellow-500 ${
+                                    estatisticas.pendentes > 0 
+                                        ? 'animate-bounce duration-[0.4s] scale-110 drop-shadow-lg' 
+                                        : ''
+                                }`} 
+                            />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold text-yellow-600">{estatisticas.pendentes}</div>
@@ -467,10 +532,28 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card 
+                        className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:bg-green-100/60 dark:hover:bg-green-900/20 hover:border-green-200 dark:hover:border-green-800 group"
+                        onClick={() => {
+                            // Limpar outros filtros e aplicar filtro de aprovados hoje
+                            setSearchValues({
+                                solicitante: '',
+                                nome_agendamento: ''
+                            });
+                            setNomeSortOrder('none');
+                            setSolicitanteSortOrder('none');
+                            setDataInicioSortOrder('none');
+                            setDataFimSortOrder('none');
+                            
+                            router.get('/gerenciar-agendamentos', { 
+                                status: 'aprovado',
+                                aprovado_hoje: 'true'
+                            });
+                        }}
+                    >
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Aprovados Hoje</CardTitle>
-                            <CheckCircle className="h-4 w-4 text-green-600" />
+                            <CheckCircle className="h-4 w-4 text-green-600 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg group-hover:text-green-500" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold text-green-600">{estatisticas.aprovados_hoje}</div>
@@ -480,10 +563,28 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card 
+                        className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:bg-red-100/60 dark:hover:bg-red-900/20 hover:border-red-200 dark:hover:border-red-800 group"
+                        onClick={() => {
+                            // Limpar outros filtros e aplicar filtro de rejeitados hoje
+                            setSearchValues({
+                                solicitante: '',
+                                nome_agendamento: ''
+                            });
+                            setNomeSortOrder('none');
+                            setSolicitanteSortOrder('none');
+                            setDataInicioSortOrder('none');
+                            setDataFimSortOrder('none');
+                            
+                            router.get('/gerenciar-agendamentos', { 
+                                status: 'rejeitado',
+                                rejeitado_hoje: 'true'
+                            });
+                        }}
+                    >
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Rejeitados Hoje</CardTitle>
-                            <XCircle className="h-4 w-4 text-red-600" />
+                            <XCircle className="h-4 w-4 text-red-600 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg group-hover:text-red-500" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold text-red-600">{estatisticas.rejeitados_hoje}</div>
@@ -493,10 +594,28 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card 
+                        className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:bg-blue-100/60 dark:hover:bg-blue-900/20 hover:border-blue-200 dark:hover:border-blue-800 group"
+                        onClick={() => {
+                            // Limpar outros filtros e aplicar filtro do mês atual com status "all"
+                            setSearchValues({
+                                solicitante: '',
+                                nome_agendamento: ''
+                            });
+                            setNomeSortOrder('none');
+                            setSolicitanteSortOrder('none');
+                            setDataInicioSortOrder('none');
+                            setDataFimSortOrder('none');
+                            
+                            router.get('/gerenciar-agendamentos', { 
+                                mes_atual: 'true',
+                                status: 'all'
+                            });
+                        }}
+                    >
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Total do Mês</CardTitle>
-                            <TrendingUp className="h-4 w-4 text-blue-600" />
+                            <TrendingUp className="h-4 w-4 text-blue-600 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg group-hover:text-blue-500" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold text-blue-600">{estatisticas.total_mes}</div>
@@ -544,7 +663,7 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                                 <Select
                                     value={filters.status || 'pendente'}
                                     onValueChange={(value) => {
-                                        const status = value === 'all' ? undefined : value;
+                                        const status = value === 'all' ? 'all' : value;
                                         router.get('/gerenciar-agendamentos', { ...filters, status });
                                     }}
                                 >
@@ -552,10 +671,10 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                                         <SelectValue placeholder="Status" />
                                     </SelectTrigger>
                                     <SelectContent>
+                                        <SelectItem value="all">Todos</SelectItem>
                                         <SelectItem value="pendente">Pendente</SelectItem>
                                         <SelectItem value="aprovado">Aprovado</SelectItem>
                                         <SelectItem value="rejeitado">Rejeitado</SelectItem>
-                                        <SelectItem value="all">Todos</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -615,14 +734,15 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                                             const dataInicio = e.target.value || undefined;
                                             router.get('/gerenciar-agendamentos', { ...filters, data_inicio: dataInicio });
                                         }}
-                                        className="pr-8"
+                                        className="pr-10"
                                     />
                                     <Button 
                                         variant="ghost" 
                                         size="sm" 
                                         onClick={toggleDataInicioSort}
-                                        className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
+                                        className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted pointer-events-auto z-10"
                                         title={`Ordenar por data início ${dataInicioSortOrder === 'none' ? 'crescente' : dataInicioSortOrder === 'asc' ? 'decrescente' : 'padrão'}`}
+                                        onMouseDown={(e) => e.preventDefault()}
                                     >
                                         {getDataInicioSortIcon()}
                                     </Button>
@@ -639,14 +759,15 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                                             const dataFim = e.target.value || undefined;
                                             router.get('/gerenciar-agendamentos', { ...filters, data_fim: dataFim });
                                         }}
-                                        className="pr-8"
+                                        className="pr-10"
                                     />
                                     <Button 
                                         variant="ghost" 
                                         size="sm" 
                                         onClick={toggleDataFimSort}
-                                        className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
+                                        className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted pointer-events-auto z-10"
                                         title={`Ordenar por data fim ${dataFimSortOrder === 'none' ? 'crescente' : dataFimSortOrder === 'asc' ? 'decrescente' : 'padrão'}`}
+                                        onMouseDown={(e) => e.preventDefault()}
                                     >
                                         {getDataFimSortIcon()}
                                     </Button>
@@ -655,7 +776,7 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
 
                             {/* Botão Limpar Filtros - só aparece quando há filtros ativos */}
                             {(searchValues.nome_agendamento || searchValues.solicitante || filters.espaco_id || 
-                              (filters.status && filters.status !== 'pendente') || filters.data_inicio || filters.data_fim || 
+                              filters.status || filters.data_inicio || filters.data_fim || 
                               nomeSortOrder !== 'none' || solicitanteSortOrder !== 'none' || 
                               dataInicioSortOrder !== 'none' || dataFimSortOrder !== 'none') && (
                                 <div className="flex flex-col">
@@ -674,8 +795,8 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                                             setDataInicioSortOrder('none');
                                             setDataFimSortOrder('none');
                                             
-                                            // Redirecionar para a página sem filtros (mantendo apenas status pendente como padrão)
-                                            router.get('/gerenciar-agendamentos', { status: 'pendente' });
+                                            // Redirecionar para a página sem filtros (mostrando todos os status)
+                                            router.get('/gerenciar-agendamentos', {});
                                         }}
                                         className="h-10 w-10 p-0"
                                         title="Limpar filtros"
@@ -798,7 +919,7 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
 
                                             <div className="flex items-center gap-2 ml-4">
                                                 <Button variant="outline" size="sm" asChild>
-                                                    <Link href={`/agendamentos/${agendamento.id}`}>
+                                                    <Link href={`/agendamentos/${agendamento.id}?from=gerenciar&${new URLSearchParams(filters).toString()}`}>
                                                         <Eye className="h-4 w-4" />
                                                     </Link>
                                                 </Button>
@@ -843,7 +964,21 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                                     variant={link.active ? "default" : "outline"}
                                     size="sm"
                                     disabled={!link.url}
-                                    onClick={() => link.url && router.get(link.url)}
+                                    onClick={() => {
+                                        if (link.url) {
+                                            // Extrair apenas o número da página da URL
+                                            const url = new URL(link.url, window.location.origin);
+                                            const page = url.searchParams.get('page');
+                                            
+                                            // Manter todos os filtros atuais e adicionar apenas a página
+                                            const currentFilters = { ...filters };
+                                            if (page) {
+                                                currentFilters.page = page;
+                                            }
+                                            
+                                            router.get('/gerenciar-agendamentos', currentFilters);
+                                        }
+                                    }}
                                     dangerouslySetInnerHTML={{ __html: link.label }}
                                 />
                             ))}

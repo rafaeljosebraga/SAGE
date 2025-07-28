@@ -51,6 +51,31 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
     // Função para obter URL de retorno baseada nos parâmetros da URL atual
     const getBackUrl = () => {
         const urlParams = new URLSearchParams(window.location.search);
+        const from = urlParams.get('from');
+        
+        // Se veio da página de gerenciar agendamentos, retornar para lá com os filtros
+        if (from === 'gerenciar') {
+            const backParams = new URLSearchParams();
+            
+            // Preservar todos os filtros de gerenciamento
+            const gerenciarParams = [
+                'status', 'espaco_id', 'data_inicio', 'data_fim', 
+                'solicitante', 'nome_agendamento', 'page', 
+                'mes_atual', 'aprovado_hoje', 'rejeitado_hoje'
+            ];
+            
+            gerenciarParams.forEach(param => {
+                const value = urlParams.get(param);
+                if (value) {
+                    backParams.set(param, value);
+                }
+            });
+            
+            const queryString = backParams.toString();
+            return queryString ? `/gerenciar-agendamentos?${queryString}` : '/gerenciar-agendamentos';
+        }
+        
+        // Caso contrário, usar a lógica original para agendamentos
         const view = urlParams.get('view');
         const date = urlParams.get('date');
         const espacos = urlParams.get('espacos');
