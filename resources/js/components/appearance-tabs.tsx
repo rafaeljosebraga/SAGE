@@ -25,7 +25,22 @@ export default function AppearanceToggleTab({ className = '', ...props }: HTMLAt
                             : 'text-neutral-500 hover:bg-neutral-200/60 hover:text-black dark:text-neutral-400 dark:hover:bg-neutral-700/60',
                     )}
                 >
-                    <Icon className="-ml-1 h-4 w-4" />
+                    <Icon className={cn(
+                        "-ml-1 h-4 w-4 transition-all duration-300",
+                        value === 'light' && "text-yellow-500 hover:rotate-12",
+                        value === 'dark' && "text-blue-500 hover:-rotate-12", 
+                        value === 'system' && "text-gray-500 hover:scale-110",
+                        appearance === value && "scale-110"
+                    )} 
+                    style={{
+                        filter: appearance === value 
+                            ? value === 'light' 
+                                ? 'drop-shadow(0 0 4px rgba(251, 191, 36, 0.4))'
+                                : value === 'dark'
+                                ? 'drop-shadow(0 0 4px rgba(59, 130, 246, 0.4))'
+                                : 'drop-shadow(0 0 4px rgba(107, 114, 128, 0.4))'
+                            : 'none'
+                    }} />
                     <span className="ml-1.5 text-sm">{label}</span>
                 </button>
             ))}
