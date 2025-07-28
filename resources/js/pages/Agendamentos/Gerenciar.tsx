@@ -81,6 +81,8 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
     const [espacoFilter, setEspacoFilter] = useState('all');
     const [dataInicioFilter, setDataInicioFilter] = useState('');
     const [dataFimFilter, setDataFimFilter] = useState('');
+    const [aprovadoHojeFilter, setAprovadoHojeFilter] = useState(false);
+    const [rejeitadoHojeFilter, setRejeitadoHojeFilter] = useState(false);
     
     // Estado para paginação client-side
     const [currentPage, setCurrentPage] = useState(1);
@@ -247,6 +249,30 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
             });
         }
 
+        // Aplicar filtro de aprovados hoje se especificado
+        if (aprovadoHojeFilter) {
+            filtered = filtered.filter(agendamento => {
+                if (agendamento.status === 'aprovado' && agendamento.aprovado_em) {
+                    const dataAprovacao = agendamento.aprovado_em.split('T')[0]; // YYYY-MM-DD
+                    const hoje = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+                    return dataAprovacao === hoje;
+                }
+                return false;
+            });
+        }
+
+        // Aplicar filtro de rejeitados hoje se especificado
+        if (rejeitadoHojeFilter) {
+            filtered = filtered.filter(agendamento => {
+                if (agendamento.status === 'rejeitado' && agendamento.aprovado_em) {
+                    const dataRejeicao = agendamento.aprovado_em.split('T')[0]; // YYYY-MM-DD
+                    const hoje = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+                    return dataRejeicao === hoje;
+                }
+                return false;
+            });
+        }
+
         // Aplicar ordenação por nome se ativa
         if (nomeSortOrder !== 'none') {
             filtered.sort((a, b) => {
@@ -360,7 +386,7 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
     // Resetar página atual quando filtros mudarem
     useEffect(() => {
         setCurrentPage(1);
-    }, [nomeAgendamentoFilter, solicitanteFilter, statusFilter, espacoFilter, dataInicioFilter, dataFimFilter, nomeSortOrder, solicitanteSortOrder, dataInicioSortOrder, dataFimSortOrder]);
+    }, [nomeAgendamentoFilter, solicitanteFilter, statusFilter, espacoFilter, dataInicioFilter, dataFimFilter, aprovadoHojeFilter, rejeitadoHojeFilter, nomeSortOrder, solicitanteSortOrder, dataInicioSortOrder, dataFimSortOrder]);
 
     // Calcular paginação client-side
     const totalItems = filteredAndSortedAgendamentos.length;
@@ -536,6 +562,8 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                             setEspacoFilter('all');
                             setDataInicioFilter('');
                             setDataFimFilter('');
+                            setAprovadoHojeFilter(false);
+                            setRejeitadoHojeFilter(false);
                             setNomeSortOrder('none');
                             setSolicitanteSortOrder('none');
                             setDataInicioSortOrder('none');
@@ -566,10 +594,12 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                             // Limpar outros filtros e aplicar filtro de aprovados hoje
                             setNomeAgendamentoFilter('');
                             setSolicitanteFilter('');
-                            setStatusFilter('aprovado');
+                            setStatusFilter('all'); // Não filtrar por status, deixar o filtro específico fazer isso
                             setEspacoFilter('all');
                             setDataInicioFilter('');
                             setDataFimFilter('');
+                            setAprovadoHojeFilter(true);
+                            setRejeitadoHojeFilter(false);
                             setNomeSortOrder('none');
                             setSolicitanteSortOrder('none');
                             setDataInicioSortOrder('none');
@@ -594,10 +624,12 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                             // Limpar outros filtros e aplicar filtro de rejeitados hoje
                             setNomeAgendamentoFilter('');
                             setSolicitanteFilter('');
-                            setStatusFilter('rejeitado');
+                            setStatusFilter('all'); // Não filtrar por status, deixar o filtro específico fazer isso
                             setEspacoFilter('all');
                             setDataInicioFilter('');
                             setDataFimFilter('');
+                            setAprovadoHojeFilter(false);
+                            setRejeitadoHojeFilter(true);
                             setNomeSortOrder('none');
                             setSolicitanteSortOrder('none');
                             setDataInicioSortOrder('none');
@@ -626,6 +658,8 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                             setEspacoFilter('all');
                             setDataInicioFilter('');
                             setDataFimFilter('');
+                            setAprovadoHojeFilter(false);
+                            setRejeitadoHojeFilter(false);
                             setNomeSortOrder('none');
                             setSolicitanteSortOrder('none');
                             setDataInicioSortOrder('none');
@@ -783,7 +817,7 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
 
                             {/* Botão Limpar Filtros - só aparece quando há filtros ativos */}
                             {(nomeAgendamentoFilter || solicitanteFilter || espacoFilter !== 'all' || 
-                              statusFilter !== 'pendente' || dataInicioFilter || dataFimFilter || 
+                              statusFilter !== 'pendente' || dataInicioFilter || dataFimFilter || aprovadoHojeFilter || rejeitadoHojeFilter || 
                               nomeSortOrder !== 'none' || solicitanteSortOrder !== 'none' || 
                               dataInicioSortOrder !== 'none' || dataFimSortOrder !== 'none') && (
                                 <div className="flex flex-col">
@@ -799,6 +833,8 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                                             setEspacoFilter('all');
                                             setDataInicioFilter('');
                                             setDataFimFilter('');
+                            setAprovadoHojeFilter(false);
+                            setRejeitadoHojeFilter(false);
                                             setNomeSortOrder('none');
                                             setSolicitanteSortOrder('none');
                                             setDataInicioSortOrder('none');
