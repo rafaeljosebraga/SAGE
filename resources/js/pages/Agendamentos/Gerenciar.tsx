@@ -82,6 +82,10 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
     const [dataInicioFilter, setDataInicioFilter] = useState('');
     const [dataFimFilter, setDataFimFilter] = useState('');
     
+    // Estado para paginação client-side
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 15;
+    
     // Estados para ordenação
     const [nomeSortOrder, setNomeSortOrder] = useState<'asc' | 'desc' | 'none'>('none');
     const [solicitanteSortOrder, setSolicitanteSortOrder] = useState<'asc' | 'desc' | 'none'>('none');
@@ -215,7 +219,7 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
         }
 
         // Aplicar filtro de status se especificado
-        if (statusFilter !== 'all') {
+        if (statusFilter && statusFilter !== 'all') {
             filtered = filtered.filter(agendamento => 
                 agendamento.status === statusFilter
             );
@@ -352,6 +356,53 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
 
         return filtered;
     })();
+
+    // Resetar página atual quando filtros mudarem
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [nomeAgendamentoFilter, solicitanteFilter, statusFilter, espacoFilter, dataInicioFilter, dataFimFilter, nomeSortOrder, solicitanteSortOrder, dataInicioSortOrder, dataFimSortOrder]);
+
+    // Calcular paginação client-side
+    const totalItems = filteredAndSortedAgendamentos.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentItems = filteredAndSortedAgendamentos.slice(startIndex, endIndex);
+
+    // Gerar links de paginação
+    const generatePaginationLinks = () => {
+        const links = [];
+        
+        // Botão "Anterior"
+        links.push({
+            label: '« Anterior',
+            active: false,
+            disabled: currentPage === 1,
+            page: currentPage - 1
+        });
+
+        // Páginas numeradas
+        for (let i = 1; i <= totalPages; i++) {
+            links.push({
+                label: i.toString(),
+                active: i === currentPage,
+                disabled: false,
+                page: i
+            });
+        }
+
+        // Botão "Próximo"
+        links.push({
+            label: 'Próximo »',
+            active: false,
+            disabled: currentPage === totalPages,
+            page: currentPage + 1
+        });
+
+        return links;
+    };
+
+    const paginationLinks = generatePaginationLinks();
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Gerenciar Agendamentos', href: '/gerenciar-agendamentos' }
@@ -732,7 +783,7 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
 
                             {/* Botão Limpar Filtros - só aparece quando há filtros ativos */}
                             {(nomeAgendamentoFilter || solicitanteFilter || espacoFilter !== 'all' || 
-                              statusFilter !== 'all' || dataInicioFilter || dataFimFilter || 
+                              statusFilter !== 'pendente' || dataInicioFilter || dataFimFilter || 
                               nomeSortOrder !== 'none' || solicitanteSortOrder !== 'none' || 
                               dataInicioSortOrder !== 'none' || dataFimSortOrder !== 'none') && (
                                 <div className="flex flex-col">
@@ -766,7 +817,7 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
 
                 {/* Lista de Agendamentos */}
                 <div className="space-y-4">
-                    {filteredAndSortedAgendamentos.length === 0 ? (
+                    {currentItems.length === 0 ? (
                         <Card>
                             <CardContent className="p-6 text-center">
                                 <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -774,7 +825,7 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                             </CardContent>
                         </Card>
                     ) : (
-                        filteredAndSortedAgendamentos.map((agendamento) => {
+                        currentItems.map((agendamento) => {
                             const isRecorrente = agendamento.grupo_recorrencia;
                             const infoGrupo = agendamento.info_grupo;
                             
@@ -909,29 +960,19 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                     )}
                 </div>
 
-                {/* Paginação */}
-                {agendamentos.links && agendamentos.links.length > 3 && (
+                {/* Paginação Client-side */}
+                {totalPages > 1 && (
                     <div className="flex justify-center">
                         <div className="flex gap-2">
-                            {agendamentos.links.map((link: any, index: number) => (
+                            {paginationLinks.map((link, index) => (
                                 <Button
                                     key={index}
                                     variant={link.active ? "default" : "outline"}
                                     size="sm"
-                                    disabled={!link.url}
+                                    disabled={link.disabled}
                                     onClick={() => {
-                                        if (link.url) {
-                                            // Extrair apenas o número da página da URL
-                                            const url = new URL(link.url, window.location.origin);
-                                            const page = url.searchParams.get('page');
-                                            
-                                            // Manter todos os filtros atuais e adicionar apenas a página
-                                            const currentFilters = { ...filters };
-                                            if (page) {
-                                                currentFilters.page = page;
-                                            }
-                                            
-                                            router.get('/gerenciar-agendamentos', currentFilters);
+                                        if (!link.disabled) {
+                                            setCurrentPage(link.page);
                                         }
                                     }}
                                     dangerouslySetInnerHTML={{ __html: link.label }}

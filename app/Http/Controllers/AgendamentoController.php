@@ -427,9 +427,6 @@ class AgendamentoController extends Controller
             if ($request->status !== 'all') {
                 $query->where('status', $request->status);
             }
-        } else {
-            // Filtro padrão: mostrar apenas pendentes quando nenhum status é especificado
-            $query->where('status', 'pendente');
         }
 
         if ($request->filled('data_inicio')) {
@@ -469,11 +466,22 @@ class AgendamentoController extends Controller
                   ->whereYear('created_at', now()->year);
         }
 
+        // Para garantir que todos os agendamentos sejam carregados, usar get() em vez de paginate()
+        // quando não há filtros específicos ou quando o frontend precisa de todos os dados
         $agendamentos = $query->orderBy('created_at', 'desc')
-                             ->paginate(15);
+                             ->get();
+
+        // Simular estrutura de paginação para compatibilidade com o frontend
+        $paginatedAgendamentos = new \Illuminate\Pagination\LengthAwarePaginator(
+            $agendamentos,
+            $agendamentos->count(),
+            $agendamentos->count(), // Todos os itens em uma página
+            1,
+            ['path' => request()->url()]
+        );
 
         // Adicionar informações do grupo para cada agendamento
-        $agendamentos->getCollection()->transform(function ($agendamento) {
+        $paginatedAgendamentos->getCollection()->transform(function ($agendamento) {
             $agendamento->info_grupo = $agendamento->info_grupo;
             return $agendamento;
         });
@@ -484,15 +492,19 @@ class AgendamentoController extends Controller
                          ->get(['id', 'nome']);
 
         // Estatísticas - contar apenas representantes de grupo para evitar duplicação
+        $hoje = now()->format('Y-m-d');
+        
         $estatisticas = [
             'pendentes' => Agendamento::representantesDeGrupo()->where('status', 'pendente')->count(),
             'aprovados_hoje' => Agendamento::representantesDeGrupo()
                                           ->where('status', 'aprovado')
-                                          ->whereDate('aprovado_em', today())
+                                          ->whereNotNull('aprovado_em')
+                                          ->whereRaw('DATE(aprovado_em) = ?', [$hoje])
                                           ->count(),
             'rejeitados_hoje' => Agendamento::representantesDeGrupo()
                                            ->where('status', 'rejeitado')
-                                           ->whereDate('aprovado_em', today())
+                                           ->whereNotNull('aprovado_em')
+                                           ->whereRaw('DATE(aprovado_em) = ?', [$hoje])
                                            ->count(),
             'total_mes' => Agendamento::representantesDeGrupo()
                                      ->whereMonth('created_at', now()->month)
@@ -501,7 +513,7 @@ class AgendamentoController extends Controller
         ];
 
         return Inertia::render('Agendamentos/Gerenciar', [
-            'agendamentos' => $agendamentos,
+            'agendamentos' => $paginatedAgendamentos,
             'espacos' => $espacos,
             'estatisticas' => $estatisticas,
             'filters' => $request->only(['espaco_id', 'status', 'data_inicio', 'data_fim', 'solicitante', 'nome_agendamento']),
