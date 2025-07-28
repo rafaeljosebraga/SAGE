@@ -57,16 +57,93 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
 
     // Estado inicial simples sem dependência da URL
     const getInitialState = () => {
-    // Determinar visualização inicial baseada apenas nos filtros do servidor
-    const initialView: ViewMode = filters.view === 'list' ? 'list' : 'day';
+    // Detectar se é um refresh da página (F5) - usando múltiplas abordagens para compatibilidade
+    const isPageRefresh = (() => {
+    // Método 1: Performance Navigation API (mais moderno)
+    if (performance.navigation && performance.navigation.type === 1) {
+    return true;
+    }
     
-    // Data inicial sempre hoje
-    const initialDate = new Date();
+    // Método 2: Performance Navigation (legado)
+    if (performance.navigation && performance.navigation.type === performance.navigation.TYPE_RELOAD) {
+    return true;
+    }
+    
+    // Método 3: Verificar se há um timestamp muito recente no sessionStorage
+    const pageLoadTime = sessionStorage.getItem('page-load-time');
+    const currentTime = Date.now();
+    
+    if (!pageLoadTime) {
+    sessionStorage.setItem('page-load-time', currentTime.toString());
+    return false;
+    }
+    
+    const timeDiff = currentTime - parseInt(pageLoadTime);
+    
+    // Se a diferença for muito pequena (menos de 100ms), provavelmente é um refresh
+    if (timeDiff < 100) {
+    return true;
+    }
+    
+    // Atualizar o timestamp
+    sessionStorage.setItem('page-load-time', currentTime.toString());
+    return false;
+    })();
+    
+    // Se for refresh, limpar localStorage e usar valores padrão
+    if (isPageRefresh) {
+    localStorage.removeItem('agendamentos-view-state');
+    console.log('Refresh detectado - localStorage limpo');
+    }
+    
+    // Tentar recuperar o estado anterior do localStorage
+    const savedState = localStorage.getItem('agendamentos-view-state');
+    let savedViewState = null;
+    
+    if (savedState) {
+    try {
+    savedViewState = JSON.parse(savedState);
+    } catch (error) {
+    console.warn('Erro ao recuperar estado salvo:', error);
+    }
+    }
+    
+    // Determinar visualização inicial
+    let initialView: ViewMode = 'day'; // padr��o
+    if (filters.view === 'list') {
+    initialView = 'list';
+    } else if (savedViewState?.viewMode) {
+    initialView = savedViewState.viewMode;
+    }
+    
+    // Determinar data inicial - cada modo preserva sua própria data
+    let initialDate = new Date(); // Sempre hoje por padrão
+    if (savedViewState?.viewMode && savedViewState?.dates) {
+    const savedModeDate = savedViewState.dates[savedViewState.viewMode];
+    if (savedModeDate) {
+    try {
+    const savedDate = new Date(savedModeDate);
+    if (!isNaN(savedDate.getTime())) {
+    initialDate = savedDate;
+    }
+    } catch (error) {
+    console.warn(`Data salva inválida para ${savedViewState.viewMode}:`, error);
+    }
+    }
+    }
     
     // Espaços iniciais - todos selecionados por padrão, ou filtro específico se houver
     let initialEspacos = espacos.map(e => e.id);
     if (filters.espaco_id) {
     initialEspacos = [parseInt(filters.espaco_id)];
+    } else if (savedViewState?.selectedEspacos && Array.isArray(savedViewState.selectedEspacos)) {
+    // Verificar se os espaços salvos ainda existem
+    const validEspacos = savedViewState.selectedEspacos.filter((id: number) => 
+    espacos.some(e => e.id === id)
+    );
+    if (validEspacos.length > 0) {
+    initialEspacos = validEspacos;
+    }
     }
     
     return {
@@ -182,6 +259,40 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     useEffect(() => {
         setNomeFilter(filters.nome || '');
     }, [filters.nome]);
+
+    // Salvar estado no localStorage - cada modo preserva sua própria data
+    useEffect(() => {
+        // Recuperar estado atual para preservar datas de outros modos
+        const currentState = localStorage.getItem('agendamentos-view-state');
+        let existingDates = {};
+        
+        if (currentState) {
+            try {
+                const parsed = JSON.parse(currentState);
+                existingDates = parsed.dates || {};
+            } catch (error) {
+                console.warn('Erro ao recuperar estado atual:', error);
+            }
+        }
+        
+        // Atualizar apenas a data do modo atual
+        const updatedDates = {
+            ...existingDates,
+            [viewMode]: currentDate.toISOString()
+        };
+        
+        const stateToSave = {
+            viewMode,
+            selectedEspacos,
+            dates: updatedDates
+        };
+        
+        try {
+            localStorage.setItem('agendamentos-view-state', JSON.stringify(stateToSave));
+        } catch (error) {
+            console.warn('Erro ao salvar estado:', error);
+        }
+    }, [viewMode, currentDate, selectedEspacos]);
 
     // Filtrar e ordenar espaços
     const filteredAndSortedEspacos = (() => {
