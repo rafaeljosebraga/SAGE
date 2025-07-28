@@ -66,7 +66,7 @@ export default function AtribuirPermissoesIndex({ users, espacos }: AtribuirPerm
             <Head title="Atribuir Permissões" />
             <div className="space-y-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-foreground">Atribuir Permissões</h1>
+                    <h1 className="text-3xl font-bold text-foreground">&nbsp;&nbsp;&nbsp;Atribuir Permissões</h1>
                     <FilterableTable
                         data={users}
                         columns={columns}

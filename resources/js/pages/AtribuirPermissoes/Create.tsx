@@ -429,7 +429,7 @@ const handleSubmit = (e: React.FormEvent) => {
                                 Voltar
                             </Link>
                             </Button>
-                        <h1 className="text-3xl font-bold text-foreground mt-2">Atribuir Permissões</h1>
+                        <h1 className="text-3xl font-bold text-foreground mt-2">&nbsp;&nbsp;&nbsp;Atribuir Permissões</h1>
                     </div>
                 </div>
 
