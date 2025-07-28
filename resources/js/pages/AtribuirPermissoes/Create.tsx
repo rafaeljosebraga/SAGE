@@ -27,8 +27,7 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
     const [selectedFoto, setSelectedFoto] = useState<Foto | null>(null);
     const [isFotoModalOpen, setIsFotoModalOpen] = useState(false);
     const [scrollToResponsaveis, setScrollToResponsaveis] = useState(false);
-
-    const {setData, processing, errors } = useForm({
+const {setData, processing, errors } = useForm({
         user_id: usID,
         espaco_ids: espacosAtribuidos,
     });
@@ -315,6 +314,7 @@ const handleSubmit = (e: React.FormEvent) => {
                 if (responsaveis.length === 1) {
                     return (
                         <button
+                            type="button"
                             onClick={() => handleViewDetailsFromResponsavel(espaco)}
                             className="text-left text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:bg-gradient-to-r dark:hover:from-blue-900/20 dark:hover:to-indigo-900/20 px-3 py-1.5 rounded-lg transition-all duration-300 hover:shadow-md hover:scale-[1.02] font-medium"
                         >
@@ -325,6 +325,7 @@ const handleSubmit = (e: React.FormEvent) => {
 
                 return (
                     <button
+                        type="button"
                         onClick={() => handleViewDetailsFromResponsavel(espaco)}
                         className="text-left text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:bg-gradient-to-r dark:hover:from-blue-900/20 dark:hover:to-indigo-900/20 px-3 py-1.5 rounded-lg transition-all duration-300 hover:shadow-md hover:scale-[1.02] font-medium"
                     >
@@ -405,7 +406,7 @@ const handleSubmit = (e: React.FormEvent) => {
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <Button asChild variant="ghost" className="pl-0">
+                        <Button asChild variant="ghost" className="pl-0" type="button">
                             <Link href={route('espaco-users.index')}>
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Voltar
