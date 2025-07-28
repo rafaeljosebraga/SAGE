@@ -48,13 +48,8 @@ class AgendamentoController extends Controller
                                  ->orderBy('hora_inicio', 'desc')
                                  ->paginate(15);
         } else {
-            // Para visualizações de calendário, buscar todos os agendamentos dos próximos 3 meses
-            $dataInicio = now()->startOfMonth();
-            $dataFim = now()->addMonths(3)->endOfMonth();
-            
-            $agendamentos = $query->whereDate('data_inicio', '>=', $dataInicio)
-                                 ->whereDate('data_inicio', '<=', $dataFim)
-                                 ->orderBy('data_inicio')
+            // Para visualizações de calendário, buscar todos os agendamentos sem limitação de tempo
+            $agendamentos = $query->orderBy('data_inicio')
                                  ->orderBy('hora_inicio')
                                  ->get();
         }
@@ -629,13 +624,8 @@ class AgendamentoController extends Controller
 
         // Todos os usuários podem ver todos os agendamentos no calendário
 
-        // Buscar agendamentos dos próximos 3 meses para o calendário
-        $dataInicio = now()->startOfMonth();
-        $dataFim = now()->addMonths(3)->endOfMonth();
-        
-        $agendamentos = $query->whereDate('data_inicio', '>=', $dataInicio)
-                             ->whereDate('data_inicio', '<=', $dataFim)
-                             ->orderBy('data_inicio')
+        // Buscar todos os agendamentos sem limitação de tempo para o calendário
+        $agendamentos = $query->orderBy('data_inicio')
                              ->orderBy('hora_inicio')
                              ->get();
 
