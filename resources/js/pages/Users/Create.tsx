@@ -21,6 +21,7 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, UserPlus } from 'lucide-react';
 import { FormEvent } from 'react';
+import { FormEventHandler, useState, useEffect, useRef } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -43,6 +44,7 @@ interface Props {
 
 export default function Create({ perfilAcesso }: Props) {
     const { toast } = useToast();
+    const [formAlterado, setFormAlterado] = useState(false);
     useToastDismissOnClick(); // Hook para dismissar toast ao clicar em botões
     const { data, setData, post, processing, errors, reset, clearErrors } = useForm({
         name: '',
@@ -51,6 +53,25 @@ export default function Create({ perfilAcesso }: Props) {
         password: '',
         password_confirmation: '',
     });
+
+    useEffect(() => {
+        const inicial = {
+            name: '',
+            email: '',
+            perfil_acesso: '',
+            password: '',
+            password_confirmation: '',
+        };
+
+        const preenchido =
+            data.name.trim() !== inicial.name ||
+            data.email.trim() !== inicial.email ||
+            data.perfil_acesso !== inicial.perfil_acesso ||
+            data.password !== inicial.password ||
+            data.password_confirmation !== inicial.password_confirmation;
+
+        setFormAlterado(preenchido);
+        }, [data]);
 
     const submit = (e: FormEvent) => {
         e.preventDefault();
@@ -81,8 +102,9 @@ export default function Create({ perfilAcesso }: Props) {
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center gap-4">
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
+                    {formAlterado ? (
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
                             <Button
                                 variant="outline"
                                 type="button"
@@ -91,27 +113,48 @@ export default function Create({ perfilAcesso }: Props) {
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Voltar
                             </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Tem certeza que deseja voltar?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    As informações preenchidas serão perdidas.
+                                As informações preenchidas serão perdidas.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel>Não</AlertDialogCancel>
                                 <AlertDialogAction
-                                    onClick={() => {
-                                        window.location.href = '/usuarios';
-                                    }}
-                                    className="bg-red-600 hover:bg-red-700"
+                                onClick={() => {
+                                    window.location.href = '/usuarios';
+                                }}
+                                className="bg-red-600 hover:bg-red-700"
                                 >
-                                    Sim, voltar
+                                Sim, voltar
                                 </AlertDialogAction>
                             </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                        ) : (
+                        <Button
+                            variant="outline"
+                            type="button"
+                            className="
+                                ml-4
+                                bg-white dark:bg-black
+                                text-[#EF7D4C] dark:text-[#EF7D4C]
+                                border border-[#EF7D4C]
+                                hover:bg-[#EF7D4C] hover:text-white
+                                dark:hover:bg-[#EF7D4C] dark:hover:text-white
+                                transition-colors
+                            "
+                            onClick={() => {
+                                window.location.href = '/usuarios';
+                            }}
+                            >
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Voltar
+                            </Button>
+                        )}
                 </div>
 
                 <Card className="max-w-2xl">

@@ -68,6 +68,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
     const [arquivosOriginais, setArquivosOriginais] = useState<File[]>([]);
     const [deveScrollParaErro, setDeveScrollParaErro] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [formAlterado, setFormAlterado] = useState(false);
     const submitTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const { data, setData, post, processing, errors, reset, clearErrors } = useForm<Required<EspacoFormData>>({
@@ -81,6 +82,34 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
         fotos: [],
         descricoes: [],
     });
+
+    useEffect(() => {
+        const inicial = {
+            nome: '',
+            descricao: '',
+            capacidade: '',
+            localizacao_id: '',
+            status: 'ativo',
+            disponivel_reserva: true,
+            recursos: [],
+            fotos: [],
+            descricoes: [],
+        };
+
+        const preenchido =
+            data.nome.trim() !== inicial.nome ||
+            data.descricao.trim() !== inicial.descricao ||
+            data.capacidade.trim() !== inicial.capacidade ||
+            data.localizacao_id !== inicial.localizacao_id ||
+            data.status !== inicial.status ||
+            data.disponivel_reserva !== inicial.disponivel_reserva ||
+            data.recursos.length !== 0 ||
+            arquivosOriginais.length !== 0 ||
+            fotos.some(foto => (foto.descricao?.trim() || '') !== '');
+
+        setFormAlterado(preenchido);
+        }, [data, arquivosOriginais, fotos]);
+
 
     // Sincronizar fotos com o formulário sempre que mudarem
     useEffect(() => {
@@ -293,8 +322,9 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
 
             <div className="space-y-6">
                 <div className="flex items-center gap-4">
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
+                    {formAlterado ? (
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
                             <Button
                                 variant="outline"
                                 type="button"
@@ -303,27 +333,48 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Voltar
                             </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Tem certeza que deseja voltar?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    As informações preenchidas serão perdidas.
+                                As informações preenchidas serão perdidas.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel>Não</AlertDialogCancel>
                                 <AlertDialogAction
-                                    onClick={() => {
-                                        window.location.href = '/espacos';
-                                    }}
-                                    className="bg-red-600 hover:bg-red-700"
+                                onClick={() => {
+                                    window.location.href = '/espacos';
+                                }}
+                                className="bg-red-600 hover:bg-red-700"
                                 >
-                                    Sim, voltar
+                                Sim, voltar
                                 </AlertDialogAction>
                             </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                        ) : (
+                        <Button
+                            variant="outline"
+                            type="button"
+                            className="
+                                ml-4
+                                bg-white dark:bg-black
+                                text-[#EF7D4C] dark:text-[#EF7D4C]
+                                border border-[#EF7D4C]
+                                hover:bg-[#EF7D4C] hover:text-white
+                                dark:hover:bg-[#EF7D4C] dark:hover:text-white
+                                transition-colors
+                            "
+                            onClick={() => {
+                                window.location.href = '/espacos';
+                            }}
+                            >
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Voltar
+                            </Button>
+                        )}
                     <h1 className="text-3xl font-bold text-black dark:text-white">Criar espaço</h1>
                 </div>
 

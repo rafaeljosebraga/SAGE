@@ -28,7 +28,7 @@ import { useToastDismissOnClick } from '@/hooks/use-toast-dismiss-on-click';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Save } from 'lucide-react';
 import { type User, type BreadcrumbItem } from '@/types';
-import { FormEventHandler, ChangeEvent } from 'react';
+import { FormEventHandler, useState, useEffect, useRef, ChangeEvent } from 'react';
 
 interface RecursosCreateProps {
     auth: {
@@ -38,6 +38,7 @@ interface RecursosCreateProps {
 
 export default function RecursosCreate({ auth }: RecursosCreateProps) {
     const { toast } = useToast();
+    const [formAlterado, setFormAlterado] = useState(false);
     useToastDismissOnClick(); // Hook para dismissar toast ao clicar em botões
     const { data, setData, reset, post, processing, errors, clearErrors } = useForm({
         nome: '',
@@ -48,6 +49,29 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
         modelo: '',
         observacoes: '',
     });
+
+    useEffect(() => {
+        const inicial = {
+            nome: '',
+            descricao: '',
+            status: 'disponivel' as 'disponivel' | 'manutencao' | 'indisponivel',
+            fixo: true,
+            marca: '',
+            modelo: '',
+            observacoes: '',
+        };
+
+        const preenchido =
+            data.nome.trim() !== inicial.nome ||
+            data.descricao.trim() !== inicial.descricao ||
+            data.status !== inicial.status ||
+            data.fixo !== inicial.fixo ||
+            data.marca.trim() !== inicial.marca ||
+            data.modelo.trim() !== inicial.modelo ||
+            data.observacoes.trim() !== inicial.observacoes;
+
+        setFormAlterado(preenchido);
+        }, [data]);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -83,8 +107,9 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
 
             <div className="space-y-6">
                 <div className="flex items-center gap-4">
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
+                    {formAlterado ? (
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
                             <Button
                                 variant="outline"
                                 type="button"
@@ -93,27 +118,48 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Voltar
                             </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Tem certeza que deseja voltar?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    As informações preenchidas serão perdidas.
+                                As informações preenchidas serão perdidas.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel>Não</AlertDialogCancel>
                                 <AlertDialogAction
-                                    onClick={() => {
-                                        window.location.href = '/recursos';
-                                    }}
-                                    className="bg-red-600 hover:bg-red-700"
+                                onClick={() => {
+                                    window.location.href = '/recursos';
+                                }}
+                                className="bg-red-600 hover:bg-red-700"
                                 >
-                                    Sim, voltar
+                                Sim, voltar
                                 </AlertDialogAction>
                             </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                        ) : (
+                        <Button
+                            variant="outline"
+                            type="button"
+                            className="
+                                ml-4
+                                bg-white dark:bg-black
+                                text-[#EF7D4C] dark:text-[#EF7D4C]
+                                border border-[#EF7D4C]
+                                hover:bg-[#EF7D4C] hover:text-white
+                                dark:hover:bg-[#EF7D4C] dark:hover:text-white
+                                transition-colors
+                            "
+                            onClick={() => {
+                                window.location.href = '/recursos';
+                            }}
+                            >
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Voltar
+                            </Button>
+                        )}
                      <h1 className="text-3xl font-bold text-black dark:text-white">Novo Recurso</h1>
                 </div>
 
