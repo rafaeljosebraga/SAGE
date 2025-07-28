@@ -93,7 +93,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     // Se for refresh, limpar localStorage e usar valores padrão
     if (isPageRefresh) {
     localStorage.removeItem('agendamentos-view-state');
-    console.log('Refresh detectado - localStorage limpo');
+    // console.log('Refresh detectado - localStorage limpo');
     }
     
     // Tentar recuperar o estado anterior do localStorage
@@ -160,6 +160,10 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     const [searchEspacos, setSearchEspacos] = useState("");
     const [searchAgendamentos, setSearchAgendamentos] = useState("");
     const [nomeFilter, setNomeFilter] = useState(filters.nome || '');
+    const [dataInicioFilter, setDataInicioFilter] = useState('');
+    const [dataFimFilter, setDataFimFilter] = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [espacoFilter, setEspacoFilter] = useState('all');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | 'none'>('none');
     const [dateSortOrder, setDateSortOrder] = useState<{
         inicio: 'asc' | 'desc' | 'none';
@@ -236,29 +240,29 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         }
     }, [filters.view]);
 
-    // Debounce para o filtro de nome
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            if (nomeFilter !== (filters.nome || '')) {
-                router.get('/agendamentos', { 
-                    ...filters, 
-                    nome: nomeFilter || undefined, 
-                    view: 'list' 
-                }, {
-                    preserveState: true,
-                    preserveScroll: true,
-                    replace: true
-                });
-            }
-        }, 500);
+    // Remover debounce - agora os filtros são apenas locais
+    // useEffect(() => {
+    //     const timer = setTimeout(() => {
+    //         if (nomeFilter !== (filters.nome || '')) {
+    //             router.get('/agendamentos', { 
+    //                 ...filters, 
+    //                 nome: nomeFilter || undefined, 
+    //                 view: 'list' 
+    //             }, {
+    //                 preserveState: true,
+    //                 preserveScroll: true,
+    //                 replace: true
+    //             });
+    //         }
+    //     }, 500);
 
-        return () => clearTimeout(timer);
-    }, [nomeFilter]);
+    //     return () => clearTimeout(timer);
+    // }, [nomeFilter]);
 
-    // Atualizar estado local quando filters.nome mudar
-    useEffect(() => {
-        setNomeFilter(filters.nome || '');
-    }, [filters.nome]);
+    // // Atualizar estado local quando filters.nome mudar
+    // useEffect(() => {
+    //     setNomeFilter(filters.nome || '');
+    // }, [filters.nome]);
 
     // Salvar estado no localStorage - cada modo preserva sua própria data
     useEffect(() => {
@@ -436,18 +440,41 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     const filteredAndSortedAgendamentos = (() => {
         let filtered = [...agendamentosData];
 
+        // Aplicar filtro de nome se especificado
+        if (nomeFilter.trim()) {
+            filtered = filtered.filter(agendamento => 
+                agendamento.titulo.toLowerCase().includes(nomeFilter.toLowerCase()) ||
+                agendamento.justificativa?.toLowerCase().includes(nomeFilter.toLowerCase()) ||
+                agendamento.user?.name.toLowerCase().includes(nomeFilter.toLowerCase())
+            );
+        }
+
+        // Aplicar filtro de espaço se especificado
+        if (espacoFilter !== 'all') {
+            filtered = filtered.filter(agendamento => 
+                agendamento.espaco_id.toString() === espacoFilter
+            );
+        }
+
+        // Aplicar filtro de status se especificado
+        if (statusFilter !== 'all') {
+            filtered = filtered.filter(agendamento => 
+                agendamento.status === statusFilter
+            );
+        }
+
         // Aplicar filtros de data se especificados
-        if (filters.data_inicio) {
+        if (dataInicioFilter) {
             filtered = filtered.filter(agendamento => {
                 const agendamentoDataInicio = agendamento.data_inicio.split('T')[0]; // YYYY-MM-DD
-                return agendamentoDataInicio >= filters.data_inicio!;
+                return agendamentoDataInicio >= dataInicioFilter;
             });
         }
 
-        if (filters.data_fim) {
+        if (dataFimFilter) {
             filtered = filtered.filter(agendamento => {
                 const agendamentoDataFim = agendamento.data_fim.split('T')[0]; // YYYY-MM-DD
-                return agendamentoDataFim <= filters.data_fim!;
+                return agendamentoDataFim <= dataFimFilter;
             });
         }
 
@@ -1328,11 +1355,8 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                         <div className="min-w-[140px]">
                             <Label htmlFor="espaco">Espaço</Label>
                             <Select
-                                value={filters.espaco_id || 'all'}
-                                onValueChange={(value) => {
-                                    const espacoId = value === 'all' ? undefined : value;
-                                    router.get('/agendamentos', { ...filters, espaco_id: espacoId, view: 'list' });
-                                }}
+                                value={espacoFilter}
+                                onValueChange={(value) => setEspacoFilter(value)}
                             >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Todos os espaços" />
@@ -1351,11 +1375,8 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                         <div className="min-w-[120px]">
                             <Label htmlFor="status">Status</Label>
                             <Select
-                                value={filters.status || 'all'}
-                                onValueChange={(value) => {
-                                    const status = value === 'all' ? undefined : value;
-                                    router.get('/agendamentos', { ...filters, status, view: 'list' });
-                                }}
+                                value={statusFilter}
+                                onValueChange={(value) => setStatusFilter(value)}
                             >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Todos os status" />
@@ -1375,10 +1396,8 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                             <div className="relative">
                                 <Input
                                     type="date"
-                                    value={filters.data_inicio || ''}
-                                    onChange={(e) => {
-                                        router.get('/agendamentos', { ...filters, data_inicio: e.target.value || undefined, view: 'list' });
-                                    }}
+                                    value={dataInicioFilter}
+                                    onChange={(e) => setDataInicioFilter(e.target.value)}
                                     className="pr-8 text-sm"
                                 />
                                 <Button 
@@ -1398,10 +1417,8 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                             <div className="relative">
                                 <Input
                                     type="date"
-                                    value={filters.data_fim || ''}
-                                    onChange={(e) => {
-                                        router.get('/agendamentos', { ...filters, data_fim: e.target.value || undefined, view: 'list' });
-                                    }}
+                                    value={dataFimFilter}
+                                    onChange={(e) => setDataFimFilter(e.target.value)}
                                     className="pr-8 text-sm"
                                 />
                                 <Button 
@@ -1417,7 +1434,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                         </div>
 
                         {/* Botão Limpar Filtros - só aparece quando há filtros ativos */}
-                        {(filters.nome || filters.espaco_id || filters.status || filters.data_inicio || filters.data_fim || 
+                        {(nomeFilter || espacoFilter !== 'all' || (statusFilter !== 'all' && statusFilter !== 'all') || dataInicioFilter || dataFimFilter || 
                           nomeSortOrder !== 'none' || dateSortOrder.inicio !== 'none' || dateSortOrder.fim !== 'none') && (
                             <div className="flex flex-col">
                                 <Label className="mb-2 opacity-0">Ações</Label>
@@ -1427,11 +1444,12 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                     onClick={() => {
                                         // Limpar todos os filtros e ordenações
                                         setNomeFilter('');
+                                        setEspacoFilter('all');
+                                        setStatusFilter('all');
+                                        setDataInicioFilter('');
+                                        setDataFimFilter('');
                                         setNomeSortOrder('none');
                                         setDateSortOrder({ inicio: 'none', fim: 'none' });
-                                        
-                                        // Redirecionar para a página sem filtros
-                                        router.get('/agendamentos', { view: 'list' });
                                     }}
                                     className="h-10 w-10 p-0"
                                     title="Limpar filtros"
