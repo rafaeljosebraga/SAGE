@@ -174,7 +174,7 @@ export function FilterableTable({
                             {columns.map((column) => (
                                 <TableHead
                                     key={column.key}
-                                    className="relative text-gray-900 font-semibold">
+                                    className="relative text-gray-90 font-semibold">
                                     <div className="flex items-center gap-2">
                                         <span>{column.label}</span>
                                         {column.sortable !== false && (
