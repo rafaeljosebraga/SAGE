@@ -1107,6 +1107,13 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                     </div>
                 )}
 
+                {/* Contador de registros */}
+                <div className="flex justify-between items-center -mt-4">
+                    <p className="text-sm text-muted-foreground ml-2">
+                        &nbsp;Mostrando {totalItems} registros
+                    </p>
+                </div>
+
                 {/* Dialog de Rejeição */}
                 <Dialog open={rejectionDialog.open} onOpenChange={(open) => setRejectionDialog({ open, agendamento: null })}>
                     <DialogContent>

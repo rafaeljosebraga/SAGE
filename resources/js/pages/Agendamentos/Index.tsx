@@ -539,6 +539,9 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         return filtered;
     })();
     
+    // Calcular total de itens para exibição
+    const totalItems = filteredAndSortedAgendamentos.length;
+    
     // Filtrar agendamentos pelos espaços selecionados
     const filteredAgendamentos = agendamentosData.filter(agendamento => 
         selectedEspacos.includes(agendamento.espaco_id)
@@ -1677,6 +1680,13 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                         </Card>
                     ))
                 )}
+
+                {/* Contador de registros */}
+                <div className="flex justify-between items-center -mt-2">
+                    <p className="text-sm text-muted-foreground ml-2">
+                        &nbsp;Mostrando {totalItems} registros
+                    </p>
+                </div>
             </div>
         </div>
     );
