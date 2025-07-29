@@ -30,6 +30,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Save } from 'lucide-react';
 import { type User, type Localizacao, type Recurso, type BreadcrumbItem } from '@/types';
 import { FormEventHandler, useState, useEffect, useRef } from 'react';
+import { useUnsavedChanges } from '@/contexts/unsaved-changes-context';
 
 // Interface local para fotos (compatível com PhotoUpload)
 interface FotoLocal {
@@ -62,6 +63,7 @@ interface EspacosCreateProps {
 }
 
 export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosCreateProps) {
+    const { setHasUnsavedChanges } = useUnsavedChanges();
     const { toast } = useToast();
     useToastDismissOnClick(); // Hook para dismissar toast ao clicar em botões
     const [fotos, setFotos] = useState<FotoLocal[]>([]);
@@ -108,9 +110,9 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
             fotos.some(foto => (foto.descricao?.trim() || '') !== '');
 
         setFormAlterado(preenchido);
-        }, [data, arquivosOriginais, fotos]);
-
-
+        setHasUnsavedChanges(preenchido);
+        }, [data, arquivosOriginais, fotos]
+    );
     // Sincronizar fotos com o formulário sempre que mudarem
     useEffect(() => {
         setData('fotos', arquivosOriginais);
@@ -123,7 +125,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
             // Mapeamento de campos para painéis
             const mapeamentoCampoParaPainel = {
                 'nome': 'painel-informacoes-basicas',
-                'capacidade': 'painel-informacoes-basicas', 
+                'capacidade': 'painel-informacoes-basicas',
                 'descricao': 'painel-informacoes-basicas',
                 'localizacao_id': 'painel-configuracoes',
                 'status': 'painel-configuracoes',
@@ -133,35 +135,35 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
 
             // Ordem de prioridade dos campos para scroll
             const camposOrdem = ['nome', 'capacidade', 'descricao', 'localizacao_id', 'status', 'recursos', 'fotos'];
-            
+
             // Encontrar o primeiro campo com erro
             const primeiroErro = camposOrdem.find(campo => errors[campo as keyof typeof errors]);
-            
+
             if (primeiroErro) {
                 const painelId = mapeamentoCampoParaPainel[primeiroErro as keyof typeof mapeamentoCampoParaPainel];
                 const painel = document.getElementById(painelId);
-                
+
                 if (painel) {
                     // Verificar se o painel cabe inteiro na tela
                     const painelRect = painel.getBoundingClientRect();
                     const viewportHeight = window.innerHeight;
                     const painelHeight = painelRect.height;
-                    
+
                     // Se o painel cabe na tela, centralizar; senão, mostrar o topo
                     const scrollBehavior = painelHeight <= viewportHeight * 0.8 ? 'center' : 'start';
-                    
+
                     painel.scrollIntoView({
                         behavior: 'smooth',
                         block: scrollBehavior as ScrollLogicalPosition,
                         inline: 'nearest'
                     });
-                    
+
                     console.log(`Scroll para painel: ${painelId} (campo: ${primeiroErro})`);
                 } else {
                     console.log(`Painel não encontrado: ${painelId}`);
                 }
             }
-            
+
             // Resetar o flag após fazer o scroll
             setDeveScrollParaErro(false);
         }
@@ -176,19 +178,25 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
         };
     }, []);
 
+    // useEffect(() => {
+    // return () => {
+    //     setHasUnsavedChanges(false);
+    // };
+    // }, [setHasUnsavedChanges]);
+
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        
+
         // Prevenir duplo clique
         if (isSubmitting || processing) {
             return;
         }
-        
+
         setIsSubmitting(true);
-        
+
         // Ativar o flag para fazer scroll em caso de erro
         setDeveScrollParaErro(true);
-        
+
         post('/espacos', {
             forceFormData: true,
 
@@ -231,12 +239,12 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
 
     const handleSubmitClick = (e: React.MouseEvent) => {
         e.preventDefault();
-        
+
         // Prevenir duplo clique
         if (isSubmitting || processing) {
             return;
         }
-        
+
         // Simular submit do formulário
         const form = e.currentTarget.closest('form');
         if (form) {
@@ -288,13 +296,13 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
         } else {
             novosRecursos = data.recursos.filter(id => id !== recursoId);
         }
-        
+
         setData('recursos', novosRecursos);
         if (errors.recursos) {
             clearErrors('recursos');
         }
     };
-    
+
     const handleFotosChange = (novasFotos: FotoLocal[]) => {
         setFotos(novasFotos);
         // Limpar erro de fotos se houver pelo menos 1 foto
@@ -302,7 +310,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
             clearErrors('fotos');
         }
     };
-    
+
     const handleArquivosChange = (novosArquivos: File[]) => {
         setArquivosOriginais(novosArquivos);
         // Limpar erro de fotos se houver pelo menos 1 arquivo
@@ -446,7 +454,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                                         value={data.localizacao_id}
                                         onValueChange={handleLocalizacaoChange}
                                     >
-                                        <SelectTrigger 
+                                        <SelectTrigger
                                             id="localizacao_id"
                                             className={errors.localizacao_id ? 'border-red-500' : ''}
                                         >
@@ -471,7 +479,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                                         value={data.status}
                                         onValueChange={handleStatusChange}
                                     >
-                                        <SelectTrigger 
+                                        <SelectTrigger
                                             id="status"
                                             className={errors.status ? 'border-red-500' : ''}
                                         >
@@ -534,7 +542,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                     )}
 
                     {/* Seção de Fotos - é OBRIGATÓRIA!!! */}
-                    <Card 
+                    <Card
                         id="painel-fotos"
                         className={errors.fotos ? 'border-red-500' : ''}
                         data-testid="fotos-card"

@@ -1,6 +1,7 @@
 import '../css/app.css';
 
 import { createInertiaApp } from '@inertiajs/react';
+import { UnsavedChangesProvider } from '@/contexts/unsaved-changes-context'; //Condicionador global
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 import { initializeTheme } from './hooks/use-appearance';
@@ -16,8 +17,10 @@ createInertiaApp({
 
         root.render(
             <>
-                <App {...props} />
-                <Toaster />
+                <UnsavedChangesProvider>
+                    <App {...props} />
+                    <Toaster />
+                </UnsavedChangesProvider>
             </>
         );
     },
