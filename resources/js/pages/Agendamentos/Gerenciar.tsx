@@ -1,3 +1,14 @@
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 import React, { useState, useEffect, useRef } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import { 
@@ -21,7 +32,6 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,6 +44,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAgendamentoColors, StatusBadge } from '@/components/ui/agend-colors';
 import { UserAvatar } from '@/components/user-avatar';
+
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 import type { PageProps, Agendamento, Espaco, BreadcrumbItem } from '@/types';
@@ -471,26 +482,18 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
         { title: 'Gerenciar Agendamentos', href: '/gerenciar-agendamentos' }
     ];
 
-    const handleApprove = (agendamento: Agendamento) => {
-        const isRecorrente = agendamento.grupo_recorrencia;
-        const totalAgendamentos = agendamento.total_grupo || agendamento.info_grupo?.total || 1;
-        
-        const confirmMessage = isRecorrente 
-            ? `Tem certeza que deseja aprovar o grupo de agendamentos recorrentes "${agendamento.titulo}"?\n\nTodos os ${totalAgendamentos} agendamentos deste grupo serão aprovados.`
-            : `Tem certeza que deseja aprovar o agendamento "${agendamento.titulo}"?`;
-            
-        if (confirm(confirmMessage)) {
-            router.post(`/agendamentos/${agendamento.id}/aprovar`, {}, {
-                onSuccess: () => {
-                    router.reload();
-                },
-                onError: (errors) => {
-                    console.error('Erro ao aprovar agendamento:', errors);
-                    alert('Erro ao aprovar agendamento. Verifique se não há conflitos de horário.');
-                }
-            });
-        }
+    const handleApproveConfirm = (agendamento: Agendamento) => {
+        router.post(`/agendamentos/${agendamento.id}/aprovar`, {}, {
+            onSuccess: () => {
+                router.reload();
+            },
+            onError: (errors) => {
+                console.error('Erro ao aprovar agendamento:', errors);
+                alert('Erro ao aprovar agendamento. Verifique se não há conflitos de horário.');
+            }
+        });
     };
+
 
     const handleReject = (agendamento: Agendamento) => {
         setRejectionDialog({ open: true, agendamento });
@@ -1039,16 +1042,19 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
 
                                                 {agendamento.status === 'pendente' && (
                                                     <>
+
                                                         <Tooltip>
                                                             <TooltipTrigger asChild>
                                                                 <Button
                                                                     variant="outline"
                                                                     size="sm"
                                                                     onClick={() => handleApprove(agendamento)}
+
                                                                     className="text-green-600 hover:text-green-700 hover:bg-green-50"
                                                                 >
                                                                     <Check className="h-4 w-4" />
                                                                 </Button>
+
                                                             </TooltipTrigger>
                                                             <TooltipContent>
                                                                 <p>Aprovar</p>
