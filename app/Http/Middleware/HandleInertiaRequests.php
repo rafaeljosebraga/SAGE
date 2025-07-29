@@ -50,6 +50,8 @@ class HandleInertiaRequests extends Middleware
                     'name' => $request->user()->name,
                     'email' => $request->user()->email,
                     'perfil_acesso' => $request->user()->perfil_acesso,
+                    'profile_photo' => $request->user()->profile_photo,
+                    'avatar' => $request->user()->profile_photo ? asset('storage/' . $request->user()->profile_photo . '?v=' . strtotime($request->user()->updated_at)) : null,
                     'email_verified_at' => $request->user()->email_verified_at,
                     'created_at' => $request->user()->created_at,
                     'updated_at' => $request->user()->updated_at,

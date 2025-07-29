@@ -5,6 +5,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { Plus, Pencil, Trash2, MapPin, Users, Eye, X, Image as ImageIcon, ZoomIn } from 'lucide-react';
 import { type User, type Espaco, type BreadcrumbItem } from '@/types';
 import { FilterableTable, type ColumnConfig } from '@/components/ui/filterable-table';
+import { UserAvatar } from '@/components/user-avatar';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -510,11 +511,7 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                                             {responsaveis.map((responsavel, index) => (
                                                 <div key={responsavel.id} className="bg-background/50 p-3 rounded-md border border-border">
                                                     <div className="flex items-start gap-2">
-                                                        <div className="w-8 h-8 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center flex-shrink-0">
-                                                            <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
-                                                                {responsavel.name.charAt(0).toUpperCase()}
-                                                            </span>
-                                                        </div>
+                                                        <UserAvatar user={responsavel} size="md" />
                                                         <div className="flex-1 min-w-0">
                                                             <div className="flex flex-col gap-1">
                                                                 <p className="text-sm font-medium text-card-foreground break-words">

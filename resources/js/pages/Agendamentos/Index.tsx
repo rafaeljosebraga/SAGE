@@ -17,6 +17,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAgendamentoColors, StatusLegend, StatusBadge, isEventPast } from '@/components/ui/agend-colors';
 import { useToast } from '@/hooks/use-toast';
+import { UserAvatar } from '@/components/user-avatar';
 
 import type { PageProps, Agendamento, Espaco, BreadcrumbItem } from '@/types';
 
@@ -1497,11 +1498,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                                 <div className="flex items-center gap-2">
                                                     {agendamento.user ? (
                                                         <>
-                                                            <div className="w-6 h-6 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center">
-                                                                <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
-                                                                    {agendamento.user.name.charAt(0).toUpperCase()}
-                                                                </span>
-                                                            </div>
+                                                            <UserAvatar user={agendamento.user} size="sm" />
                                                             <div className="flex flex-col">
                                                                 <span className="text-sm font-medium">{agendamento.user.name}</span>
                                                                 {agendamento.user.email && (

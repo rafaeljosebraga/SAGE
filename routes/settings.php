@@ -10,6 +10,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('configuracoes/perfil', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('configuracoes/perfil', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('configuracoes/perfil/foto', [ProfileController::class, 'removePhoto'])->name('profile.photo.remove');
     Route::delete('configuracoes/perfil', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('configuracoes/senha', [PasswordController::class, 'edit'])->name('password.edit');

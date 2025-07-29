@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-react';
+import { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 
@@ -42,10 +43,38 @@ interface AppHeaderProps {
     breadcrumbs?: BreadcrumbItem[];
 }
 
-export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
+export const AppHeader = memo(function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const page = usePage<SharedData>();
     const { auth } = page.props;
     const getInitials = useInitials();
+    const [cacheTimestamp, setCacheTimestamp] = useState(() => 
+        auth.user.updated_at ? new Date(auth.user.updated_at).getTime() : Date.now()
+    );
+    // Memoizar as iniciais para evitar recálculos desnecessários
+    const initials = useMemo(() => getInitials(auth.user.name), [getInitials, auth.user.name]);
+
+    // Escutar evento de atualização de foto de perfil
+    useEffect(() => {
+        const handleProfilePhotoUpdate = (event: CustomEvent) => {
+            if (event.detail.userId === auth.user.id) {
+                setCacheTimestamp(event.detail.timestamp);
+            }
+        };
+
+        window.addEventListener('profile-photo-updated', handleProfilePhotoUpdate as EventListener);
+        
+        return () => {
+            window.removeEventListener('profile-photo-updated', handleProfilePhotoUpdate as EventListener);
+        };
+    }, [auth.user.id]);
+
+    // Memoizar a URL da foto para evitar recálculos desnecessários
+    const profilePhotoUrl = useMemo(() => {
+        if (auth.user.profile_photo) {
+            return `/storage/${auth.user.profile_photo}?v=${cacheTimestamp}`;
+        }
+        return auth.user.avatar;
+    }, [auth.user.profile_photo, auth.user.avatar, cacheTimestamp]);
     return (
         <>
             <div className="border-b border-sidebar-border/80">
@@ -155,15 +184,22 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="size-10 rounded-full p-1">
-                                    <Avatar className="size-8 overflow-hidden rounded-full">
-                                        <AvatarImage src={auth.user.avatar} alt={auth.user.name} />
-                                        <AvatarFallback className="rounded-lg bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200">
-                                            {getInitials(auth.user.name)}
-                                        </AvatarFallback>
-                                    </Avatar>
+                                    <div className="size-8 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
+                                        {profilePhotoUrl ? (
+                                            <img
+                                                src={profilePhotoUrl}
+                                                alt={auth.user.name}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <span className="text-slate-700 dark:text-slate-200 font-medium text-sm">
+                                                {initials}
+                                            </span>
+                                        )}
+                                    </div>
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-56" align="end">
+                            <DropdownMenuContent className="w-56" align="end" sideOffset={4}>
                                 <UserMenuContent user={auth.user} />
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -179,4 +215,4 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
             )}
         </>
     );
-}
+});
