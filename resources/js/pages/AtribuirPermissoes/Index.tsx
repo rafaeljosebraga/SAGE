@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Head, Link } from '@inertiajs/react';
 import { UserIcon, Plus } from 'lucide-react';
 import { type User, type Espaco, type BreadcrumbItem } from '@/types';
@@ -14,6 +15,30 @@ interface AtribuirPermissoesIndexProps {
 
 
 export default function AtribuirPermissoesIndex({ users, espacos }: AtribuirPermissoesIndexProps) {
+
+    // Função para formatar o perfil do usuário
+    const formatPerfil = (perfil: string | undefined) => {
+        if (!perfil) return "Não definido";
+        return perfil.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+    };
+
+    // Função para obter as cores do perfil
+    const getPerfilColor = (perfil: string | undefined) => {
+        if (!perfil) return "bg-gray-100 text-gray-800 border-gray-200";
+        
+        switch (perfil.toLowerCase()) {
+            case "administrador":
+                return "bg-[#EF7D4C] text-white border-transparent";
+            case "coordenador":
+                return "bg-[#957157] text-white border-transparent";
+            case "diretor_geral":
+                return "bg-[#F1DEC5] text-gray-600 border-transparent";
+            case "servidores":
+                return "bg-[#285355] text-white border-transparent";
+            default:
+                return "bg-gray-100 text-gray-800 border-gray-200";
+        }
+    };
 
     const columns: ColumnConfig[] = [
         {
@@ -34,7 +59,19 @@ export default function AtribuirPermissoesIndex({ users, espacos }: AtribuirPerm
         {
             key: 'perfil_acesso',
             label: 'Perfil de Acesso',
-            render: (value) => <span>{value || 'N/A'}</span>
+            type: 'select',
+            options: [
+                { value: 'administrador', label: 'Administrador' },
+                { value: 'diretor_geral', label: 'Diretor Geral' },
+                { value: 'coordenador', label: 'Coordenador' },
+                { value: 'servidores', label: 'Servidores' }
+            ],
+            getValue: (user) => user.perfil_acesso || '',
+            render: (value, user) => (
+                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPerfilColor(user.perfil_acesso)}`}>
+                    {formatPerfil(user.perfil_acesso)}
+                </span>
+            )
         },
         {
             key: 'acoes',
