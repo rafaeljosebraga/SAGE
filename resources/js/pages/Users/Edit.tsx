@@ -19,7 +19,7 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Edit as EditIcon } from 'lucide-react';
-import { FormEvent } from 'react';
+import { FormEvent, ChangeEvent, useState, useEffect, useRef } from 'react';
 
 interface User {
     id: number;
@@ -49,7 +49,10 @@ export default function Edit({ user, perfilAcesso }: Props) {
             href: `/usuarios/${user.id}/editar`,
         },
     ];
-const { data, setData, reset, put, processing, errors, clearErrors } = useForm({
+
+    const [formAlterado, setFormAlterado] = useState(false);
+
+    const { data, setData, reset, put, processing, errors, clearErrors } = useForm({
         name: user.name,
         email: user.email,
         perfil_acesso: user.perfil_acesso,
@@ -80,41 +83,78 @@ const { data, setData, reset, put, processing, errors, clearErrors } = useForm({
         });
     };
 
+    useEffect(() => {
+        const normalizeString = (str?: string | null) => str ?? '';
+
+        const houveAlteracao =
+            normalizeString(data.name) !== normalizeString(user.name) ||
+            normalizeString(data.email) !== normalizeString(user.email) ||
+            normalizeString(data.perfil_acesso) !== normalizeString(user.perfil_acesso);
+
+        setFormAlterado(houveAlteracao);
+        }, [data, user]);
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Editar ${user.name}`} />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center gap-4">
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button
+                    {formAlterado ? (
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="
+                                        bg-white dark:bg-black
+                                        text-[#EF7D4C] dark:text-[#EF7D4C]
+                                        border border-[#EF7D4C]
+                                        hover:bg-[#EF7D4C] hover:text-white
+                                        dark:hover:bg-[#EF7D4C] dark:hover:text-white
+                                        transition-colors
+                                    "
+                                >
+                                    <ArrowLeft className="mr-2 h-4 w-4" />
+                                    Voltar
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Tem certeza que deseja voltar?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        As alterações feitas não foram salvas. Você perderá todas as modificações.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Não</AlertDialogCancel>
+                                    <AlertDialogAction
+                                        className="bg-red-600 hover:bg-red-700"
+                                        onClick={() => (window.location.href = '/usuarios')}
+                                    >
+                                        Sim, voltar
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    ) : (
+                        <Button
                             type="button"
                             variant="outline"
-                            className="gap-2"
-                            >
-                            <ArrowLeft className="h-4 w-4" />
+                            className="
+                                bg-white dark:bg-black
+                                text-[#EF7D4C] dark:text-[#EF7D4C]
+                                border border-[#EF7D4C]
+                                hover:bg-[#EF7D4C] hover:text-white
+                                dark:hover:bg-[#EF7D4C] dark:hover:text-white
+                                transition-colors
+                            "
+                            onClick={() => (window.location.href = '/usuarios')}
+                        >
+                            <ArrowLeft className="mr-2 h-4 w-4" />
                             Voltar
-                            </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                            <AlertDialogTitle>Tem certeza que deseja voltar?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                As alterações feitas não foram salvas. Você perderá todas as modificações.
-                            </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                            <AlertDialogCancel>Não</AlertDialogCancel>
-                            <AlertDialogAction
-                                className="bg-red-600 hover:bg-red-700"
-                                asChild
-                            >
-                                <Link href="/usuarios">Sim, voltar</Link>
-                            </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                        </AlertDialog>
+                        </Button>
+                    )}
                 </div>
 
                 <Card className="max-w-2xl">
