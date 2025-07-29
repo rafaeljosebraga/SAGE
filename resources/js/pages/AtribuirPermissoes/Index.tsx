@@ -46,12 +46,19 @@ export default function AtribuirPermissoesIndex({ users, espacos }: AtribuirPerm
                         variant="outline"
                         size="sm"
                         asChild
-                        className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black"
-                    >
+                        className="
+                            bg-white dark:bg-black
+                            text-[#EF7D4C] dark:text-[#EF7D4C]
+                            border border-[#EF7D4C]
+                            hover:bg-[#EF7D4C] hover:text-white
+                            dark:hover:bg-[#EF7D4C] dark:hover:text-white
+                            transition-colors
+                        "
+                        >
                         <Link href={`atribuir-permissoes/${user.id}/criar`}>
-                            <Plus className="h-4 w-4 text-[#F26326]" />
+                            <Plus className="h-4 w-4" />
                         </Link>
-                    </Button>
+                        </Button>
                 </div>
             )
         }
@@ -66,7 +73,7 @@ export default function AtribuirPermissoesIndex({ users, espacos }: AtribuirPerm
             <Head title="Atribuir Permissões" />
             <div className="space-y-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-foreground">Atribuir Permissões</h1>
+                    <h1 className="text-3xl font-bold text-foreground">&nbsp;&nbsp;&nbsp;Atribuir Permissões</h1>
                     <FilterableTable
                         data={users}
                         columns={columns}
