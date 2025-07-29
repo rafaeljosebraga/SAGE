@@ -18,11 +18,6 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
             href: '/configuracoes/senha',
             icon: null,
         },
-        {
-            title: 'Aparência',
-            href: '/configuracoes/aparencia',
-            icon: null,
-        },
     ];
 
     // When server-side rendering, we only render the layout on the client...

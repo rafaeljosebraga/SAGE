@@ -14,17 +14,3 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Appearance() {
-    return (
-        <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Configurações de Aparência" />
-
-            <SettingsLayout>
-                <div className="space-y-6">
-                    <HeadingSmall title="Aparência" description="Atualize as configurações de aparência da sua conta" />
-                    <AppearanceTabs />
-                </div>
-            </SettingsLayout>
-        </AppLayout>
-    );
-}
