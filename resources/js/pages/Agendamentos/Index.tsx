@@ -3,7 +3,11 @@ import { Head, Link, router } from '@inertiajs/react';
 import { Calendar, Clock, MapPin, User, Users, Filter, Plus, Eye, Edit, Trash2, Settings, AlertTriangle, ChevronLeft, ChevronRight, List, Search, ArrowUpDown, ArrowUp, ArrowDown, RotateCcw, X, Building, Info } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, addMonths, subMonths, startOfWeek, endOfWeek, addDays, isSameDay, parseISO, addHours, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-
+import {
+  CheckCircle2,
+  XCircle,
+  Ban,
+} from "lucide-react";
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -172,6 +176,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         fim: 'asc' | 'desc' | 'none';
     }>({ inicio: 'none', fim: 'none' });
     const [nomeSortOrder, setNomeSortOrder] = useState<'asc' | 'desc' | 'none'>('none');
+    const [showFilters, setShowFilters] = useState(false);
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Agendamentos', href: '/agendamentos' }
@@ -241,30 +246,6 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
             setViewMode('list');
         }
     }, [filters.view]);
-
-    // Remover debounce - agora os filtros são apenas locais
-    // useEffect(() => {
-    //     const timer = setTimeout(() => {
-    //         if (nomeFilter !== (filters.nome || '')) {
-    //             router.get('/agendamentos', { 
-    //                 ...filters, 
-    //                 nome: nomeFilter || undefined, 
-    //                 view: 'list' 
-    //             }, {
-    //                 preserveState: true,
-    //                 preserveScroll: true,
-    //                 replace: true
-    //             });
-    //         }
-    //     }, 500);
-
-    //     return () => clearTimeout(timer);
-    // }, [nomeFilter]);
-
-    // // Atualizar estado local quando filters.nome mudar
-    // useEffect(() => {
-    //     setNomeFilter(filters.nome || '');
-    // }, [filters.nome]);
 
     // Salvar estado no localStorage - cada modo preserva sua própria data
     useEffect(() => {
@@ -597,7 +578,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
 
     // Obter agendamentos de um dia específico
     const getEventsForDay = (date: Date) => {
-        return filteredAgendamentos.filter(event => {
+        let events = filteredAgendamentos.filter(event => {
             try {
                 const eventDate = parseISO(event.data_inicio);
                 return isSameDay(eventDate, date);
@@ -605,6 +586,49 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                 return false;
             }
         });
+
+        // Aplicar filtros adicionais se não estivermos na visualização de lista
+        if (viewMode !== 'list') {
+            // Aplicar filtro de nome se especificado
+            if (nomeFilter.trim()) {
+                events = events.filter(event => 
+                    event.titulo.toLowerCase().includes(nomeFilter.toLowerCase()) ||
+                    event.justificativa?.toLowerCase().includes(nomeFilter.toLowerCase()) ||
+                    event.user?.name.toLowerCase().includes(nomeFilter.toLowerCase())
+                );
+            }
+
+            // Aplicar filtro de espaço se especificado
+            if (espacoFilter !== 'all') {
+                events = events.filter(event => 
+                    event.espaco_id.toString() === espacoFilter
+                );
+            }
+
+            // Aplicar filtro de status se especificado
+            if (statusFilter !== 'all') {
+                events = events.filter(event => 
+                    event.status === statusFilter
+                );
+            }
+
+            // Aplicar filtros de data se especificados
+            if (dataInicioFilter) {
+                events = events.filter(event => {
+                    const eventDataInicio = event.data_inicio.split('T')[0]; // YYYY-MM-DD
+                    return eventDataInicio >= dataInicioFilter;
+                });
+            }
+
+            if (dataFimFilter) {
+                events = events.filter(event => {
+                    const eventDataFim = event.data_fim.split('T')[0]; // YYYY-MM-DD
+                    return eventDataFim <= dataFimFilter;
+                });
+            }
+        }
+
+        return events;
     };
 
     // Obter agendamentos para um horário específico
@@ -983,6 +1007,150 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
 
     const renderMonthView = () => (
         <div className="space-y-4">
+            {/* Botão de Filtros */}
+            <div className="flex items-center justify-between">
+                <Button
+                    variant="outline"
+                    onClick={() => setShowFilters(!showFilters)}
+                    className="flex items-center gap-2 bg-white dark:bg-muted border border-border hover:bg-muted/40 dark:hover:bg-muted/60"
+                    >
+                    <Filter className="h-4 w-4" />
+                    Filtros
+                    {(nomeFilter || espacoFilter !== 'all' || statusFilter !== 'all' || dataInicioFilter || dataFimFilter || 
+                        nomeSortOrder !== 'none' || dateSortOrder.inicio !== 'none' || dateSortOrder.fim !== 'none') && (
+                        <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                            !
+                        </Badge>
+                    )}
+                    </Button>
+            </div>
+
+            {/* Painel de Filtros Colapsável */}
+            {showFilters && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <Filter className="h-5 w-5" />
+                                Opções de Filtro
+                            </div>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setShowFilters(false)}
+                                className="h-8 w-8 p-0"
+                            >
+                                <X className="h-4 w-4" />
+                            </Button>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex flex-wrap items-end gap-3">
+                            <div className="flex-1 min-w-[200px]">
+                                <Label htmlFor="nome_agendamento">Nome do Agendamento</Label>
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <Input
+                                        id="nome_agendamento"
+                                        placeholder="Buscar por nome..."
+                                        value={nomeFilter}
+                                        onChange={(e) => setNomeFilter(e.target.value)}
+                                        className="pl-10"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="min-w-[140px]">
+                                <Label htmlFor="espaco">Espaço</Label>
+                                <Select
+                                    value={espacoFilter}
+                                    onValueChange={(value) => setEspacoFilter(value)}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Todos os espaços" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">Todos os espaços</SelectItem>
+                                        {espacos.map((espaco) => (
+                                            <SelectItem key={espaco.id} value={espaco.id.toString()}>
+                                                {espaco.nome}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="min-w-[120px]">
+                                <Label htmlFor="status">Status</Label>
+                                <Select
+                                    value={statusFilter}
+                                    onValueChange={(value) => setStatusFilter(value)}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Todos os status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">Todos os status</SelectItem>
+                                        <SelectItem value="pendente">Pendente</SelectItem>
+                                        <SelectItem value="aprovado">Aprovado</SelectItem>
+                                        <SelectItem value="rejeitado">Rejeitado</SelectItem>
+                                        <SelectItem value="cancelado">Cancelado</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="min-w-[140px]">
+                                <Label htmlFor="data_inicio">Data Início</Label>
+                                <Input
+                                    type="date"
+                                    value={dataInicioFilter}
+                                    onChange={(e) => setDataInicioFilter(e.target.value)}
+                                    className="text-sm"
+                                />
+                            </div>
+
+                            <div className="min-w-[140px]">
+                                <Label htmlFor="data_fim">Data Fim</Label>
+                                <Input
+                                    type="date"
+                                    value={dataFimFilter}
+                                    onChange={(e) => setDataFimFilter(e.target.value)}
+                                    className="text-sm"
+                                />
+                            </div>
+
+                            {/* Botão Limpar Filtros */}
+                            {(nomeFilter || espacoFilter !== 'all' || statusFilter !== 'all' || dataInicioFilter || dataFimFilter) && (
+                                <div className="flex flex-col">
+                                    <Label className="mb-2 opacity-0">Ações</Label>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm"
+                                                onClick={() => {
+                                                    setNomeFilter('');
+                                                    setEspacoFilter('all');
+                                                    setStatusFilter('all');
+                                                    setDataInicioFilter('');
+                                                    setDataFimFilter('');
+                                                }}
+                                                className="h-10 w-10 p-0"
+                                            >
+                                                <X className="h-4 w-4" />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Limpar filtros</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </div>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+
             {/* Cabeçalho dos dias da semana */}
             <div className="grid grid-cols-7 gap-1">
                 {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day) => (
@@ -1066,6 +1234,149 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
 
     const renderWeekView = () => (
         <div className="space-y-4">
+            {/* Botão de Filtros */}
+            <div className="flex items-center justify-between">
+                <Button
+                    variant="outline"
+                    onClick={() => setShowFilters(!showFilters)}
+                    className="flex items-center gap-2 bg-white dark:bg-muted border border-border hover:bg-muted/40 dark:hover:bg-muted/60"
+                    >
+                    <Filter className="h-4 w-4" />
+                    Filtros
+                    {(nomeFilter || espacoFilter !== 'all' || statusFilter !== 'all' || dataInicioFilter || dataFimFilter) && (
+                        <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                        !
+                        </Badge>
+                    )}
+                    </Button>
+            </div>
+
+            {/* Painel de Filtros Colapsável */}
+            {showFilters && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <Filter className="h-5 w-5" />
+                                Opções de Filtro
+                            </div>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setShowFilters(false)}
+                                className="h-8 w-8 p-0"
+                            >
+                                <X className="h-4 w-4" />
+                            </Button>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex flex-wrap items-end gap-3">
+                            <div className="flex-1 min-w-[200px]">
+                                <Label htmlFor="nome_agendamento">Nome do Agendamento</Label>
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <Input
+                                        id="nome_agendamento"
+                                        placeholder="Buscar por nome..."
+                                        value={nomeFilter}
+                                        onChange={(e) => setNomeFilter(e.target.value)}
+                                        className="pl-10"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="min-w-[140px]">
+                                <Label htmlFor="espaco">Espaço</Label>
+                                <Select
+                                    value={espacoFilter}
+                                    onValueChange={(value) => setEspacoFilter(value)}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Todos os espaços" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">Todos os espaços</SelectItem>
+                                        {espacos.map((espaco) => (
+                                            <SelectItem key={espaco.id} value={espaco.id.toString()}>
+                                                {espaco.nome}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="min-w-[120px]">
+                                <Label htmlFor="status">Status</Label>
+                                <Select
+                                    value={statusFilter}
+                                    onValueChange={(value) => setStatusFilter(value)}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Todos os status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">Todos os status</SelectItem>
+                                        <SelectItem value="pendente">Pendente</SelectItem>
+                                        <SelectItem value="aprovado">Aprovado</SelectItem>
+                                        <SelectItem value="rejeitado">Rejeitado</SelectItem>
+                                        <SelectItem value="cancelado">Cancelado</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="min-w-[140px]">
+                                <Label htmlFor="data_inicio">Data Início</Label>
+                                <Input
+                                    type="date"
+                                    value={dataInicioFilter}
+                                    onChange={(e) => setDataInicioFilter(e.target.value)}
+                                    className="text-sm"
+                                />
+                            </div>
+
+                            <div className="min-w-[140px]">
+                                <Label htmlFor="data_fim">Data Fim</Label>
+                                <Input
+                                    type="date"
+                                    value={dataFimFilter}
+                                    onChange={(e) => setDataFimFilter(e.target.value)}
+                                    className="text-sm"
+                                />
+                            </div>
+
+                            {/* Botão Limpar Filtros */}
+                            {(nomeFilter || espacoFilter !== 'all' || statusFilter !== 'all' || dataInicioFilter || dataFimFilter) && (
+                                <div className="flex flex-col">
+                                    <Label className="mb-2 opacity-0">Ações</Label>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm"
+                                                onClick={() => {
+                                                    setNomeFilter('');
+                                                    setEspacoFilter('all');
+                                                    setStatusFilter('all');
+                                                    setDataInicioFilter('');
+                                                    setDataFimFilter('');
+                                                }}
+                                                className="h-10 w-10 p-0"
+                                            >
+                                                <X className="h-4 w-4" />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Limpar filtros</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </div>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+
             {/* Cabeçalho dos dias */}
             <div className="grid grid-cols-8 gap-1">
                 <div className="p-3 text-center font-medium text-muted-foreground"></div>
@@ -1143,6 +1454,127 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         
         return (
             <div className="space-y-4">
+                {/* Botão de Filtros */}
+                <div className="flex items-center justify-between">
+                    <Button
+                        variant="outline"
+                        onClick={() => setShowFilters(!showFilters)}
+                        className="flex items-center gap-2 bg-white dark:bg-muted border border-border hover:bg-muted/40 dark:hover:bg-muted/60"
+                        >
+                        <Filter className="h-4 w-4" />
+                        Filtros
+                        {(nomeFilter || espacoFilter !== 'all' || statusFilter !== 'all' || dataInicioFilter || dataFimFilter) && (
+                            <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                            !
+                            </Badge>
+                        )}
+                        </Button>
+                </div>
+
+                {/* Painel de Filtros Colapsável */}
+                {showFilters && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <Filter className="h-5 w-5" />
+                                    Opções de Filtro
+                                </div>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setShowFilters(false)}
+                                    className="h-8 w-8 p-0"
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex flex-wrap items-end gap-3">
+                                <div className="flex-1 min-w-[200px]">
+                                    <Label htmlFor="nome_agendamento">Nome do Agendamento</Label>
+                                    <div className="relative">
+                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <Input
+                                            id="nome_agendamento"
+                                            placeholder="Buscar por nome..."
+                                            value={nomeFilter}
+                                            onChange={(e) => setNomeFilter(e.target.value)}
+                                            className="pl-10"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="min-w-[140px]">
+                                    <Label htmlFor="espaco">Espaço</Label>
+                                    <Select
+                                        value={espacoFilter}
+                                        onValueChange={(value) => setEspacoFilter(value)}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Todos os espaços" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">Todos os espaços</SelectItem>
+                                            {espacos.map((espaco) => (
+                                                <SelectItem key={espaco.id} value={espaco.id.toString()}>
+                                                    {espaco.nome}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="min-w-[120px]">
+                                    <Label htmlFor="status">Status</Label>
+                                    <Select
+                                        value={statusFilter}
+                                        onValueChange={(value) => setStatusFilter(value)}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Todos os status" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">Todos os status</SelectItem>
+                                            <SelectItem value="pendente">Pendente</SelectItem>
+                                            <SelectItem value="aprovado">Aprovado</SelectItem>
+                                            <SelectItem value="rejeitado">Rejeitado</SelectItem>
+                                            <SelectItem value="cancelado">Cancelado</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                {/* Botão Limpar Filtros */}
+                                {(nomeFilter || espacoFilter !== 'all' || statusFilter !== 'all') && (
+                                    <div className="flex flex-col">
+                                        <Label className="mb-2 opacity-0">Ações</Label>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button 
+                                                    variant="outline" 
+                                                    size="sm"
+                                                    onClick={() => {
+                                                        setNomeFilter('');
+                                                        setEspacoFilter('all');
+                                                        setStatusFilter('all');
+                                                    }}
+                                                    className="h-10 w-10 p-0"
+                                                >
+                                                    <X className="h-4 w-4" />
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>Limpar filtros</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </div>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+
                 {/* Cabeçalho do dia */}
                 <div className="text-center p-4 bg-muted/50 rounded-lg">
                     <h3 className="text-lg font-semibold">
@@ -1228,21 +1660,166 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
 
         return (
             <div className="space-y-4">
-                {/* Controles de busca e ordenação para timeline */}
-                <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
-                    <div className="flex items-center gap-2">
-                        <Search className="h-4 w-4 text-muted-foreground" />
-                        <Input
-                            placeholder="Buscar agendamentos..."
-                            value={searchAgendamentos}
-                            onChange={(e) => setSearchAgendamentos(e.target.value)}
-                            className="h-8 text-sm w-64"
-                        />
-                    </div>
+                {/* Botão de Filtros */}
+                <div className="flex items-center justify-between">
+                    <Button
+                        variant="outline"
+                        onClick={() => setShowFilters(!showFilters)}
+                        className="flex items-center gap-2 bg-white dark:bg-muted border border-border hover:bg-muted/40 dark:hover:bg-muted/60"
+                        >
+                        <Filter className="h-4 w-4" />
+                        Filtros
+                        {(nomeFilter || espacoFilter !== 'all' || statusFilter !== 'all' || dataInicioFilter || dataFimFilter) && (
+                            <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                            !
+                            </Badge>
+                        )}
+                        </Button>   
                     <div className="text-sm text-muted-foreground">
                         {timelineEspacos.length} de {espacos.filter(e => selectedEspacos.includes(e.id)).length} espaços
                     </div>
                 </div>
+
+                {/* Painel de Filtros Colapsável */}
+                {showFilters && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <Filter className="h-5 w-5" />
+                                    Opções de Filtro
+                                </div>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setShowFilters(false)}
+                                    className="h-8 w-8 p-0"
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex flex-wrap items-end gap-3">
+                                <div className="flex-1 min-w-[200px]">
+                                    <Label htmlFor="buscar_agendamentos">Buscar Agendamentos</Label>
+                                    <div className="relative">
+                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <Input
+                                            id="buscar_agendamentos"
+                                            placeholder="Buscar agendamentos..."
+                                            value={searchAgendamentos}
+                                            onChange={(e) => setSearchAgendamentos(e.target.value)}
+                                            className="pl-10"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex-1 min-w-[200px]">
+                                    <Label htmlFor="nome_agendamento">Nome do Agendamento</Label>
+                                    <div className="relative">
+                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <Input
+                                            id="nome_agendamento"
+                                            placeholder="Buscar por nome..."
+                                            value={nomeFilter}
+                                            onChange={(e) => setNomeFilter(e.target.value)}
+                                            className="pl-10"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="min-w-[140px]">
+                                    <Label htmlFor="espaco">Espaço</Label>
+                                    <Select
+                                        value={espacoFilter}
+                                        onValueChange={(value) => setEspacoFilter(value)}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Todos os espaços" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">Todos os espaços</SelectItem>
+                                            {espacos.map((espaco) => (
+                                                <SelectItem key={espaco.id} value={espaco.id.toString()}>
+                                                    {espaco.nome}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="min-w-[120px]">
+                                    <Label htmlFor="status">Status</Label>
+                                    <Select
+                                        value={statusFilter}
+                                        onValueChange={(value) => setStatusFilter(value)}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Todos os status" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">Todos os status</SelectItem>
+                                            <SelectItem value="pendente">Pendente</SelectItem>
+                                            <SelectItem value="aprovado">Aprovado</SelectItem>
+                                            <SelectItem value="rejeitado">Rejeitado</SelectItem>
+                                            <SelectItem value="cancelado">Cancelado</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="min-w-[140px]">
+                                    <Label htmlFor="data_inicio">Data Início</Label>
+                                    <Input
+                                        type="date"
+                                        value={dataInicioFilter}
+                                        onChange={(e) => setDataInicioFilter(e.target.value)}
+                                        className="text-sm"
+                                    />
+                                </div>
+
+                                <div className="min-w-[140px]">
+                                    <Label htmlFor="data_fim">Data Fim</Label>
+                                    <Input
+                                        type="date"
+                                        value={dataFimFilter}
+                                        onChange={(e) => setDataFimFilter(e.target.value)}
+                                        className="text-sm"
+                                    />
+                                </div>
+
+                                {/* Botão Limpar Filtros */}
+                                {(nomeFilter || espacoFilter !== 'all' || statusFilter !== 'all' || dataInicioFilter || dataFimFilter || searchAgendamentos) && (
+                                    <div className="flex flex-col">
+                                        <Label className="mb-2 opacity-0">Ações</Label>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button 
+                                                    variant="outline" 
+                                                    size="sm"
+                                                    onClick={() => {
+                                                        setNomeFilter('');
+                                                        setEspacoFilter('all');
+                                                        setStatusFilter('all');
+                                                        setDataInicioFilter('');
+                                                        setDataFimFilter('');
+                                                        setSearchAgendamentos('');
+                                                    }}
+                                                    className="h-10 w-10 p-0"
+                                                >
+                                                    <X className="h-4 w-4" />
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>Limpar filtros</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </div>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
 
                 {/* Cabeçalho com dias */}
                 <div className="grid gap-1" style={{ gridTemplateColumns: "200px repeat(7, 1fr)" }}>
@@ -1354,172 +1931,204 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
 
     const renderListView = () => (
         <div className="space-y-6">
-            {/* Filtros */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Filter className="h-5 w-5" />
-                        Filtros
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="flex flex-wrap items-end gap-3">
-                        <div className="flex-1 min-w-[200px]">
-                            <Label htmlFor="nome_agendamento">Nome do Agendamento</Label>
-                            <div className="relative">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    id="nome_agendamento"
-                                    placeholder="Buscar por nome..."
-                                    value={nomeFilter}
-                                    onChange={(e) => setNomeFilter(e.target.value)}
-                                    className="pl-10 pr-10"
-                                />
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button 
-                                            variant="ghost" 
-                                            size="sm" 
-                                            onClick={toggleNomeSort}
-                                            className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
-                                        >
-                                            {getNomeSortIcon()}
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p>Ordenar por nome {nomeSortOrder === 'none' ? 'crescente' : nomeSortOrder === 'asc' ? 'decrescente' : 'padrão'}</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </div>
-                        </div>
+            {/* Botão de Filtros */}
+            <div className="flex items-center justify-between">
+                <Button
+                    variant="outline"
+                    onClick={() => setShowFilters(!showFilters)}
+                    className="flex items-center gap-2 bg-white dark:bg-muted border border-border hover:bg-muted/40 dark:hover:bg-muted/60"
+                    >
+                    <Filter className="h-4 w-4" />
+                    Filtros
+                    {(nomeFilter || espacoFilter !== 'all' || statusFilter !== 'all' || dataInicioFilter || dataFimFilter) && (
+                    <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                        !
+                    </Badge>
+                    )}
+                    </Button>
+                <div className="text-sm text-muted-foreground">
+                    {totalItems} agendamento(s) encontrado(s)
+                </div>
+            </div>
 
-                        <div className="min-w-[140px]">
-                            <Label htmlFor="espaco">Espaço</Label>
-                            <Select
-                                value={espacoFilter}
-                                onValueChange={(value) => setEspacoFilter(value)}
+            {/* Painel de Filtros Colapsável */}
+            {showFilters && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <Filter className="h-5 w-5" />
+                                Opções de Filtro
+                            </div>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setShowFilters(false)}
+                                className="h-8 w-8 p-0"
                             >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Todos os espaços" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">Todos os espaços</SelectItem>
-                                    {espacos.map((espaco) => (
-                                        <SelectItem key={espaco.id} value={espaco.id.toString()}>
-                                            {espaco.nome}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div className="min-w-[120px]">
-                            <Label htmlFor="status">Status</Label>
-                            <Select
-                                value={statusFilter}
-                                onValueChange={(value) => setStatusFilter(value)}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Todos os status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">Todos os status</SelectItem>
-                                    <SelectItem value="pendente">Pendente</SelectItem>
-                                    <SelectItem value="aprovado">Aprovado</SelectItem>
-                                    <SelectItem value="rejeitado">Rejeitado</SelectItem>
-                                    <SelectItem value="cancelado">Cancelado</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div className="min-w-[140px]">
-                            <Label htmlFor="data_inicio">Data Início</Label>
-                            <div className="relative">
-                                <Input
-                                    type="date"
-                                    value={dataInicioFilter}
-                                    onChange={(e) => setDataInicioFilter(e.target.value)}
-                                    className="pr-8 text-sm"
-                                />
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button 
-                                            variant="ghost" 
-                                            size="sm" 
-                                            onClick={() => toggleDateSort('inicio')}
-                                            className="absolute right-1 top-1/2 transform -translate-y-1/2 h-5 w-5 p-0 hover:bg-muted"
-                                        >
-                                            {getDateSortIcon('inicio')}
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p>Ordenar por data de início {dateSortOrder.inicio === 'none' ? 'crescente' : dateSortOrder.inicio === 'asc' ? 'decrescente' : 'padrão'}</p>
-                                    </TooltipContent>
-                                </Tooltip>
+                                <X className="h-4 w-4" />
+                            </Button>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex flex-wrap items-end gap-3">
+                            <div className="flex-1 min-w-[200px]">
+                                <Label htmlFor="nome_agendamento">Nome do Agendamento</Label>
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <Input
+                                        id="nome_agendamento"
+                                        placeholder="Buscar por nome..."
+                                        value={nomeFilter}
+                                        onChange={(e) => setNomeFilter(e.target.value)}
+                                        className="pl-10 pr-10"
+                                    />
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button 
+                                                variant="ghost" 
+                                                size="sm" 
+                                                onClick={toggleNomeSort}
+                                                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
+                                            >
+                                                {getNomeSortIcon()}
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Ordenar por nome {nomeSortOrder === 'none' ? 'crescente' : nomeSortOrder === 'asc' ? 'decrescente' : 'padrão'}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </div>
                             </div>
-                        </div>
 
-                        <div className="min-w-[140px]">
-                            <Label htmlFor="data_fim">Data Fim</Label>
-                            <div className="relative">
-                                <Input
-                                    type="date"
-                                    value={dataFimFilter}
-                                    onChange={(e) => setDataFimFilter(e.target.value)}
-                                    className="pr-8 text-sm"
-                                />
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button 
-                                            variant="ghost" 
-                                            size="sm" 
-                                            onClick={() => toggleDateSort('fim')}
-                                            className="absolute right-1 top-1/2 transform -translate-y-1/2 h-5 w-5 p-0 hover:bg-muted"
-                                        >
-                                            {getDateSortIcon('fim')}
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p>Ordenar por data de fim {dateSortOrder.fim === 'none' ? 'crescente' : dateSortOrder.fim === 'asc' ? 'decrescente' : 'padrão'}</p>
-                                    </TooltipContent>
-                                </Tooltip>
+                            <div className="min-w-[140px]">
+                                <Label htmlFor="espaco">Espaço</Label>
+                                <Select
+                                    value={espacoFilter}
+                                    onValueChange={(value) => setEspacoFilter(value)}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Todos os espaços" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">Todos os espaços</SelectItem>
+                                        {espacos.map((espaco) => (
+                                            <SelectItem key={espaco.id} value={espaco.id.toString()}>
+                                                {espaco.nome}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
-                        </div>
 
-                        {/* Botão Limpar Filtros - só aparece quando há filtros ativos */}
-                        {(nomeFilter || espacoFilter !== 'all' || (statusFilter !== 'all' && statusFilter !== 'all') || dataInicioFilter || dataFimFilter || 
-                          nomeSortOrder !== 'none' || dateSortOrder.inicio !== 'none' || dateSortOrder.fim !== 'none') && (
-                            <div className="flex flex-col">
-                                <Label className="mb-2 opacity-0">Ações</Label>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button 
-                                            variant="outline" 
-                                            size="sm"
-                                            onClick={() => {
-                                                // Limpar todos os filtros e ordenações
-                                                setNomeFilter('');
-                                                setEspacoFilter('all');
-                                                setStatusFilter('all');
-                                                setDataInicioFilter('');
-                                                setDataFimFilter('');
-                                                setNomeSortOrder('none');
-                                                setDateSortOrder({ inicio: 'none', fim: 'none' });
-                                            }}
-                                            className="h-10 w-10 p-0"
-                                        >
-                                            <X className="h-4 w-4" />
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p>Limpar filtros</p>
-                                    </TooltipContent>
-                                </Tooltip>
+                            <div className="min-w-[120px]">
+                                <Label htmlFor="status">Status</Label>
+                                <Select
+                                    value={statusFilter}
+                                    onValueChange={(value) => setStatusFilter(value)}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Todos os status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">Todos os status</SelectItem>
+                                        <SelectItem value="pendente">Pendente</SelectItem>
+                                        <SelectItem value="aprovado">Aprovado</SelectItem>
+                                        <SelectItem value="rejeitado">Rejeitado</SelectItem>
+                                        <SelectItem value="cancelado">Cancelado</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
-                        )}
-                    </div>
-                </CardContent>
-            </Card>
+
+                            <div className="min-w-[140px]">
+                                <Label htmlFor="data_inicio">Data Início</Label>
+                                <div className="relative">
+                                    <Input
+                                        type="date"
+                                        value={dataInicioFilter}
+                                        onChange={(e) => setDataInicioFilter(e.target.value)}
+                                        className="pr-8 text-sm"
+                                    />
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button 
+                                                variant="ghost" 
+                                                size="sm" 
+                                                onClick={() => toggleDateSort('inicio')}
+                                                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-5 w-5 p-0 hover:bg-muted"
+                                            >
+                                                {getDateSortIcon('inicio')}
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Ordenar por data de início {dateSortOrder.inicio === 'none' ? 'crescente' : dateSortOrder.inicio === 'asc' ? 'decrescente' : 'padrão'}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </div>
+                            </div>
+
+                            <div className="min-w-[140px]">
+                                <Label htmlFor="data_fim">Data Fim</Label>
+                                <div className="relative">
+                                    <Input
+                                        type="date"
+                                        value={dataFimFilter}
+                                        onChange={(e) => setDataFimFilter(e.target.value)}
+                                        className="pr-8 text-sm"
+                                    />
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button 
+                                                variant="ghost" 
+                                                size="sm" 
+                                                onClick={() => toggleDateSort('fim')}
+                                                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-5 w-5 p-0 hover:bg-muted"
+                                            >
+                                                {getDateSortIcon('fim')}
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Ordenar por data de fim {dateSortOrder.fim === 'none' ? 'crescente' : dateSortOrder.fim === 'asc' ? 'decrescente' : 'padrão'}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </div>
+                            </div>
+
+                            {/* Botão Limpar Filtros - só aparece quando há filtros ativos */}
+                            {(nomeFilter || espacoFilter !== 'all' || (statusFilter !== 'all' && statusFilter !== 'all') || dataInicioFilter || dataFimFilter || 
+                              nomeSortOrder !== 'none' || dateSortOrder.inicio !== 'none' || dateSortOrder.fim !== 'none') && (
+                                <div className="flex flex-col">
+                                    <Label className="mb-2 opacity-0">Ações</Label>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm"
+                                                onClick={() => {
+                                                    // Limpar todos os filtros e ordenações
+                                                    setNomeFilter('');
+                                                    setEspacoFilter('all');
+                                                    setStatusFilter('all');
+                                                    setDataInicioFilter('');
+                                                    setDataFimFilter('');
+                                                    setNomeSortOrder('none');
+                                                    setDateSortOrder({ inicio: 'none', fim: 'none' });
+                                                }}
+                                                className="h-10 w-10 p-0"
+                                            >
+                                                <X className="h-4 w-4" />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Limpar filtros</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </div>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
 
             {/* Lista de Agendamentos */}
             <div className="space-y-4">
@@ -1761,129 +2370,9 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
 
                 {/* Controles e Filtros */}
                 {viewMode !== 'list' ? (
-                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                        {/* Painel de Controle */}
-                        <Card className="lg:col-span-1 shadow-sm bg-card dark:bg-card">
-                            <CardHeader className="pb-4">
-                                <CardTitle className="flex items-center gap-3 text-lg bg-gradient-to-r from-background to-muted/20 dark:from-background dark:to-muted/10 rounded-lg p-4 -m-4">
-                                    <div className="p-2.5 bg-primary/10 dark:bg-primary/20 rounded-lg ring-1 ring-primary/20 dark:ring-primary/30">
-                                        <Filter className="h-5 w-5 text-primary dark:text-primary" />
-                                    </div>
-                                    <span className="text-foreground dark:text-foreground">Controles</span>
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-6 p-6">
-                                {/* Filtro de Espaços */}
-                                <div className="space-y-4">
-                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                                        <Label className="text-sm font-semibold text-foreground dark:text-foreground flex items-center gap-2">
-                                            <Building className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
-                                            Espaços
-                                        </Label>
-                                        <div className="flex items-center gap-1 flex-wrap">
-                                            <Tooltip>
-                                            <TooltipTrigger asChild>
-                                            <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={toggleSort}
-                                            className="h-7 w-7 p-0 hover:bg-primary/10 dark:hover:bg-primary/20 text-muted-foreground hover:text-primary dark:text-muted-foreground dark:hover:text-primary transition-colors flex-shrink-0"
-                                            >
-                                            {getSortIcon()}
-                                            </Button>
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                            <p>Ordenar {sortOrder === 'none' ? 'A-Z' : sortOrder === 'asc' ? 'Z-A' : 'padrão'}</p>
-                                            </TooltipContent>
-                                            </Tooltip>
-                                            <div className="h-4 w-px bg-border dark:bg-border mx-1 flex-shrink-0" />
-                                            <Button 
-                                                variant="ghost" 
-                                                size="sm" 
-                                                onClick={selectAllEspacos}
-                                                className="text-xs h-7 px-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors flex-shrink-0"
-                                            >
-                                                Todos
-                                            </Button>
-                                            <Button 
-                                                variant="ghost" 
-                                                size="sm" 
-                                                onClick={deselectAllEspacos}
-                                                className="text-xs h-7 px-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 hover:text-red-700 dark:hover:text-red-300 transition-colors flex-shrink-0"
-                                            >
-                                                Nenhum
-                                            </Button>
-                                        </div>
-                                    </div>
-                                    
-                                    {/* Campo de busca */}
-                                    <div className="relative">
-                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
-                                        <Input
-                                            placeholder="Buscar espaços..."
-                                            value={searchEspacos}
-                                            onChange={(e) => setSearchEspacos(e.target.value)}
-                                            className="pl-10 h-9 text-sm bg-background dark:bg-background border-border/60 dark:border-border/40 focus:border-primary/60 dark:focus:border-primary/50 focus:ring-primary/20 dark:focus:ring-primary/30 placeholder:text-muted-foreground dark:placeholder:text-muted-foreground"
-                                        />
-                                    </div>
-                                    
-                                    {/* Lista de espaços */}
-                                    <div className="space-y-2 max-h-52 overflow-y-auto scrollbar-thin scrollbar-track-muted/20 dark:scrollbar-track-muted/10 scrollbar-thumb-muted-foreground/30 dark:scrollbar-thumb-muted-foreground/40 hover:scrollbar-thumb-muted-foreground/50 dark:hover:scrollbar-thumb-muted-foreground/60 pr-1">
-                                        {filteredAndSortedEspacos.map((espaco) => (
-                                            <div key={espaco.id} className="group flex items-start space-x-3 p-3 rounded-lg hover:bg-muted/50 dark:hover:bg-muted/30 transition-all duration-200 border border-transparent hover:border-border/50 dark:hover:border-border/30">
-                                                <Checkbox
-                                                    id={`espaco-${espaco.id}`}
-                                                    checked={selectedEspacos.includes(espaco.id)}
-                                                    onCheckedChange={() => toggleEspaco(espaco.id)}
-                                                    className="mt-0.5 data-[state=checked]:bg-primary dark:data-[state=checked]:bg-orange-500 data-[state=checked]:border-primary dark:data-[state=checked]:border-orange-500 border-border dark:border-border"
-                                                />
-                                                <Label 
-                                                    htmlFor={`espaco-${espaco.id}`}
-                                                    className="text-sm cursor-pointer flex-1 leading-relaxed group-hover:text-foreground dark:group-hover:text-foreground transition-colors"
-                                                >
-                                                    <div className="font-medium text-foreground dark:text-foreground mb-1">{espaco.nome}</div>
-                                                    <div className="text-xs text-muted-foreground dark:text-muted-foreground flex items-center gap-2">
-                                                        <span className="flex items-center gap-1 bg-muted/50 dark:bg-muted/30 px-2 py-0.5 rounded-full">
-                                                            <Users className="h-3 w-3" />
-                                                            <span className="font-medium">{espaco.capacidade}</span>
-                                                        </span>
-                                                        {espaco.localizacao?.nome && (
-                                                            <span className="bg-primary/10 dark:bg-primary/30 text-primary dark:text-primary-foreground px-2 py-0.5 rounded-full text-xs font-medium">
-                                                                {espaco.localizacao.nome}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </Label>
-                                            </div>
-                                        ))}
-                                        {filteredAndSortedEspacos.length === 0 && searchEspacos && (
-                                            <div className="text-sm text-muted-foreground dark:text-muted-foreground text-center py-8 space-y-3">
-                                                <div className="p-3 bg-muted/30 dark:bg-muted/20 rounded-full w-fit mx-auto">
-                                                    <Search className="h-8 w-8 opacity-50" />
-                                                </div>
-                                                <p className="font-medium">Nenhum espaço encontrado</p>
-                                                <p className="text-xs opacity-75">Tente ajustar os termos de busca</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Legenda de Status */}
-                                <div className="space-y-4">
-                                    <Label className="text-sm font-semibold text-foreground dark:text-foreground flex items-center gap-2">
-                                        <Info className="h-4 w-4 text-primary" />
-                                        Legenda de Status
-                                    </Label>
-                                    <div className="bg-gradient-to-br from-muted/30 to-muted/50 dark:from-muted/20 dark:to-muted/40 rounded-lg p-4 border border-border/30 dark:border-border/20">
-                                        <StatusLegend className="space-y-3" />
-                                    </div>
-                                </div>
-
-                            </CardContent>
-                        </Card>
-
+                    <div className="w-full">
                         {/* Calendário */}
-                        <Card className="lg:col-span-3">
+                        <Card>
                             <CardHeader>
                                 <div className="flex items-center justify-between">
                                     <CardTitle className="flex items-center gap-2">
@@ -2418,6 +2907,35 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                     </DialogContent>
                 </Dialog>
 
+            </div>
+
+            {/* Bloco de legenda de status */}
+            <div className="w-full px-6 mt-6">
+            <div className="w-full bg-white dark:bg-background p-4 rounded-xl shadow-sm border border-border text-center">
+                <div className="text-base font-semibold mb-3">Legenda de Status</div>
+
+                <div className="flex flex-wrap justify-center gap-8 items-center">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Clock className="w-4 h-4 text-yellow-500" />
+                    <span>Pendente</span>
+                </div>
+
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <CheckCircle2 className="w-4 h-4 text-green-500" />
+                    <span>Aprovado</span>
+                </div>
+
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <XCircle className="w-4 h-4 text-red-500" />
+                    <span>Rejeitado</span>
+                </div>
+
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Ban className="w-4 h-4 text-gray-500" />
+                    <span>Cancelado</span>
+                </div>
+                </div>
+            </div>
             </div>
         </AppLayout>
     );
