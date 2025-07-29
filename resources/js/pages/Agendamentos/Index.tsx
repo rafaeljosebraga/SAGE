@@ -333,11 +333,11 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     const getSortIcon = () => {
         switch (sortOrder) {
             case 'asc':
-                return <ArrowUp className="h-3 w-3" />;
+                return <ArrowUp className="h-3 w-3  text-blue-600" />;
             case 'desc':
-                return <ArrowDown className="h-3 w-3" />;
+                return <ArrowDown className="h-3 w-3  text-blue-600" />;
             default:
-                return <ArrowUpDown className="h-3 w-3" />;
+                return <ArrowUpDown className="h-3 w-3 text-gray-400" />;
         }
     };
 
@@ -358,11 +358,11 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     const getNomeSortIcon = () => {
         switch (nomeSortOrder) {
             case 'asc':
-                return <ArrowUp className="h-3 w-3" />;
+                return <ArrowUp className="h-3 w-3  text-blue-600" />;
             case 'desc':
-                return <ArrowDown className="h-3 w-3" />;
+                return <ArrowDown className="h-3 w-3  text-blue-600" />;
             default:
-                return <ArrowUpDown className="h-3 w-3" />;
+                return <ArrowUpDown className="h-3 w-3 text-gray-400" />;
         }
     };
 
@@ -403,11 +403,11 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         const order = dateSortOrder[type];
         switch (order) {
             case 'asc':
-                return <ArrowUp className="h-3 w-3" />;
+                return <ArrowUp className="h-3 w-3  text-blue-600" />;
             case 'desc':
-                return <ArrowDown className="h-3 w-3" />;
+                return <ArrowDown className="h-3 w-3  text-blue-600" />;
             default:
-                return <ArrowUpDown className="h-3 w-3" />;
+                return <ArrowUpDown className="h-3 w-3 text-gray-400" />;
         }
     };
 

@@ -116,11 +116,11 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
     const getNomeSortIcon = () => {
         switch (nomeSortOrder) {
             case 'asc':
-                return <ArrowUp className="h-3 w-3" />;
+                return <ArrowUp className="h-3 w-3 text-blue-600" />;
             case 'desc':
-                return <ArrowDown className="h-3 w-3" />;
+                return <ArrowDown className="h-3 w-3 text-blue-600" />;
             default:
-                return <ArrowUpDown className="h-3 w-3" />;
+                return <ArrowUpDown className="h-3 w-3 text-gray-400" />;
         }
     };
 
@@ -142,11 +142,11 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
     const getSolicitanteSortIcon = () => {
         switch (solicitanteSortOrder) {
             case 'asc':
-                return <ArrowUp className="h-3 w-3" />;
+                return <ArrowUp className="h-3 w-3 text-blue-600" />;
             case 'desc':
-                return <ArrowDown className="h-3 w-3" />;
+                return <ArrowDown className="h-3 w-3 text-blue-600" />;
             default:
-                return <ArrowUpDown className="h-3 w-3" />;
+                return <ArrowUpDown className="h-3 w-3 text-gray-400" />;
         }
     };
 
@@ -168,11 +168,11 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
     const getDataInicioSortIcon = () => {
         switch (dataInicioSortOrder) {
             case 'asc':
-                return <ArrowUp className="h-3 w-3" />;
+                return <ArrowUp className="h-3 w-3 text-blue-600" />;
             case 'desc':
-                return <ArrowDown className="h-3 w-3" />;
+                return <ArrowDown className="h-3 w-3 text-blue-600" />;
             default:
-                return <ArrowUpDown className="h-3 w-3" />;
+                return <ArrowUpDown className="h-3 w-3 text-gray-400" />;
         }
     };
 
@@ -194,11 +194,11 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
     const getDataFimSortIcon = () => {
         switch (dataFimSortOrder) {
             case 'asc':
-                return <ArrowUp className="h-3 w-3" />;
+                return <ArrowUp className="h-3 w-3 text-blue-600" />;
             case 'desc':
-                return <ArrowDown className="h-3 w-3" />;
+                return <ArrowDown className="h-3 w-3 text-blue-600" />;
             default:
-                return <ArrowUpDown className="h-3 w-3" />;
+                return <ArrowUpDown className="h-3 w-3 text-gray-400" />;
         }
     };
 

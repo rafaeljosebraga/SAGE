@@ -9,6 +9,13 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Search, X, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 
 export interface ColumnConfig {
@@ -170,67 +177,77 @@ export function FilterableTable({
                 <Table>
                     <TableHeader>
                         {/* Linha dos cabeçalhos */}
-                        <TableRow>
+                        <TableRow className="bg-muted/20">
                             {columns.map((column) => (
                                 <TableHead
                                     key={column.key}
-                                    className="relative text-gray-900 font-semibold">
-                                    <div className="flex items-center gap-2">
-                                        <span>{column.label}</span>
-                                        {column.sortable !== false && (
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="h-6 w-6 p-0"
-                                                onClick={() => toggleSort(column.key)}
-                                            >
-                                                {getSortIcon(column.key)}
-                                            </Button>
-                                        )}
-                                    </div>
+                                    className="relative text-gray-90 font-semibold">
+                                    <span>{column.label}</span>
                                 </TableHead>
                             ))}
                         </TableRow>
                         
                         {/* Linha dos filtros */}
-                        <TableRow className="bg-gray-50/50 dark:bg-gray-800/50">
+                        <TableRow className="bg-muted/30">
                             {columns.map((column, index) => (
                                 <TableHead key={`filter-${column.key}`} className="py-2">
                                     {column.searchable !== false ? (
                                         <div className="relative">
                                             {column.type === 'select' && column.options ? (
-                                                <select
-                                                    value={filters[column.key] || ''}
-                                                    onChange={(e) => updateFilter(column.key, e.target.value)}
-                                                    className="h-8 w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
+                                                <Select
+                                                    value={filters[column.key] || 'all'}
+                                                    onValueChange={(value) => {
+                                                        if (value === 'all') {
+                                                            updateFilter(column.key, '');
+                                                        } else {
+                                                            updateFilter(column.key, value);
+                                                        }
+                                                    }}
                                                 >
-                                                    <option value="">Todos</option>
-                                                    {column.options.map((option) => (
-                                                        <option key={option.value} value={option.value}>
-                                                            {option.label}
-                                                        </option>
-                                                    ))}
-                                                </select>
+                                                    <SelectTrigger className="h-10 text-sm">
+                                                        <SelectValue placeholder="Todos" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="all">Todos</SelectItem>
+                                                        {column.options.map((option) => (
+                                                            <SelectItem key={option.value} value={option.value}>
+                                                                {option.label}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
                                             ) : (
                                                 <>
-                                                    <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 h-3 w-3" />
+                                                    <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4" />
                                                     <Input
                                                         type={column.type === 'number' ? 'number' : 'text'}
-                                                        placeholder="Filtrar..."
+                                                        placeholder={column.label === 'Recursos' ? "Buscar por nome..." : "Filtrar..."}
                                                         value={filters[column.key] || ''}
                                                         onChange={(e) => updateFilter(column.key, e.target.value)}
-                                                        className="h-8 pl-7 pr-7 text-xs bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                                                        className="pl-8 pr-16 text-xs bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                                                     />
-                                                    {filters[column.key] && (
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                                            onClick={() => clearFilter(column.key)}
-                                                        >
-                                                            <X className="h-3 w-3 text-gray-400 dark:text-gray-500" />
-                                                        </Button>
-                                                    )}
+                                                    <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
+                                                        {column.sortable !== false && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                                onClick={() => toggleSort(column.key)}
+                                                            >
+                                                                {getSortIcon(column.key)}
+                                                            </Button>
+                                                        )}
+                                                        {filters[column.key] && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                                onClick={() => clearFilter(column.key)}
+                                                            >
+                                                                <X className="h-3 w-3 text-gray-400 dark:text-gray-500" />
+                                                            </Button>
+                                                        )}
+                                                    </div>
                                                 </>
                                             )}
                                         </div>
