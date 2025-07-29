@@ -44,6 +44,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAgendamentoColors, StatusBadge } from '@/components/ui/agend-colors';
 import { UserAvatar } from '@/components/user-avatar';
+
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+
 import type { PageProps, Agendamento, Espaco, BreadcrumbItem } from '@/types';
 
 interface Props extends PageProps {
@@ -124,11 +127,11 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
     const getNomeSortIcon = () => {
         switch (nomeSortOrder) {
             case 'asc':
-                return <ArrowUp className="h-3 w-3" />;
+                return <ArrowUp className="h-3 w-3 text-blue-600" />;
             case 'desc':
-                return <ArrowDown className="h-3 w-3" />;
+                return <ArrowDown className="h-3 w-3 text-blue-600" />;
             default:
-                return <ArrowUpDown className="h-3 w-3" />;
+                return <ArrowUpDown className="h-3 w-3 text-gray-400" />;
         }
     };
 
@@ -150,11 +153,11 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
     const getSolicitanteSortIcon = () => {
         switch (solicitanteSortOrder) {
             case 'asc':
-                return <ArrowUp className="h-3 w-3" />;
+                return <ArrowUp className="h-3 w-3 text-blue-600" />;
             case 'desc':
-                return <ArrowDown className="h-3 w-3" />;
+                return <ArrowDown className="h-3 w-3 text-blue-600" />;
             default:
-                return <ArrowUpDown className="h-3 w-3" />;
+                return <ArrowUpDown className="h-3 w-3 text-gray-400" />;
         }
     };
 
@@ -176,11 +179,11 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
     const getDataInicioSortIcon = () => {
         switch (dataInicioSortOrder) {
             case 'asc':
-                return <ArrowUp className="h-3 w-3" />;
+                return <ArrowUp className="h-3 w-3 text-blue-600" />;
             case 'desc':
-                return <ArrowDown className="h-3 w-3" />;
+                return <ArrowDown className="h-3 w-3 text-blue-600" />;
             default:
-                return <ArrowUpDown className="h-3 w-3" />;
+                return <ArrowUpDown className="h-3 w-3 text-gray-400" />;
         }
     };
 
@@ -202,11 +205,11 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
     const getDataFimSortIcon = () => {
         switch (dataFimSortOrder) {
             case 'asc':
-                return <ArrowUp className="h-3 w-3" />;
+                return <ArrowUp className="h-3 w-3 text-blue-600" />;
             case 'desc':
-                return <ArrowDown className="h-3 w-3" />;
+                return <ArrowDown className="h-3 w-3 text-blue-600" />;
             default:
-                return <ArrowUpDown className="h-3 w-3" />;
+                return <ArrowUpDown className="h-3 w-3 text-gray-400" />;
         }
     };
 
@@ -737,15 +740,21 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                                         onChange={(e) => setNomeAgendamentoFilter(e.target.value)}
                                         className="pl-8 pr-10"
                                     />
-                                    <Button 
-                                        variant="ghost" 
-                                        size="sm" 
-                                        onClick={toggleNomeSort}
-                                        className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
-                                        title={`Ordenar por nome ${nomeSortOrder === 'none' ? 'crescente' : nomeSortOrder === 'asc' ? 'decrescente' : 'padrão'}`}
-                                    >
-                                        {getNomeSortIcon()}
-                                    </Button>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button 
+                                                variant="ghost" 
+                                                size="sm" 
+                                                onClick={toggleNomeSort}
+                                                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
+                                            >
+                                                {getNomeSortIcon()}
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Ordenar por nome {nomeSortOrder === 'none' ? 'crescente' : nomeSortOrder === 'asc' ? 'decrescente' : 'padrão'}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
                                 </div>
                             </div>
 
@@ -797,15 +806,21 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                                         onChange={(e) => setSolicitanteFilter(e.target.value)}
                                         className="pl-8 pr-10"
                                     />
-                                    <Button 
-                                        variant="ghost" 
-                                        size="sm" 
-                                        onClick={toggleSolicitanteSort}
-                                        className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
-                                        title={`Ordenar por solicitante ${solicitanteSortOrder === 'none' ? 'crescente' : solicitanteSortOrder === 'asc' ? 'decrescente' : 'padrão'}`}
-                                    >
-                                        {getSolicitanteSortIcon()}
-                                    </Button>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button 
+                                                variant="ghost" 
+                                                size="sm" 
+                                                onClick={toggleSolicitanteSort}
+                                                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
+                                            >
+                                                {getSolicitanteSortIcon()}
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Ordenar por solicitante {solicitanteSortOrder === 'none' ? 'crescente' : solicitanteSortOrder === 'asc' ? 'decrescente' : 'padrão'}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
                                 </div>
                             </div>
 
@@ -818,16 +833,22 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                                         onChange={(e) => setDataInicioFilter(e.target.value)}
                                         className="pr-10"
                                     />
-                                    <Button 
-                                        variant="ghost" 
-                                        size="sm" 
-                                        onClick={toggleDataInicioSort}
-                                        className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted pointer-events-auto z-10"
-                                        title={`Ordenar por data início ${dataInicioSortOrder === 'none' ? 'crescente' : dataInicioSortOrder === 'asc' ? 'decrescente' : 'padrão'}`}
-                                        onMouseDown={(e) => e.preventDefault()}
-                                    >
-                                        {getDataInicioSortIcon()}
-                                    </Button>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button 
+                                                variant="ghost" 
+                                                size="sm" 
+                                                onClick={toggleDataInicioSort}
+                                                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted pointer-events-auto z-10"
+                                                onMouseDown={(e) => e.preventDefault()}
+                                            >
+                                                {getDataInicioSortIcon()}
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Ordenar por data início {dataInicioSortOrder === 'none' ? 'crescente' : dataInicioSortOrder === 'asc' ? 'decrescente' : 'padrão'}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
                                 </div>
                             </div>
 
@@ -840,16 +861,22 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                                         onChange={(e) => setDataFimFilter(e.target.value)}
                                         className="pr-10"
                                     />
-                                    <Button 
-                                        variant="ghost" 
-                                        size="sm" 
-                                        onClick={toggleDataFimSort}
-                                        className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted pointer-events-auto z-10"
-                                        title={`Ordenar por data fim ${dataFimSortOrder === 'none' ? 'crescente' : dataFimSortOrder === 'asc' ? 'decrescente' : 'padrão'}`}
-                                        onMouseDown={(e) => e.preventDefault()}
-                                    >
-                                        {getDataFimSortIcon()}
-                                    </Button>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button 
+                                                variant="ghost" 
+                                                size="sm" 
+                                                onClick={toggleDataFimSort}
+                                                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted pointer-events-auto z-10"
+                                                onMouseDown={(e) => e.preventDefault()}
+                                            >
+                                                {getDataFimSortIcon()}
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Ordenar por data fim {dataFimSortOrder === 'none' ? 'crescente' : dataFimSortOrder === 'asc' ? 'decrescente' : 'padrão'}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
                                 </div>
                             </div>
 
@@ -860,29 +887,35 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                               dataInicioSortOrder !== 'none' || dataFimSortOrder !== 'none') && (
                                 <div className="flex flex-col">
                                     <Label className="mb-2 opacity-0">Ações</Label>
-                                    <Button 
-                                        variant="outline" 
-                                        size="sm"
-                                        onClick={() => {
-                                            // Limpar todos os filtros e ordenações
-                                            setNomeAgendamentoFilter('');
-                                            setSolicitanteFilter('');
-                                            setStatusFilter('pendente');
-                                            setEspacoFilter('all');
-                                            setDataInicioFilter('');
-                                            setDataFimFilter('');
-                            setAprovadoHojeFilter(false);
-                            setRejeitadoHojeFilter(false);
-                                            setNomeSortOrder('none');
-                                            setSolicitanteSortOrder('none');
-                                            setDataInicioSortOrder('none');
-                                            setDataFimSortOrder('none');
-                                        }}
-                                        className="h-10 w-10 p-0"
-                                        title="Limpar filtros"
-                                        >
-                                        <X className="h-4 w-4" />
-                                        </Button>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm"
+                                                onClick={() => {
+                                                    // Limpar todos os filtros e ordenações
+                                                    setNomeAgendamentoFilter('');
+                                                    setSolicitanteFilter('');
+                                                    setStatusFilter('pendente');
+                                                    setEspacoFilter('all');
+                                                    setDataInicioFilter('');
+                                                    setDataFimFilter('');
+                                    setAprovadoHojeFilter(false);
+                                    setRejeitadoHojeFilter(false);
+                                                    setNomeSortOrder('none');
+                                                    setSolicitanteSortOrder('none');
+                                                    setDataInicioSortOrder('none');
+                                                    setDataFimSortOrder('none');
+                                                }}
+                                                className="h-10 w-10 p-0"
+                                            >
+                                                <X className="h-4 w-4" />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Limpar filtros</p>
+                                        </TooltipContent>
+                                    </Tooltip>
                                 </div>
                             )}
                         </div>
@@ -994,56 +1027,53 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                                             </div>
 
                                             <div className="flex items-center gap-2 ml-4">
-                                                <Button variant="outline" size="sm" asChild>
-                                                    <Link href={`/agendamentos/${agendamento.id}?from=gerenciar&${new URLSearchParams(filters).toString()}`}>
-                                                        <Eye className="h-4 w-4" />
-                                                    </Link>
-                                                </Button>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button variant="outline" size="sm" asChild>
+                                                            <Link href={`/agendamentos/${agendamento.id}?from=gerenciar&${new URLSearchParams(filters).toString()}`}>
+                                                                <Eye className="h-4 w-4" />
+                                                            </Link>
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Visualizar</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
 
                                                 {agendamento.status === 'pendente' && (
                                                     <>
-                                                         <AlertDialog>
-                                                            <AlertDialogTrigger asChild>
+
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
                                                                 <Button
                                                                     variant="outline"
                                                                     size="sm"
+                                                                    onClick={() => handleApproveConfirm(agendamento)}
                                                                     className="text-green-600 hover:text-green-700 hover:bg-green-50"
                                                                 >
                                                                     <Check className="h-4 w-4" />
                                                                 </Button>
-                                                            </AlertDialogTrigger>
-                                                            <AlertDialogContent>
-                                                                <AlertDialogHeader>
-                                                                    <AlertDialogTitle>
-                                                                        {agendamento.grupo_recorrencia 
-                                                                            ? `Aprovar agendamentos recorrentes?` 
-                                                                            : `Aprovar agendamento?`}
-                                                                    </AlertDialogTitle>
-                                                                    <AlertDialogDescription>
-                                                                        {agendamento.grupo_recorrencia 
-                                                                            ? `Tem certeza de que deseja aprovar o grupo de agendamentos "${agendamento.titulo}"? Todos os ${agendamento.total_grupo || agendamento.info_grupo?.total || 1} agendamentos serão aprovados.`
-                                                                            : `Tem certeza de que deseja aprovar o agendamento "${agendamento.titulo}"?`}
-                                                                    </AlertDialogDescription>
-                                                                </AlertDialogHeader>
-                                                                <AlertDialogFooter>
-                                                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                                                    <AlertDialogAction
-                                                                        className="bg-green-600 hover:bg-green-700"
-                                                                        onClick={() => handleApproveConfirm(agendamento)}
-                                                                    >
-                                                                        Sim, aprovar
-                                                                    </AlertDialogAction>
-                                                                </AlertDialogFooter>
-                                                            </AlertDialogContent>
-                                                        </AlertDialog>
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            onClick={() => handleReject(agendamento)}
-                                                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                                        >
-                                                            <X className="h-4 w-4" />
-                                                        </Button>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>Aprovar</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    onClick={() => handleReject(agendamento)}
+                                                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                                >
+                                                                    <X className="h-4 w-4" />
+                                                                </Button>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>Rejeitar</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
                                                     </>
                                                 )}
                                             </div>
@@ -1076,6 +1106,13 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                         </div>
                     </div>
                 )}
+
+                {/* Contador de registros */}
+                <div className="flex justify-between items-center -mt-4">
+                    <p className="text-sm text-muted-foreground ml-2">
+                        &nbsp;Mostrando {totalItems} registros
+                    </p>
+                </div>
 
                 {/* Dialog de Rejeição */}
                 <Dialog open={rejectionDialog.open} onOpenChange={(open) => setRejectionDialog({ open, agendamento: null })}>

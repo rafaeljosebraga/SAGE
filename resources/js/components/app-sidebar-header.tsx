@@ -3,6 +3,7 @@ import { Breadcrumbs } from '@/components/breadcrumbs';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { type BreadcrumbItem as BreadcrumbItemType } from '@/types';
 import { Moon, Sun } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbItemType[] }) {
     const [theme, setTheme] = useState<'light' | 'dark' | null>(null);
@@ -40,40 +41,46 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                 <SidebarTrigger className="-ml-1" />
                 <Breadcrumbs breadcrumbs={breadcrumbs} />
             </div>
-            <button
-                onClick={toggleTheme}
-                className="relative text-muted-foreground hover:text-foreground transition-all duration-300 p-2 rounded-lg hover:bg-sidebar-accent/50 hover:scale-105 active:scale-95"
-                title="Alternar tema"
-            >
-                <div className="relative w-5 h-5">
-                    {/* Sun Icon */}
-                    <Sun 
-                        className={`absolute inset-0 h-5 w-5 text-yellow-400 ${
-                            hasInteracted ? 'transition-all duration-500 ease-in-out' : ''
-                        } ${
-                            theme === 'dark' 
-                                ? 'opacity-100 rotate-0 scale-100' 
-                                : 'opacity-0 rotate-180 scale-75'
-                        }`}
-                        style={{
-                            filter: theme === 'dark' ? 'drop-shadow(0 0 8px rgba(251, 191, 36, 0.3))' : 'none'
-                        }}
-                    />
-                    {/* Moon Icon */}
-                    <Moon 
-                        className={`absolute inset-0 h-5 w-5 text-blue-500 ${
-                            hasInteracted ? 'transition-all duration-500 ease-in-out' : ''
-                        } ${
-                            theme === 'light' 
-                                ? 'opacity-100 rotate-0 scale-100' 
-                                : 'opacity-0 -rotate-180 scale-75'
-                        }`}
-                        style={{
-                            filter: theme === 'light' ? 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.3))' : 'none'
-                        }}
-                    />
-                </div>
-            </button>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <button
+                        onClick={toggleTheme}
+                        className="relative text-muted-foreground hover:text-foreground transition-all duration-300 p-2 rounded-lg hover:bg-sidebar-accent/50 hover:scale-105 active:scale-95"
+                    >
+                        <div className="relative w-5 h-5">
+                            {/* Sun Icon */}
+                            <Sun 
+                                className={`absolute inset-0 h-5 w-5 text-yellow-400 ${
+                                    hasInteracted ? 'transition-all duration-500 ease-in-out' : ''
+                                } ${
+                                    theme === 'dark' 
+                                        ? 'opacity-100 rotate-0 scale-100' 
+                                        : 'opacity-0 rotate-180 scale-75'
+                                }`}
+                                style={{
+                                    filter: theme === 'dark' ? 'drop-shadow(0 0 8px rgba(251, 191, 36, 0.3))' : 'none'
+                                }}
+                            />
+                            {/* Moon Icon */}
+                            <Moon 
+                                className={`absolute inset-0 h-5 w-5 text-blue-500 ${
+                                    hasInteracted ? 'transition-all duration-500 ease-in-out' : ''
+                                } ${
+                                    theme === 'light' 
+                                        ? 'opacity-100 rotate-0 scale-100' 
+                                        : 'opacity-0 -rotate-180 scale-75'
+                                }`}
+                                style={{
+                                    filter: theme === 'light' ? 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.3))' : 'none'
+                                }}
+                            />
+                        </div>
+                    </button>
+                </TooltipTrigger>
+                <TooltipContent side="left">
+                    <p>Alternar tema</p>
+                </TooltipContent>
+            </Tooltip>
         </header>
     );
 }

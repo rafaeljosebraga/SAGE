@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { FilterableTable, type ColumnConfig } from '@/components/ui/filterable-table';
 import { type User, type Espaco, type BreadcrumbItem } from '@/types';
 import { UserAvatar } from '@/components/user-avatar';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface AtribuirPermissoesCreateProps {
     Users: User[];
@@ -25,27 +26,25 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedEspaco, setSelectedEspaco] = useState<Espaco | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedFoto, setSelectedFoto] = useState<Foto | null>(null);
+    const [selectedFoto, setSelectedFoto] = useState<any | null>(null);
     const [isFotoModalOpen, setIsFotoModalOpen] = useState(false);
     const [scrollToResponsaveis, setScrollToResponsaveis] = useState(false);
-const {setData, processing, errors } = useForm({
+
+    const {setData, processing, errors } = useForm<{
+        user_id: number;
+        espaco_ids: number[];
+    }>({
         user_id: usID,
         espaco_ids: espacosAtribuidos,
     });
 
     const [removedEspacos, setRemovedEspacos] = useState<number[]>([]);
 
-    // Função 100% independente
-    const atualizarEspacosSelecionados = (espacos) => {
+    // Função para atualizar espaços selecionados
+    const atualizarEspacosSelecionados = (espacos: number[]) => {
         setSelectedEspacos(espacos);
         setData('espaco_ids', espacos);
         setRemovedEspacos([]); // Limpa removidos ao atualizar atribuídos
-    };
-    // Atualiza automaticamente quando os IDs mudam
-
-    const onChangeEspacos = (novosEspacos) => {
-        setEspacosAtribuidos(novosEspacos); // ou dispatch, depende do seu estado
-        atualizarEspacosSelecionados(novosEspacos);
     };
 
     useEffect(() => {
@@ -86,6 +85,16 @@ const {setData, processing, errors } = useForm({
         setScrollToResponsaveis(false);
     };
 
+    const handleViewFoto = (foto: any) => {
+        setSelectedFoto(foto);
+        setIsFotoModalOpen(true);
+    };
+
+    const closeFotoModal = () => {
+        setIsFotoModalOpen(false);
+        setSelectedFoto(null);
+    };
+
     const disposedEspacos = espacosAtribuidos.filter(id => !selectedEspacos.includes(id));
     // Alternar seleção de espaço
     const toggleEspaco = (espacoId: number) => {
@@ -116,16 +125,13 @@ const handleSubmit = (e: React.FormEvent) => {
     router.post(route('espaco-users.store'), {
         user_id: selectedUserId,
         espaco_ids: selectedEspacos,
-        espaco_ids_removidos: disposedEspacos, // <-- add this line
+        espaco_ids_removidos: disposedEspacos,
     }, {
         onSuccess: () => {
             // Limpar seleção após sucesso
             setSelectedUserId(null);
             setSelectedEspacos([]);
-            setData({
-                user_id: null,
-                espaco_ids: [],
-            });
+            setData('espaco_ids', []);
             setSearchTerm('');
         },
     });
@@ -382,15 +388,22 @@ const handleSubmit = (e: React.FormEvent) => {
             sortable: false,
             render: (value, espaco) => (
                 <div className="flex items-center justify-center gap-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        type="button"
-                        onClick={() => handleViewDetails(espaco)}
-                        className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-blue-700 dark:text-blue-700"
-                    >
-                        <Eye className="h-4 w-4" />
-                    </Button>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                type="button"
+                                onClick={() => handleViewDetails(espaco)}
+                                className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-blue-700 dark:text-blue-700"
+                            >
+                                <Eye className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Visualizar</p>
+                        </TooltipContent>
+                    </Tooltip>
                 </div>
             )
         }

@@ -7,6 +7,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { Plus, Pencil, Trash2, Package, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import { type User, type Recurso, type BreadcrumbItem } from '@/types';
 import { FilterableTable, type ColumnConfig } from '@/components/ui/filterable-table';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -171,26 +172,40 @@ export default function RecursosIndex({ auth, recursos }: RecursosIndexProps) {
             sortable: false,
             render: (value, recurso) => (
                 <div className="flex items-center justify-center gap-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        asChild
-                         className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black"
-                    >
-                        <Link href={`/recursos/${recurso.id}/editar`}>
-                            <Pencil className="h-4 w-4" />
-                        </Link>
-                    </Button>
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
                             <Button
                                 variant="outline"
                                 size="sm"
-                                className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-[#F26326] hover:text-black dark:text-[#F26326] dark:hover:text-black"
+                                asChild
+                                className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black"
                             >
-                                <Trash2 className="h-4 w-4" />
+                                <Link href={`/recursos/${recurso.id}/editar`}>
+                                    <Pencil className="h-4 w-4" />
+                                </Link>
                             </Button>
-                        </AlertDialogTrigger>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Editar</p>
+                        </TooltipContent>
+                    </Tooltip>
+                    <AlertDialog>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <AlertDialogTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-[#F26326] hover:text-black dark:text-[#F26326] dark:hover:text-black"
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </AlertDialogTrigger>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Excluir</p>
+                            </TooltipContent>
+                        </Tooltip>
                         <AlertDialogContent>
                             <AlertDialogHeader>
                                 <AlertDialogTitle>
