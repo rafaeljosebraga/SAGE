@@ -237,6 +237,12 @@ export default function Create({ perfilAcesso }: Props) {
                                         if (errors.password) clearErrors('password');
                                         if (errors.password_confirmation) clearErrors('password_confirmation');
                                     }}
+                                    onCopy={(e) => e.preventDefault()}
+                                    onPaste={(e) => e.preventDefault()}
+                                    onCut={(e) => e.preventDefault()}
+                                    onDrag={(e) => e.preventDefault()}
+                                    onDrop={(e) => e.preventDefault()}
+                                    onContextMenu={(e) => e.preventDefault()}
                                     placeholder="Digite a senha (mínimo 8 caracteres)"
                                     className={errors.password ? 'border-red-500' : ''}
                                      />
@@ -255,6 +261,12 @@ export default function Create({ perfilAcesso }: Props) {
                                         if (errors.password) clearErrors('password');
                                         if (errors.password_confirmation) clearErrors('password_confirmation');
                                     }}
+                                    onCopy={(e) => e.preventDefault()}
+                                    onPaste={(e) => e.preventDefault()}
+                                    onCut={(e) => e.preventDefault()}
+                                    onDrag={(e) => e.preventDefault()}
+                                    onDrop={(e) => e.preventDefault()}
+                                    onContextMenu={(e) => e.preventDefault()}
                                     placeholder="Confirme a senha"
                                     className={errors.password_confirmation ? 'border-red-500' : ''}
                                        />
