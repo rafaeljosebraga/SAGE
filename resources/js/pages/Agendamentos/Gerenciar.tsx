@@ -1048,13 +1048,11 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                                                                 <Button
                                                                     variant="outline"
                                                                     size="sm"
-                                                                    onClick={() => handleApprove(agendamento)}
-
+                                                                    onClick={() => handleApproveConfirm(agendamento)}
                                                                     className="text-green-600 hover:text-green-700 hover:bg-green-50"
                                                                 >
                                                                     <Check className="h-4 w-4" />
                                                                 </Button>
-
                                                             </TooltipTrigger>
                                                             <TooltipContent>
                                                                 <p>Aprovar</p>
