@@ -181,3 +181,52 @@
         outline: none;
     }
 }
+
+@layer components {
+    /* Estilos para melhorar o avatar e evitar piscar */
+    [data-slot="avatar"] {
+        @apply relative;
+        /* Força aceleração de hardware para melhor performance */
+        transform: translateZ(0);
+        backface-visibility: hidden;
+    }
+
+    [data-slot="avatar-image"] {
+        /* Renderização otimizada da imagem */
+        image-rendering: auto;
+        object-fit: cover;
+    }
+
+    [data-slot="avatar-fallback"] {
+        /* Garante que o fallback seja renderizado de forma consistente */
+        font-feature-settings: "kern" 1;
+        text-rendering: optimizeLegibility;
+    }
+
+    /* Otimizações específicas para o sidebar */
+    [data-sidebar="menu-button"] {
+        /* Evita reflow durante interações */
+        contain: layout style;
+    }
+
+    /* Otimizações para elementos que mudam frequentemente */
+    .sidebar-user-info {
+        /* Evita reflow desnecessário */
+        contain: layout style;
+    }
+
+    /* Prevenção de piscar em imagens */
+    img[src*="profile-photos"] {
+        /* Cache da imagem no navegador */
+        image-rendering: auto;
+        /* Evita piscar durante carregamento */
+        background-color: transparent;
+    }
+
+    /* Melhora a renderização de texto nas iniciais */
+    [data-slot="avatar-fallback"] {
+        /* Garante renderização consistente do texto */
+        font-variant-numeric: tabular-nums;
+        font-feature-settings: "tnum" 1;
+    }
+}

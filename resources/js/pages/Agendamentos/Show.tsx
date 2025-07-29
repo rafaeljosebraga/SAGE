@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAgendamentoColors, StatusBadge } from '@/components/ui/agend-colors';
 import { useToast } from '@/hooks/use-toast';
+import { UserAvatar } from '@/components/user-avatar';
 
 import type { PageProps, Agendamento, Foto, BreadcrumbItem } from '@/types';
 
@@ -589,11 +590,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                                                      'Cancelado por'}
                                                 </p>
                                                 <div className="flex items-start gap-3">
-                                                    <div className="w-8 h-8 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center flex-shrink-0">
-                                                        <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
-                                                            {aprovador.name.charAt(0).toUpperCase()}
-                                                        </span>
-                                                    </div>
+                                                    <UserAvatar user={aprovador} />
                                                     <div className="flex-1">
                                                         <div className="flex items-center gap-2 flex-wrap">
                                                             <p className="font-medium">{aprovador.name}</p>
@@ -722,11 +719,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                                 </CardHeader>
                                 <CardContent>
                                     <div className="flex items-start gap-3">
-                                        <div className="w-10 h-10 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center flex-shrink-0">
-                                            <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
-                                                {agendamento.user.name.charAt(0).toUpperCase()}
-                                            </span>
-                                        </div>
+                                        <UserAvatar user={agendamento.user} size="lg" />
                                         <div className="flex-1">
                                             <div className="flex items-center gap-2 flex-wrap">
                                                 <p className="font-medium">{agendamento.user.name}</p>
@@ -871,11 +864,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                                             {responsaveis.map((responsavel, index) => (
                                                 <div key={responsavel.id} className="bg-background/50 p-3 rounded-md border border-border">
                                                     <div className="flex items-start gap-2">
-                                                        <div className="w-8 h-8 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center flex-shrink-0">
-                                                            <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
-                                                                {responsavel.name.charAt(0).toUpperCase()}
-                                                            </span>
-                                                        </div>
+                                                        <UserAvatar user={responsavel} size="md" />
                                                         <div className="flex-1 min-w-0">
                                                             <div className="flex flex-col gap-1">
                                                                 <p className="text-sm font-medium text-card-foreground break-words">

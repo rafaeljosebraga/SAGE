@@ -192,6 +192,7 @@ return [
         'email' => 'e-mail',
         'password' => 'senha',
         'password_confirmation' => 'confirmação da senha',
+        'current_password' => 'senha atual',
         'city' => 'cidade',
         'country' => 'país',
         'address' => 'endereço',

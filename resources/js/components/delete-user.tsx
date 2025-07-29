@@ -5,6 +5,7 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
 
 import HeadingSmall from '@/components/heading-small';
 
@@ -12,6 +13,7 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 
 export default function DeleteUser() {
     const passwordInput = useRef<HTMLInputElement>(null);
+    const { toast } = useToast();
     const { data, setData, delete: destroy, processing, reset, errors, clearErrors } = useForm<Required<{ password: string }>>({ password: '' });
 
     const deleteUser: FormEventHandler = (e) => {
@@ -19,8 +21,30 @@ export default function DeleteUser() {
 
         destroy(route('profile.destroy'), {
             preserveScroll: true,
-            onSuccess: () => closeModal(),
-            onError: () => passwordInput.current?.focus(),
+            onSuccess: () => {
+                closeModal();
+                
+                // Mostrar toast de sucesso por 5 segundos
+                toast({
+                    title: "Conta apagada com sucesso!",
+                    description: "Sua conta e todos os dados foram permanentemente removidos.",
+                    duration: 5000,
+                });
+            },
+            onError: (errors) => {
+                passwordInput.current?.focus();
+                
+                // Mostrar toast de erro
+                const errorMessages = Object.values(errors).flat();
+                const errorMessage = errorMessages.length > 0 ? errorMessages[0] as string : "Erro ao apagar conta";
+                
+                toast({
+                    title: "Erro ao apagar conta",
+                    description: errorMessage,
+                    variant: "destructive",
+                    duration: 5000,
+                });
+            },
             onFinish: () => reset(),
         });
     };

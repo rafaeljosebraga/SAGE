@@ -10,6 +10,7 @@ import HeadingSmall from '@/components/heading-small';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -21,6 +22,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Password() {
     const passwordInput = useRef<HTMLInputElement>(null);
     const currentPasswordInput = useRef<HTMLInputElement>(null);
+    const { toast } = useToast();
 
     const { data, setData, errors, put, reset, processing, recentlySuccessful } = useForm({
         current_password: '',
@@ -33,7 +35,16 @@ export default function Password() {
 
         put(route('password.update'), {
             preserveScroll: true,
-            onSuccess: () => reset(),
+            onSuccess: () => {
+                reset();
+                
+                // Mostrar toast de sucesso por 5 segundos
+                toast({
+                    title: "Senha atualizada com sucesso!",
+                    description: "Sua senha foi alterada e está segura.",
+                    duration: 5000,
+                });
+            },
             onError: (errors) => {
                 if (errors.password) {
                     reset('password', 'password_confirmation');
@@ -44,6 +55,17 @@ export default function Password() {
                     reset('current_password');
                     currentPasswordInput.current?.focus();
                 }
+                
+                // Mostrar toast de erro
+                const errorMessages = Object.values(errors).flat();
+                const errorMessage = errorMessages.length > 0 ? errorMessages[0] as string : "Erro ao atualizar senha";
+                
+                toast({
+                    title: "Erro ao atualizar senha",
+                    description: errorMessage,
+                    variant: "destructive",
+                    duration: 5000,
+                });
             },
         });
     };

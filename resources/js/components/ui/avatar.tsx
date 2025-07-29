@@ -21,12 +21,16 @@ function Avatar({
 
 function AvatarImage({
   className,
+  onLoadingStatusChange,
   ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Image>) {
+}: React.ComponentProps<typeof AvatarPrimitive.Image> & {
+  onLoadingStatusChange?: (status: 'idle' | 'loading' | 'loaded' | 'error') => void
+}) {
   return (
     <AvatarPrimitive.Image
       data-slot="avatar-image"
-      className={cn("aspect-square size-full", className)}
+      className={cn("aspect-square size-full object-cover", className)}
+      onLoadingStatusChange={onLoadingStatusChange}
       {...props}
     />
   )
@@ -34,11 +38,15 @@ function AvatarImage({
 
 function AvatarFallback({
   className,
+  delayMs = 0,
   ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Fallback>) {
+}: React.ComponentProps<typeof AvatarPrimitive.Fallback> & {
+  delayMs?: number
+}) {
   return (
     <AvatarPrimitive.Fallback
       data-slot="avatar-fallback"
+      delayMs={delayMs}
       className={cn(
         "bg-muted flex size-full items-center justify-center rounded-full",
         className

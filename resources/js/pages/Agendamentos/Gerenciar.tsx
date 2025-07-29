@@ -33,6 +33,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAgendamentoColors, StatusBadge } from '@/components/ui/agend-colors';
+import { UserAvatar } from '@/components/user-avatar';
 
 import type { PageProps, Agendamento, Espaco, BreadcrumbItem } from '@/types';
 
@@ -251,11 +252,31 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
 
         // Aplicar filtro de aprovados hoje se especificado
         if (aprovadoHojeFilter) {
+            const hoje = new Date();
+            // Usar data local em vez de UTC para evitar problemas de fuso horário
+            const hojeStr = hoje.getFullYear() + '-' + 
+                           String(hoje.getMonth() + 1).padStart(2, '0') + '-' + 
+                           String(hoje.getDate()).padStart(2, '0');
+            
             filtered = filtered.filter(agendamento => {
-                if (agendamento.status === 'aprovado' && agendamento.aprovado_em) {
-                    const dataAprovacao = agendamento.aprovado_em.split('T')[0]; // YYYY-MM-DD
-                    const hoje = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-                    return dataAprovacao === hoje;
+                if (agendamento.status === 'aprovado') {
+                    // Tentar diferentes campos de data
+                    const dataField = agendamento.aprovado_em || agendamento.updated_at || agendamento.created_at;
+                    
+                    if (dataField) {
+                        try {
+                            // Criar data de aprovação usando data local
+                            const dataAprovacao = new Date(dataField);
+                            const dataAprovacaoStr = dataAprovacao.getFullYear() + '-' + 
+                                                   String(dataAprovacao.getMonth() + 1).padStart(2, '0') + '-' + 
+                                                   String(dataAprovacao.getDate()).padStart(2, '0');
+                            
+                            return dataAprovacaoStr === hojeStr;
+                        } catch (error) {
+                            console.warn('Erro ao processar data:', dataField, error);
+                            return false;
+                        }
+                    }
                 }
                 return false;
             });
@@ -263,11 +284,26 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
 
         // Aplicar filtro de rejeitados hoje se especificado
         if (rejeitadoHojeFilter) {
+            const hoje = new Date();
+            // Usar data local em vez de UTC para evitar problemas de fuso horário
+            const hojeStr = hoje.getFullYear() + '-' + 
+                           String(hoje.getMonth() + 1).padStart(2, '0') + '-' + 
+                           String(hoje.getDate()).padStart(2, '0');
+            
             filtered = filtered.filter(agendamento => {
                 if (agendamento.status === 'rejeitado' && agendamento.aprovado_em) {
-                    const dataRejeicao = agendamento.aprovado_em.split('T')[0]; // YYYY-MM-DD
-                    const hoje = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-                    return dataRejeicao === hoje;
+                    try {
+                        // Criar data de rejeição usando data local
+                        const dataRejeicao = new Date(agendamento.aprovado_em);
+                        const dataRejeicaoStr = dataRejeicao.getFullYear() + '-' + 
+                                              String(dataRejeicao.getMonth() + 1).padStart(2, '0') + '-' + 
+                                              String(dataRejeicao.getDate()).padStart(2, '0');
+                        
+                        return dataRejeicaoStr === hojeStr;
+                    } catch (error) {
+                        console.warn('Erro ao processar data de rejeição:', agendamento.aprovado_em);
+                        return false;
+                    }
                 }
                 return false;
             });
@@ -889,11 +925,7 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                                                     <div className="flex items-center gap-2">
                                                         <User className="h-4 w-4" />
                                                         <div className="flex items-center gap-2">
-                                                            <div className="w-6 h-6 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center">
-                                                                <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
-                                                                    {agendamento.user?.name?.charAt(0).toUpperCase() || 'U'}
-                                                                </span>
-                                                            </div>
+                                                            {agendamento.user && <UserAvatar user={agendamento.user} size="sm" />}
                                                             <div className="flex flex-col">
                                                                 <span className="text-sm font-medium">{agendamento.user?.name || 'Usuário não encontrado'}</span>
                                                                 {agendamento.user?.email && (

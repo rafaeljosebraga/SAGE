@@ -22,6 +22,7 @@ class User extends Authenticatable
         'email',
         'password',
         'perfil_acesso',
+        'profile_photo',
     ];
 
     /**
@@ -90,5 +91,17 @@ class User extends Authenticatable
         return $this->belongsToMany(Espaco::class, 'espaco_user')
             ->withPivot('created_by', 'updated_by')
             ->withTimestamps();
+    }
+
+    /**
+     * Retorna a URL da foto de perfil do usuário
+     */
+    public function getProfilePhotoUrlAttribute(): ?string
+    {
+        if ($this->profile_photo) {
+            return asset('storage/' . $this->profile_photo);
+        }
+        
+        return null;
     }
 }
