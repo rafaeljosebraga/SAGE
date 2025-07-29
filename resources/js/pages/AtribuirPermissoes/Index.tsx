@@ -5,6 +5,7 @@ import { Head, Link } from '@inertiajs/react';
 import { UserIcon, Plus } from 'lucide-react';
 import { type User, type Espaco, type BreadcrumbItem } from '@/types';
 import { FilterableTable, type ColumnConfig } from '@/components/ui/filterable-table';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface AtribuirPermissoesIndexProps {
     users: User[];
@@ -42,23 +43,30 @@ export default function AtribuirPermissoesIndex({ users, espacos }: AtribuirPerm
             sortable: false,
             render: (value, user) => (
                 <div className="flex items-center justify-center gap-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        asChild
-                        className="
-                            bg-white dark:bg-black
-                            text-[#EF7D4C] dark:text-[#EF7D4C]
-                            border border-[#EF7D4C]
-                            hover:bg-[#EF7D4C] hover:text-white
-                            dark:hover:bg-[#EF7D4C] dark:hover:text-white
-                            transition-colors
-                        "
-                        >
-                        <Link href={`atribuir-permissoes/${user.id}/criar`}>
-                            <Plus className="h-4 w-4" />
-                        </Link>
-                        </Button>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                asChild
+                                className="
+                                    bg-white dark:bg-black
+                                    text-[#EF7D4C] dark:text-[#EF7D4C]
+                                    border border-[#EF7D4C]
+                                    hover:bg-[#EF7D4C] hover:text-white
+                                    dark:hover:bg-[#EF7D4C] dark:hover:text-white
+                                    transition-colors
+                                "
+                                >
+                                <Link href={`atribuir-permissoes/${user.id}/criar`}>
+                                    <Plus className="h-4 w-4" />
+                                </Link>
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Atribuir</p>
+                        </TooltipContent>
+                    </Tooltip>
                 </div>
             )
         }

@@ -17,6 +17,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useEffect } from 'react';
 
 interface UsersIndexProps {
@@ -165,26 +166,40 @@ export default function UsersIndex({ auth, users, flash }: UsersIndexProps) {
             sortable: false,
             render: (value, user) => (
                 <div className="flex items-center justify-center gap-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        asChild
-                        className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black"
-                    >
-                        <Link href={`/usuarios/${user.id}/editar`}>
-                            <Pencil className="h-4 w-4" />
-                        </Link>
-                    </Button>
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
                             <Button
                                 variant="outline"
                                 size="sm"
-                               className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-[#F26326] hover:text-black dark:text-[#F26326] dark:hover:text-black"
+                                asChild
+                                className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black"
                             >
-                                <Trash2 className="h-4 w-4" />
+                                <Link href={`/usuarios/${user.id}/editar`}>
+                                    <Pencil className="h-4 w-4" />
+                                </Link>
                             </Button>
-                        </AlertDialogTrigger>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Editar</p>
+                        </TooltipContent>
+                    </Tooltip>
+                    <AlertDialog>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <AlertDialogTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                       className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-[#F26326] hover:text-black dark:text-[#F26326] dark:hover:text-black"
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </AlertDialogTrigger>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Excluir</p>
+                            </TooltipContent>
+                        </Tooltip>
                         <AlertDialogContent>
                             <AlertDialogHeader>
                                 <AlertDialogTitle>

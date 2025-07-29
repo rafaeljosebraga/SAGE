@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { FilterableTable, type ColumnConfig } from '@/components/ui/filterable-table';
 import { type User, type Espaco, type BreadcrumbItem } from '@/types';
 import { UserAvatar } from '@/components/user-avatar';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface AtribuirPermissoesCreateProps {
     Users: User[];
@@ -387,15 +388,22 @@ const handleSubmit = (e: React.FormEvent) => {
             sortable: false,
             render: (value, espaco) => (
                 <div className="flex items-center justify-center gap-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        type="button"
-                        onClick={() => handleViewDetails(espaco)}
-                        className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-blue-700 dark:text-blue-700"
-                    >
-                        <Eye className="h-4 w-4" />
-                    </Button>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                type="button"
+                                onClick={() => handleViewDetails(espaco)}
+                                className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-blue-700 dark:text-blue-700"
+                            >
+                                <Eye className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Visualizar</p>
+                        </TooltipContent>
+                    </Tooltip>
                 </div>
             )
         }

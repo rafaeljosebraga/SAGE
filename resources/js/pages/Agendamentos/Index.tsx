@@ -18,6 +18,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useAgendamentoColors, StatusLegend, StatusBadge, isEventPast } from '@/components/ui/agend-colors';
 import { useToast } from '@/hooks/use-toast';
 import { UserAvatar } from '@/components/user-avatar';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 import type { PageProps, Agendamento, Espaco, BreadcrumbItem } from '@/types';
 
@@ -1017,30 +1018,35 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
 
                             <div className="space-y-1">
                                 {dayEvents.slice(0, 3).map((event) => (
-                                    <div
-                                        key={event.id}
-                                        className={`text-xs p-1 rounded cursor-pointer transition-opacity hover:opacity-80 ${getEventBackgroundColor(event)}`}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleEventClick(event);
-                                        }}
-                                        title={getEventTooltip(event)}
-                                    >
-                                        <div className="flex items-start justify-between gap-1">
-                                            <div className="flex-1 min-w-0">
-                                                <div className="font-medium truncate">
-                                                    <span className="text-xs font-normal opacity-75">
-                                                        {event.hora_inicio.substring(0, 5)}
-                                                    </span>
-                                                    <span className="ml-1">{event.titulo}</span>
+                                    <Tooltip key={event.id}>
+                                        <TooltipTrigger asChild>
+                                            <div
+                                                className={`text-xs p-1 rounded cursor-pointer transition-opacity hover:opacity-80 ${getEventBackgroundColor(event)}`}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleEventClick(event);
+                                                }}
+                                            >
+                                                <div className="flex items-start justify-between gap-1">
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="font-medium truncate">
+                                                            <span className="text-xs font-normal opacity-75">
+                                                                {event.hora_inicio.substring(0, 5)}
+                                                            </span>
+                                                            <span className="ml-1">{event.titulo}</span>
+                                                        </div>
+                                                        <div className="text-xs opacity-75 truncate">{event.espaco?.nome}</div>
+                                                    </div>
+                                                    <div className="flex-shrink-0">
+                                                        {getStatusIcon(event.status)}
+                                                    </div>
                                                 </div>
-                                                <div className="text-xs opacity-75 truncate">{event.espaco?.nome}</div>
                                             </div>
-                                            <div className="flex-shrink-0">
-                                                {getStatusIcon(event.status)}
-                                            </div>
-                                        </div>
-                                    </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>{getEventTooltip(event)}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
                                 ))}
                                 {dayEvents.length > 3 && (
                                     <div className="text-xs text-muted-foreground font-medium">
@@ -1099,21 +1105,26 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                     onClick={() => handleDateSelect(day, timeSlot)}
                                 >
                                     {events.map((event) => (
-                                        <div
-                                            key={event.id}
-                                            className={`text-xs p-1 rounded mb-1 cursor-pointer transition-opacity hover:opacity-80 relative ${getEventBackgroundColor(event)}`}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleEventClick(event);
-                                            }}
-                                            title={getEventTooltip(event, false)}
-                                        >
-                                            <div className="absolute top-0.5 right-0.5">
-                                                {getStatusIcon(event.status)}
-                                            </div>
-                                            <div className="font-medium truncate pr-4">{event.titulo}</div>
-                                            <div className="text-xs opacity-75 truncate">{event.espaco?.nome}</div>
-                                        </div>
+                                        <Tooltip key={event.id}>
+                                            <TooltipTrigger asChild>
+                                                <div
+                                                    className={`text-xs p-1 rounded mb-1 cursor-pointer transition-opacity hover:opacity-80 relative ${getEventBackgroundColor(event)}`}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleEventClick(event);
+                                                    }}
+                                                >
+                                                    <div className="absolute top-0.5 right-0.5">
+                                                        {getStatusIcon(event.status)}
+                                                    </div>
+                                                    <div className="font-medium truncate pr-4">{event.titulo}</div>
+                                                    <div className="text-xs opacity-75 truncate">{event.espaco?.nome}</div>
+                                                </div>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>{getEventTooltip(event, false)}</p>
+                                            </TooltipContent>
+                                        </Tooltip>
                                     ))}
                                 </div>
                             );
@@ -1159,20 +1170,26 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                         </div>
                                     ) : (
                                         events.map((event) => (
-                                            <div
-                                                key={event.id}
-                                                className={`p-3 rounded-lg cursor-pointer transition-opacity hover:opacity-80 ${getEventBackgroundColor(event)}`}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleEventClick(event);
-                                                }}
-                                            >
-                                                <div className="font-medium">{event.titulo}</div>
-                                                <div className="text-sm opacity-75">
-                                                    {event.espaco?.nome} • {event.hora_inicio} - {event.hora_fim}
-                                                </div>
-                                                <div className="text-sm opacity-75">{event.user?.name}</div>
-                                            </div>
+                                            <Tooltip key={event.id}>
+                                                <TooltipTrigger asChild>
+                                                    <div
+                                                        className={`p-3 rounded-lg cursor-pointer transition-opacity hover:opacity-80 ${getEventBackgroundColor(event)}`}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleEventClick(event);
+                                                        }}
+                                                    >
+                                                        <div className="font-medium">{event.titulo}</div>
+                                                        <div className="text-sm opacity-75">
+                                                            {event.espaco?.nome} • {event.hora_inicio} - {event.hora_fim}
+                                                        </div>
+                                                        <div className="text-sm opacity-75">{event.user?.name}</div>
+                                                    </div>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>{getEventTooltip(event)}</p>
+                                                </TooltipContent>
+                                            </Tooltip>
                                         ))
                                     )}
                                 </div>
@@ -1288,23 +1305,28 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                         >
                                             <div className="space-y-1">
                                                 {dayEvents.map((event) => (
-                                                    <div
-                                                        key={event.id}
-                                                        className={`text-xs p-1 rounded cursor-pointer transition-opacity hover:opacity-80 relative ${getEventBackgroundColor(event)}`}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleEventClick(event);
-                                                        }}
-                                                        title={getEventTooltip(event)}
-                                                    >
-                                                        <div className="absolute top-0.5 right-0.5">
-                                                            {getStatusIcon(event.status)}
-                                                        </div>
-                                                        <div className="font-medium truncate pr-4">{event.titulo}</div>
-                                                        <div className="text-xs opacity-75">
-                                                            {event.hora_inicio.substring(0, 5)} - {event.hora_fim.substring(0, 5)}
-                                                        </div>
-                                                    </div>
+                                                    <Tooltip key={event.id}>
+                                                        <TooltipTrigger asChild>
+                                                            <div
+                                                                className={`text-xs p-1 rounded cursor-pointer transition-opacity hover:opacity-80 relative ${getEventBackgroundColor(event)}`}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleEventClick(event);
+                                                                }}
+                                                            >
+                                                                <div className="absolute top-0.5 right-0.5">
+                                                                    {getStatusIcon(event.status)}
+                                                                </div>
+                                                                <div className="font-medium truncate pr-4">{event.titulo}</div>
+                                                                <div className="text-xs opacity-75">
+                                                                    {event.hora_inicio.substring(0, 5)} - {event.hora_fim.substring(0, 5)}
+                                                                </div>
+                                                            </div>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>{getEventTooltip(event)}</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
                                                 ))}
                                             </div>
                                         </div>
@@ -1341,15 +1363,21 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                     onChange={(e) => setNomeFilter(e.target.value)}
                                     className="pl-10 pr-10"
                                 />
-                                <Button 
-                                    variant="ghost" 
-                                    size="sm" 
-                                    onClick={toggleNomeSort}
-                                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
-                                    title={`Ordenar por nome ${nomeSortOrder === 'none' ? 'crescente' : nomeSortOrder === 'asc' ? 'decrescente' : 'padrão'}`}
-                                >
-                                    {getNomeSortIcon()}
-                                </Button>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button 
+                                            variant="ghost" 
+                                            size="sm" 
+                                            onClick={toggleNomeSort}
+                                            className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
+                                        >
+                                            {getNomeSortIcon()}
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Ordenar por nome {nomeSortOrder === 'none' ? 'crescente' : nomeSortOrder === 'asc' ? 'decrescente' : 'padrão'}</p>
+                                    </TooltipContent>
+                                </Tooltip>
                             </div>
                         </div>
 
@@ -1401,15 +1429,21 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                     onChange={(e) => setDataInicioFilter(e.target.value)}
                                     className="pr-8 text-sm"
                                 />
-                                <Button 
-                                    variant="ghost" 
-                                    size="sm" 
-                                    onClick={() => toggleDateSort('inicio')}
-                                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-5 w-5 p-0 hover:bg-muted"
-                                    title={`Ordenar por data de início ${dateSortOrder.inicio === 'none' ? 'crescente' : dateSortOrder.inicio === 'asc' ? 'decrescente' : 'padrão'}`}
-                                >
-                                    {getDateSortIcon('inicio')}
-                                </Button>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button 
+                                            variant="ghost" 
+                                            size="sm" 
+                                            onClick={() => toggleDateSort('inicio')}
+                                            className="absolute right-1 top-1/2 transform -translate-y-1/2 h-5 w-5 p-0 hover:bg-muted"
+                                        >
+                                            {getDateSortIcon('inicio')}
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Ordenar por data de início {dateSortOrder.inicio === 'none' ? 'crescente' : dateSortOrder.inicio === 'asc' ? 'decrescente' : 'padrão'}</p>
+                                    </TooltipContent>
+                                </Tooltip>
                             </div>
                         </div>
 
@@ -1422,15 +1456,21 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                     onChange={(e) => setDataFimFilter(e.target.value)}
                                     className="pr-8 text-sm"
                                 />
-                                <Button 
-                                    variant="ghost" 
-                                    size="sm" 
-                                    onClick={() => toggleDateSort('fim')}
-                                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-5 w-5 p-0 hover:bg-muted"
-                                    title={`Ordenar por data de fim ${dateSortOrder.fim === 'none' ? 'crescente' : dateSortOrder.fim === 'asc' ? 'decrescente' : 'padrão'}`}
-                                >
-                                    {getDateSortIcon('fim')}
-                                </Button>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button 
+                                            variant="ghost" 
+                                            size="sm" 
+                                            onClick={() => toggleDateSort('fim')}
+                                            className="absolute right-1 top-1/2 transform -translate-y-1/2 h-5 w-5 p-0 hover:bg-muted"
+                                        >
+                                            {getDateSortIcon('fim')}
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Ordenar por data de fim {dateSortOrder.fim === 'none' ? 'crescente' : dateSortOrder.fim === 'asc' ? 'decrescente' : 'padrão'}</p>
+                                    </TooltipContent>
+                                </Tooltip>
                             </div>
                         </div>
 
@@ -1439,24 +1479,30 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                           nomeSortOrder !== 'none' || dateSortOrder.inicio !== 'none' || dateSortOrder.fim !== 'none') && (
                             <div className="flex flex-col">
                                 <Label className="mb-2 opacity-0">Ações</Label>
-                                <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => {
-                                        // Limpar todos os filtros e ordenações
-                                        setNomeFilter('');
-                                        setEspacoFilter('all');
-                                        setStatusFilter('all');
-                                        setDataInicioFilter('');
-                                        setDataFimFilter('');
-                                        setNomeSortOrder('none');
-                                        setDateSortOrder({ inicio: 'none', fim: 'none' });
-                                    }}
-                                    className="h-10 w-10 p-0"
-                                    title="Limpar filtros"
-                                >
-                                    <X className="h-4 w-4" />
-                                </Button>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button 
+                                            variant="outline" 
+                                            size="sm"
+                                            onClick={() => {
+                                                // Limpar todos os filtros e ordenações
+                                                setNomeFilter('');
+                                                setEspacoFilter('all');
+                                                setStatusFilter('all');
+                                                setDataInicioFilter('');
+                                                setDataFimFilter('');
+                                                setNomeSortOrder('none');
+                                                setDateSortOrder({ inicio: 'none', fim: 'none' });
+                                            }}
+                                            className="h-10 w-10 p-0"
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Limpar filtros</p>
+                                    </TooltipContent>
+                                </Tooltip>
                             </div>
                         )}
                     </div>
@@ -1560,44 +1606,70 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                     </div>
 
                                     <div className="flex items-center gap-2 ml-4">
-                                        <Button 
-                                            variant="outline" 
-                                            size="sm" 
-                                            onClick={() => handleEventClick(agendamento)}
-                                        >
-                                            <Eye className="h-4 w-4" />
-                                        </Button>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button 
+                                                    variant="outline" 
+                                                    size="sm" 
+                                                    onClick={() => handleEventClick(agendamento)}
+                                                >
+                                                    <Eye className="h-4 w-4" />
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>Visualizar</p>
+                                            </TooltipContent>
+                                        </Tooltip>
 
                                         {canEdit(agendamento) && (
-                                        <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => router.get(`/agendamentos/${agendamento.id}/editar`)}
-                                        >
-                                        <Edit className="h-4 w-4" />
-                                        </Button>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => router.get(`/agendamentos/${agendamento.id}/editar`)}
+                                                >
+                                                <Edit className="h-4 w-4" />
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>Editar</p>
+                                            </TooltipContent>
+                                        </Tooltip>
                                         )}
 
                                         {canForceDelete(agendamento) ? (
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handleForceDelete(agendamento)}
-                                                className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
-                                                title="Excluir agendamento permanentemente"
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => handleForceDelete(agendamento)}
+                                                        className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Excluir</p>
+                                                </TooltipContent>
+                                            </Tooltip>
                                         ) : canDelete(agendamento) ? (
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handleDelete(agendamento)}
-                                                className="text-slate-600 hover:text-slate-700 hover:bg-slate-50"
-                                                title="Cancelar agendamento"
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => handleDelete(agendamento)}
+                                                        className="text-slate-600 hover:text-slate-700 hover:bg-slate-50"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Cancelar agendamento</p>
+                                                </TooltipContent>
+                                            </Tooltip>
                                         ) : null}
                                     </div>
                                 </div>
@@ -1690,15 +1762,21 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                             Espaços
                                         </Label>
                                         <div className="flex items-center gap-1 flex-wrap">
-                                            <Button 
-                                                variant="ghost" 
-                                                size="sm" 
-                                                onClick={toggleSort}
-                                                className="h-7 w-7 p-0 hover:bg-primary/10 dark:hover:bg-primary/20 text-muted-foreground hover:text-primary dark:text-muted-foreground dark:hover:text-primary transition-colors flex-shrink-0"
-                                                title={`Ordenar ${sortOrder === 'none' ? 'A-Z' : sortOrder === 'asc' ? 'Z-A' : 'padrão'}`}
+                                            <Tooltip>
+                                            <TooltipTrigger asChild>
+                                            <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={toggleSort}
+                                            className="h-7 w-7 p-0 hover:bg-primary/10 dark:hover:bg-primary/20 text-muted-foreground hover:text-primary dark:text-muted-foreground dark:hover:text-primary transition-colors flex-shrink-0"
                                             >
-                                                {getSortIcon()}
+                                            {getSortIcon()}
                                             </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                            <p>Ordenar {sortOrder === 'none' ? 'A-Z' : sortOrder === 'asc' ? 'Z-A' : 'padrão'}</p>
+                                            </TooltipContent>
+                                            </Tooltip>
                                             <div className="h-4 w-px bg-border dark:bg-border mx-1 flex-shrink-0" />
                                             <Button 
                                                 variant="ghost" 
@@ -2111,20 +2189,34 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                                 </div>
 
                                                 <div className="flex items-center gap-2">
-                                                    <Button variant="outline" size="sm" asChild>
-                                                        <Link href={`/agendamentos/${event.id}`}>
-                                                            <Eye className="h-4 w-4" />
-                                                        </Link>
-                                                    </Button>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button variant="outline" size="sm" asChild>
+                                                                <Link href={`/agendamentos/${event.id}`}>
+                                                                    <Eye className="h-4 w-4" />
+                                                                </Link>
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>Visualizar</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
 
                                                     {canEdit(event) && (
-                                                    <Button 
-                                                    variant="outline" 
-                                                    size="sm" 
+                                                    <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                    <Button
+                                                    variant="outline"
+                                                    size="sm"
                                                     onClick={() => router.get(`/agendamentos/${event.id}/editar`)}
                                                     >
                                                     <Edit className="h-4 w-4" />
                                                     </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                    <p>Editar</p>
+                                                    </TooltipContent>
+                                                    </Tooltip>
                                                     )}
 
                                                     {canDelete(event) && (

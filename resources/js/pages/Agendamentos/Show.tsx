@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useAgendamentoColors, StatusBadge } from '@/components/ui/agend-colors';
 import { useToast } from '@/hooks/use-toast';
 import { UserAvatar } from '@/components/user-avatar';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 import type { PageProps, Agendamento, Foto, BreadcrumbItem } from '@/types';
 
@@ -364,63 +365,87 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                         <StatusBadge status={agendamento.status} agendamento={agendamento} />
 
                         {canEdit && (
-                            <Button 
-                                variant="outline" 
-                                size="sm" 
-                                title="Editar agendamento"
-                                onClick={() => {
-                                    // Preservar os parâmetros da URL atual e adicionar indicador de origem
-                                    const urlParams = new URLSearchParams(window.location.search);
-                                    urlParams.set('from', 'show'); // Indicar que veio da tela de detalhes
-                                    
-                                    router.get(`/agendamentos/${agendamento.id}/editar?${urlParams.toString()}`);
-                                }}
-                            >
-                                <Edit className="h-4 w-4 mr-2" />
-                                Editar
-                            </Button>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        onClick={() => {
+                                            // Preservar os parâmetros da URL atual e adicionar indicador de origem
+                                            const urlParams = new URLSearchParams(window.location.search);
+                                            urlParams.set('from', 'show'); // Indicar que veio da tela de detalhes
+                                            
+                                            router.get(`/agendamentos/${agendamento.id}/editar?${urlParams.toString()}`);
+                                        }}
+                                    >
+                                        <Edit className="h-4 w-4 mr-2" />
+                                        Editar
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Editar</p>
+                                </TooltipContent>
+                            </Tooltip>
                         )}
 
                         {/* Mostrar botão Excluir apenas para diretor geral */}
                         {canForceDelete && (
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={handleForceDelete}
-                                title="Excluir agendamento"
-                                className="text-orange-600 hover:text-orange-700 border-orange-200 hover:border-orange-300 dark:text-orange-400 dark:hover:text-orange-300 dark:border-orange-800 dark:hover:border-orange-700"
-                            >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Excluir
-                            </Button>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleForceDelete}
+                                        className="text-orange-600 hover:text-orange-700 border-orange-200 hover:border-orange-300 dark:text-orange-400 dark:hover:text-orange-300 dark:border-orange-800 dark:hover:border-orange-700"
+                                    >
+                                        <Trash2 className="h-4 w-4 mr-2" />
+                                        Excluir
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Excluir</p>
+                                </TooltipContent>
+                            </Tooltip>
                         )}
 
                         {/* Mostrar botão Cancelar apenas se não estiver cancelado */}
                         {canDelete && (
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={handleDelete}
-                                title="Cancelar agendamento"
-                                className="text-slate-600 hover:text-slate-700 border-slate-200 hover:border-slate-300 dark:text-slate-400 dark:hover:text-slate-300 dark:border-slate-600 dark:hover:border-slate-500"
-                            >
-                                <Ban className="h-4 w-4 mr-2" />
-                                Cancelar
-                            </Button>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleDelete}
+                                        className="text-slate-600 hover:text-slate-700 border-slate-200 hover:border-slate-300 dark:text-slate-400 dark:hover:text-slate-300 dark:border-slate-600 dark:hover:border-slate-500"
+                                    >
+                                        <Ban className="h-4 w-4 mr-2" />
+                                        Cancelar
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Cancelar</p>
+                                </TooltipContent>
+                            </Tooltip>
                         )}
 
                         {/* Mostrar botão Voltar Agendamento apenas se estiver cancelado */}
                         {canUncancel && (
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={handleUncancel}
-                                title="Voltar agendamento"
-                                className="text-green-600 hover:text-green-700"
-                            >
-                                <RotateCcw className="h-4 w-4 mr-2" />
-                                Voltar Agendamento
-                            </Button>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleUncancel}
+                                        className="text-green-600 hover:text-green-700"
+                                    >
+                                        <RotateCcw className="h-4 w-4 mr-2" />
+                                        Voltar Agendamento
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Voltar Agendamento</p>
+                                </TooltipContent>
+                            </Tooltip>
                         )}
                     </div>
                 </div>
