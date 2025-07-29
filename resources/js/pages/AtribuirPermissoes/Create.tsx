@@ -405,18 +405,29 @@ const handleSubmit = (e: React.FormEvent) => {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Atribuir Permissões" />
             <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <Button asChild variant="ghost" className="pl-0" type="button">
-                            <Link href={route('espaco-users.index')}>
-                                <ArrowLeft className="mr-2 h-4 w-4" />
-                                Voltar
-                            </Link>
-                        </Button>
-                        <h1 className="text-3xl font-bold text-foreground mt-2">Atribuir Permissões</h1>
-                    </div>
-                </div>
+                <div className="flex items-center gap-4">
+                    <Button asChild variant="ghost" type="button">
+                    <Link
+                        href={route('espaco-users.index')}
+                        className="
+                        ml-4
+                        bg-white dark:bg-black
+                        text-[#EF7D4C] dark:text-[#EF7D4C]
+                        border border-[#EF7D4C]
+                        hover:!bg-[#EF7D4C] hover:!text-white
+                        dark:hover:!bg-[#EF7D4C] dark:hover:!text-white
+                        transition-colors
+                        pl-0
+                        inline-flex items-center
+                        "
+                    >
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Voltar
+                    </Link>
+                    </Button>
 
+                    <h1 className="text-3xl font-bold text-foreground">Atribuir Permissões</h1>
+                </div>
                 <form onSubmit={handleSubmit}>
                     <div>
 

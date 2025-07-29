@@ -28,7 +28,7 @@ import { PhotoUpload } from '@/components/ui/photo-upload';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Save } from 'lucide-react';
 import { type User, type Localizacao, type Recurso, type Espaco, type Foto, type BreadcrumbItem } from '@/types';
-import { FormEventHandler, ChangeEvent, useState, useEffect } from 'react';
+import { FormEventHandler, ChangeEvent, useState, useEffect, useRef } from 'react';
 import { UserAvatar } from '@/components/user-avatar';
 
 // Tipo para o formulário de edição
@@ -55,6 +55,7 @@ interface EspacosEditProps {
 export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: EspacosEditProps) {
     const [fotosAtuais, setFotosAtuais] = useState<Foto[]>(espaco.fotos || []);
     const [deveScrollParaErro, setDeveScrollParaErro] = useState(false);
+    const [formAlterado, setFormAlterado] = useState(false);
 
     const formatPerfil = (perfil: string | undefined) => {
         if (!perfil) return "Não definido";
@@ -230,6 +231,19 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
         }
     };
 
+    useEffect(() => {
+        const houveAlteracao =
+            data.nome.trim() !== (espaco.nome || '').trim() ||
+            data.descricao.trim() !== (espaco.descricao || '').trim() ||
+            data.capacidade.trim() !== (espaco.capacidade?.toString() || '').trim() ||
+            data.localizacao_id.trim() !== (espaco.localizacao_id?.toString() || '').trim() ||
+            data.status !== (espaco.status || 'ativo') ||
+            data.disponivel_reserva !== (espaco.disponivel_reserva || false) ||
+            JSON.stringify(data.recursos.sort()) !== JSON.stringify((espaco.recursos?.map(r => r.id).sort()) || []);
+
+        setFormAlterado(houveAlteracao);
+    }, [data, espaco]);
+
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Espaços', href: '/espacos' },
         { title: 'Editar Espaço', href: `/espacos/${espaco.id}/editar` }
@@ -241,61 +255,63 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
 
             <div className="space-y-6">
                 <div className="flex items-center gap-4">
-                    {(!fotosAtuais || fotosAtuais.length === 0) ? (
-                        <Button
-                            variant="outline"
-                            type="button"
-                            className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-[#F26326] hover:text-black dark:text-[#F26326] dark:hover:text-black border-red-500"
-                            onClick={() => {
-                                // Mostrar erro de fotos e fazer scroll
-                                setDeveScrollParaErro(true);
-                                
-                                // Simular erro de fotos para mostrar o campo em vermelho
-                                const painelFotos = document.getElementById('painel-fotos');
-                                if (painelFotos) {
-                                    painelFotos.classList.add('border-red-500');
-                                    painelFotos.scrollIntoView({
-                                        behavior: 'smooth',
-                                        block: 'center',
-                                        inline: 'nearest'
-                                    });
-                                }
-                            }}
-                        >
-                            <ArrowLeft className="mr-2 h-4 w-4" />
-                            Voltar
-                        </Button>
-                    ) : (
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button
-                                variant="outline"
+                    {formAlterado ? (
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button
                                 type="button"
-                                className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-[#F26326] hover:text-black dark:text-[#F26326] dark:hover:text-black"
-                                >
+                                variant="outline"
+                                className="
+                                    ml-4
+                                    bg-white dark:bg-black
+                                    text-[#EF7D4C] dark:text-[#EF7D4C]
+                                    border border-[#EF7D4C]
+                                    hover:bg-[#EF7D4C] hover:text-white
+                                    dark:hover:bg-[#EF7D4C] dark:hover:text-white
+                                    transition-colors
+                                "
+                            >
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Voltar
-                                </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
                                 <AlertDialogTitle>Tem certeza que deseja voltar?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    As alterações feitas não foram salvas. Você perderá todas as modificações exceto as fotos que são salvas.
+                                    As alterações feitas não foram salvas. Você perderá todas as modificações.
                                 </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
                                 <AlertDialogCancel>Não</AlertDialogCancel>
                                 <AlertDialogAction
                                     className="bg-red-600 hover:bg-red-700"
-                                    asChild
+                                    onClick={() => (window.location.href = '/espacos')}
                                 >
-                                    <Link href="/espacos">Sim, voltar</Link>
+                                    Sim, voltar
                                 </AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                            </AlertDialog>
-                    )}
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                ) : (
+                    <Button
+                        type="button"
+                        variant="outline"
+                        className="
+                            ml-4
+                            bg-white dark:bg-black
+                            text-[#EF7D4C] dark:text-[#EF7D4C]
+                            border border-[#EF7D4C]
+                            hover:bg-[#EF7D4C] hover:text-white
+                            dark:hover:bg-[#EF7D4C] dark:hover:text-white
+                            transition-colors
+                        "
+                        onClick={() => (window.location.href = '/espacos')}
+                    >
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Voltar
+                    </Button>
+                )}
                     <h1 className="text-3xl font-bold text-black dark:text-white">Editar espaço</h1>
                 </div>
 

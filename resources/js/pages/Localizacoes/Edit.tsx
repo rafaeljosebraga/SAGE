@@ -18,7 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Save } from 'lucide-react';
 import { type User, type Localizacao, type BreadcrumbItem } from '@/types';
-import { FormEventHandler, ChangeEvent } from 'react';
+import { FormEventHandler, ChangeEvent, useState, useEffect, useRef } from 'react';
 
 interface LocalizacoesEditProps {
     auth: {
@@ -33,6 +33,8 @@ export default function LocalizacoesEdit({ auth, localizacao }: LocalizacoesEdit
         descricao: localizacao.descricao || '',
     });
 
+    const [formAlterado, setFormAlterado] = useState(false);
+
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         put(route('localizacoes.update', localizacao.id));
@@ -43,45 +45,82 @@ export default function LocalizacoesEdit({ auth, localizacao }: LocalizacoesEdit
         { title: 'Editar Localização', href: route('localizacoes.edit', localizacao.id) }
     ];
 
+    useEffect(() => {
+        const houveAlteracao =
+            data.nome !== localizacao.nome ||
+            data.descricao !== localizacao.descricao;
+
+        setFormAlterado(houveAlteracao);
+    }, [data, localizacao]);
+
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Editar Localização - ${localizacao.nome}`} />
 
-            <div className="space-y-6">
-                <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 mb-5">
+                {formAlterado ? (
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
                             <Button
-                            type="button"
-                            variant="outline"
-                            className="gap-2"
+                                type="button"
+                                variant="outline"
+                                className="
+                                    ml-4
+                                    bg-white dark:bg-black
+                                    text-[#EF7D4C] dark:text-[#EF7D4C]
+                                    border border-[#EF7D4C]
+                                    hover:bg-[#EF7D4C] hover:text-white
+                                    dark:hover:bg-[#EF7D4C] dark:hover:text-white
+                                    transition-colors
+                                "
                             >
-                            <ArrowLeft className="h-4 w-4" />
-                            Voltar
+                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                Voltar
                             </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                             <AlertDialogHeader>
-                            <AlertDialogTitle>Tem certeza que deseja voltar?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                As alterações feitas não foram salvas. Você perderá todas as modificações.
-                            </AlertDialogDescription>
+                                <AlertDialogTitle>Tem certeza que deseja voltar?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    As alterações feitas não foram salvas. Você perderá todas as modificações.
+                                </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                            <AlertDialogCancel>Não</AlertDialogCancel>
-                            <AlertDialogAction
-                                className="bg-red-600 hover:bg-red-700"
-                                asChild
-                            >
-                                <Link href="/localizacoes">Sim, voltar</Link>
-                            </AlertDialogAction>
+                                <AlertDialogCancel>Não</AlertDialogCancel>
+                                <AlertDialogAction
+                                    className="bg-red-600 hover:bg-red-700"
+                                    onClick={() => (window.location.href = '/localizacoes')}
+                                >
+                                    Sim, voltar
+                                </AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
-                        </AlertDialog>
-        <h1 className="text-3xl font-bold text-black dark:text-white">Editar Localização</h1>
-                </div>
+                    </AlertDialog>
+                ) : (
+                    <Button
+                        type="button"
+                        variant="outline"
+                        className="
+                            ml-4
+                            bg-white dark:bg-black
+                            text-[#EF7D4C] dark:text-[#EF7D4C]
+                            border border-[#EF7D4C]
+                            hover:bg-[#EF7D4C] hover:text-white
+                            dark:hover:bg-[#EF7D4C] dark:hover:text-white
+                            transition-colors
+                        "
+                        onClick={() => (window.location.href = '/localizacoes')}
+                    >
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Voltar
+                    </Button>
+                )}
 
-                <form onSubmit={submit} className="space-y-6">
+                <h1 className="text-3xl font-bold text-black dark:text-white">Editar Localização</h1>
+            </div>
+
+            <form onSubmit={submit} className="space-y-6">
                     <Card>
                         <CardHeader>
                             <CardTitle>Informações da Localização</CardTitle>
@@ -160,7 +199,6 @@ export default function LocalizacoesEdit({ auth, localizacao }: LocalizacoesEdit
                         </AlertDialog>
                     </div>
                 </form>
-            </div>
         </AppLayout>
     );
 }

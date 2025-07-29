@@ -418,11 +418,12 @@ export function PhotoUpload({
                                                                 Cancelar
                                                             </AlertDialogCancel>
                                                             <AlertDialogAction
-                                                                onClick={() => removerFoto(index)}
-                                                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                                            onClick={() => removerFoto(index)}
+                                                            className="bg-red-600 text-white hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700"
                                                             >
-                                                                Excluir
+                                                            Excluir
                                                             </AlertDialogAction>
+
                                                         </AlertDialogFooter>
                                                     </AlertDialogContent>
                                                 </AlertDialog>

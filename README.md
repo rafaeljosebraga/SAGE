@@ -1,6 +1,9 @@
 # SAGE
 ## Project Setup Guide
 
+### Contexto do Projeto
+O SAGE (Sistema de Agendamento e Gerenciamento de Espaços) é um projeto desenvolvido como parte da disciplina de APS (Análise e Projeto de Sistemas). Este repositório é um fork do projeto original e contém o desenvolvimento contínuo do sistema.
+
 ### Prerequisites
 - Docker Desktop (v4.25+)
 - Git
@@ -45,7 +48,7 @@ source ~/.bashrc
 # 11. comando para habilitar os toast, para popups
 npm install @radix-ui/react-toast
 ```
-# Atualizar Projeto para o gerenciar usuário
+# Atualizar Projeto (se já instalado)
 
 ```bash
 # Executar Migrações
@@ -74,3 +77,4 @@ npm run dev
 # Criação de Seeder
 /vendor/bin/sail artisan make:seeder AdminUserSeeder
 ```
+

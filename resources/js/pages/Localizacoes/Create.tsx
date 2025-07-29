@@ -33,6 +33,7 @@ export default function LocalizacoesCreate({ auth }: LocalizacoesCreateProps) {
     const { toast } = useToast();
     useToastDismissOnClick(); // Hook para dismissar toast ao clicar em botões
     const [arquivosOriginais, setArquivosOriginais] = useState<File[]>([]);
+    const [formAlterado, setFormAlterado] = useState(false);
     const [deveScrollParaErro, setDeveScrollParaErro] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const submitTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -88,7 +89,18 @@ export default function LocalizacoesCreate({ auth }: LocalizacoesCreateProps) {
         });
     };
 
+    useEffect(() => {
+        const inicial = {
+            nome: '',
+            descricao: '',
+        };
 
+        const alterado =
+            data.nome.trim() !== inicial.nome ||
+            data.descricao.trim() !== inicial.descricao;
+
+        setFormAlterado(alterado);
+        }, [data]);
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Localizações', href: route('localizacoes.index') },
@@ -101,37 +113,67 @@ export default function LocalizacoesCreate({ auth }: LocalizacoesCreateProps) {
 
             <div className="space-y-6">
                 <div className="flex items-center gap-4">
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
+                    {formAlterado ? (
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
                             <Button
                                 variant="outline"
                                 type="button"
-                                className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-[#F26326] hover:text-black dark:text-[#F26326] dark:hover:text-black"
+                                className="
+                                    ml-4
+                                    bg-white dark:bg-black
+                                    text-[#EF7D4C] dark:text-[#EF7D4C]
+                                    border border-[#EF7D4C]
+                                    hover:bg-[#EF7D4C] hover:text-white
+                                    dark:hover:bg-[#EF7D4C] dark:hover:text-white
+                                    transition-colors
+                                "
                             >
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Voltar
                             </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Tem certeza que deseja voltar?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    As informações preenchidas serão perdidas.
+                                As informações preenchidas serão perdidas.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel>Não</AlertDialogCancel>
                                 <AlertDialogAction
-                                    onClick={() => {
-                                        window.location.href = '/localizacoes';
-                                    }}
-                                    className="bg-red-600 hover:bg-red-700"
+                                onClick={() => {
+                                    window.location.href = '/localizacoes';
+                                }}
+                                className="bg-red-600 hover:bg-red-700"
                                 >
-                                    Sim, voltar
+                                Sim, voltar
                                 </AlertDialogAction>
                             </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                        ) : (
+                        <Button
+                            variant="outline"
+                            type="button"
+                            className="
+                                ml-4
+                                bg-white dark:bg-black
+                                text-[#EF7D4C] dark:text-[#EF7D4C]
+                                border border-[#EF7D4C]
+                                hover:bg-[#EF7D4C] hover:text-white
+                                dark:hover:bg-[#EF7D4C] dark:hover:text-white
+                                transition-colors
+                            "
+                            onClick={() => {
+                                window.location.href = '/localizacoes';
+                            }}
+                            >
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Voltar
+                            </Button>
+                        )}
                       <h1 className="text-3xl font-bold text-black dark:text-white">Nova Localização</h1>
                 </div>
 

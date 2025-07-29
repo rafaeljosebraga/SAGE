@@ -28,7 +28,7 @@ import { useToastDismissOnClick } from '@/hooks/use-toast-dismiss-on-click';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Save } from 'lucide-react';
 import { type User, type Recurso, type BreadcrumbItem } from '@/types';
-import { FormEventHandler, ChangeEvent } from 'react';
+import { FormEventHandler, ChangeEvent, useState, useEffect, useRef } from 'react';
 
 interface RecursosEditProps {
     auth: {
@@ -40,6 +40,7 @@ interface RecursosEditProps {
 export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
     const { toast } = useToast();
     useToastDismissOnClick(); // Hook para dismissar toast ao clicar em botões
+    const [formAlterado, setFormAlterado] = useState(false);
     const { data, setData, reset, put, processing, errors, clearErrors } = useForm({
         nome: recurso.nome || '',
         descricao: recurso.descricao || '',
@@ -77,41 +78,97 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
         { title: 'Editar Recurso', href: route('recursos.edit', recurso.id) }
     ];
 
+    const recursoOriginal = useRef<Recurso>(recurso);
+
+    useEffect(() => {
+        recursoOriginal.current = recurso;
+        reset();
+    }, [recurso, reset]);
+
+    function normalizeString(str?: string | null) {
+        return str ?? '';
+    }
+
+    function normalizeBoolean(val?: boolean | null) {
+        return val ?? false;
+    }
+
+    useEffect(() => {
+    const houveAlteracao =
+        normalizeString(data.nome) !== normalizeString(recursoOriginal.current.nome) ||
+        normalizeString(data.descricao) !== normalizeString(recursoOriginal.current.descricao) ||
+        normalizeString(data.status) !== normalizeString(recursoOriginal.current.status) ||
+        normalizeBoolean(data.fixo) !== normalizeBoolean(recursoOriginal.current.fixo) ||
+        normalizeString(data.marca) !== normalizeString(recursoOriginal.current.marca) ||
+        normalizeString(data.modelo) !== normalizeString(recursoOriginal.current.modelo) ||
+        normalizeString(data.observacoes) !== normalizeString(recursoOriginal.current.observacoes);
+
+    setFormAlterado(houveAlteracao);
+    }, [data]);
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Editar Recurso - ${recurso.nome}`} />
 
             <div className="space-y-6">
                 <div className="flex items-center gap-4">
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button
+                    {formAlterado ? (
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="
+                                        ml-4
+                                        bg-white dark:bg-black
+                                        text-[#EF7D4C] dark:text-[#EF7D4C]
+                                        border border-[#EF7D4C]
+                                        hover:bg-[#EF7D4C] hover:text-white
+                                        dark:hover:bg-[#EF7D4C] dark:hover:text-white
+                                        transition-colors
+                                    "
+                                >
+                                    <ArrowLeft className="mr-2 h-4 w-4" />
+                                    Voltar
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Tem certeza que deseja voltar?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        As alterações feitas não foram salvas. Você perderá todas as modificações.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Não</AlertDialogCancel>
+                                    <AlertDialogAction
+                                        className="bg-red-600 hover:bg-red-700"
+                                        onClick={() => (window.location.href = '/recursos')}
+                                    >
+                                        Sim, voltar
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    ) : (
+                        <Button
                             type="button"
                             variant="outline"
-                            className="gap-2"
-                            >
-                            <ArrowLeft className="h-4 w-4" />
+                            className="
+                                ml-4
+                                bg-white dark:bg-black
+                                text-[#EF7D4C] dark:text-[#EF7D4C]
+                                border border-[#EF7D4C]
+                                hover:bg-[#EF7D4C] hover:text-white
+                                dark:hover:bg-[#EF7D4C] dark:hover:text-white
+                                transition-colors
+                            "
+                            onClick={() => (window.location.href = '/recursos')}
+                        >
+                            <ArrowLeft className="mr-2 h-4 w-4" />
                             Voltar
-                            </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                            <AlertDialogTitle>Tem certeza que deseja voltar?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                As alterações feitas não foram salvas. Você perderá todas as modificações.
-                            </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                            <AlertDialogCancel>Não</AlertDialogCancel>
-                            <AlertDialogAction
-                                className="bg-red-600 hover:bg-red-700"
-                                asChild
-                            >
-                                <Link href="/recursos">Sim, voltar</Link>
-                            </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                        </AlertDialog>
+                        </Button>
+                    )}
                       <h1 className="text-3xl font-bold text-black dark:text-white">Editar Recurso</h1>
                 </div>
 
