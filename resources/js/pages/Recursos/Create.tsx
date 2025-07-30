@@ -115,9 +115,8 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                                 type="button"
                                 className="
                                     ml-4
-                                    bg-white dark:bg-black
-                                    text-[#EF7D4C] dark:text-[#EF7D4C]
-                                    border border-[#EF7D4C]
+                                    bg-white dark:bg-white
+                                    text-black dark:text-black
                                     hover:bg-[#EF7D4C] hover:text-white
                                     dark:hover:bg-[#EF7D4C] dark:hover:text-white
                                     transition-colors
@@ -153,9 +152,8 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                             type="button"
                             className="
                                 ml-4
-                                bg-white dark:bg-black
-                                text-[#EF7D4C] dark:text-[#EF7D4C]
-                                border border-[#EF7D4C]
+                                bg-white dark:bg-white
+                                text-black dark:text-black
                                 hover:bg-[#EF7D4C] hover:text-white
                                 dark:hover:bg-[#EF7D4C] dark:hover:text-white
                                 transition-colors
