@@ -1,12 +1,14 @@
 import { useState } from 'react';
+import axios from 'axios';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Head, Link } from '@inertiajs/react';
-import { UserIcon, Plus } from 'lucide-react';
+import { UserIcon, Plus, Eye } from 'lucide-react';
 import { type User, type Espaco, type BreadcrumbItem } from '@/types';
 import { FilterableTable, type ColumnConfig } from '@/components/ui/filterable-table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { ModalDetalhesUsuario } from '@/components/ui/espacosByUserModal';
 
 interface AtribuirPermissoesIndexProps {
     users: User[];
@@ -15,6 +17,23 @@ interface AtribuirPermissoesIndexProps {
 
 
 export default function AtribuirPermissoesIndex({ users, espacos }: AtribuirPermissoesIndexProps) {
+    const [usuarioSelecionado, setUsuarioSelecionado] = useState<User | null>(null);
+    const [espacosDoUsuario, setSalasDoUsuario] = useState<Espaco[]>([]);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    async function handleViewDetails(id) {
+        try {
+            const response = await axios.get(`/usuarios/${id}/espacos`);
+            setUsuarioSelecionado(users[id]);
+            setSalasDoUsuario(response.data); // é a lista de espacos
+            setIsModalOpen(true);
+        } catch (error) {
+            console.error('Erro ao buscar espaços do usuário:', error);
+        }
+    }
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+    };
 
     // Função para formatar o perfil do usuário
     const formatPerfil = (perfil: string | undefined) => {
@@ -25,7 +44,7 @@ export default function AtribuirPermissoesIndex({ users, espacos }: AtribuirPerm
     // Função para obter as cores do perfil
     const getPerfilColor = (perfil: string | undefined) => {
         if (!perfil) return "bg-gray-100 text-gray-800 border-gray-200";
-        
+
         switch (perfil.toLowerCase()) {
             case "administrador":
                 return "bg-[#EF7D4C] text-white border-transparent";
@@ -104,6 +123,21 @@ export default function AtribuirPermissoesIndex({ users, espacos }: AtribuirPerm
                             <p>Atribuir</p>
                         </TooltipContent>
                     </Tooltip>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleViewDetails(user.id)}
+                                className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-blue-700 dark:text-blue-700"
+                            >
+                                <Eye className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Visualizar espacos atribuidos</p>
+                        </TooltipContent>
+                    </Tooltip>
                 </div>
             )
         }
@@ -126,6 +160,13 @@ export default function AtribuirPermissoesIndex({ users, espacos }: AtribuirPerm
                     />
                 </div>
             </div>
+
+        <ModalDetalhesUsuario
+            isOpen={isModalOpen}
+            onClose={closeModal}
+            usuario={usuarioSelecionado}
+            espacos={espacosDoUsuario}
+        />
         </AppLayout>
     );
 }
