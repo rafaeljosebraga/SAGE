@@ -86,14 +86,7 @@ export default function AtribuirPermissoesIndex({ users, espacos }: AtribuirPerm
                                 variant="outline"
                                 size="sm"
                                 asChild
-                                className="
-                                    bg-white dark:bg-black
-                                    text-[#EF7D4C] dark:text-[#EF7D4C]
-                                    border border-[#EF7D4C]
-                                    hover:bg-[#EF7D4C] hover:text-white
-                                    dark:hover:bg-[#EF7D4C] dark:hover:text-white
-                                    transition-colors
-                                "
+                                className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-[#EF7D4C] dark:text-[#EF7D4C] hover:text-white dark:hover:text-white"
                                 >
                                 <Link href={`atribuir-permissoes/${user.id}/criar`}>
                                     <Plus className="h-4 w-4" />
