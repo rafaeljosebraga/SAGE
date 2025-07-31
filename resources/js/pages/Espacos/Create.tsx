@@ -336,7 +336,14 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                             <Button
                                 variant="outline"
                                 type="button"
-                                className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-[#F26326] hover:text-black dark:text-[#F26326] dark:hover:text-black"
+                               className="
+                                    ml-4
+                                    bg-white dark:bg-white
+                                    text-black dark:text-black
+                                    hover:bg-[#EF7D4C] hover:text-white
+                                    dark:hover:bg-[#EF7D4C] dark:hover:text-white
+                                    transition-colors
+                            "
                             >
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Voltar
@@ -367,13 +374,12 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                             variant="outline"
                             type="button"
                             className="
-                                ml-4
-                                bg-white dark:bg-black
-                                text-[#EF7D4C] dark:text-[#EF7D4C]
-                                border border-[#EF7D4C]
-                                hover:bg-[#EF7D4C] hover:text-white
-                                dark:hover:bg-[#EF7D4C] dark:hover:text-white
-                                transition-colors
+                                    ml-4
+                                    bg-white dark:bg-white
+                                    text-black dark:text-black
+                                    hover:bg-[#EF7D4C] hover:text-white
+                                    dark:hover:bg-[#EF7D4C] dark:hover:text-white
+                                    transition-colors
                             "
                             onClick={() => {
                                 window.location.href = '/espacos';

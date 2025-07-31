@@ -261,15 +261,14 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                             <Button
                                 type="button"
                                 variant="outline"
-                                className="
+                               className="
                                     ml-4
-                                    bg-white dark:bg-black
-                                    text-[#EF7D4C] dark:text-[#EF7D4C]
-                                    border border-[#EF7D4C]
+                                    bg-white dark:bg-white
+                                    text-black dark:text-black
                                     hover:bg-[#EF7D4C] hover:text-white
                                     dark:hover:bg-[#EF7D4C] dark:hover:text-white
                                     transition-colors
-                                "
+                            "
                             >
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Voltar
@@ -298,14 +297,13 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                         type="button"
                         variant="outline"
                         className="
-                            ml-4
-                            bg-white dark:bg-black
-                            text-[#EF7D4C] dark:text-[#EF7D4C]
-                            border border-[#EF7D4C]
-                            hover:bg-[#EF7D4C] hover:text-white
-                            dark:hover:bg-[#EF7D4C] dark:hover:text-white
-                            transition-colors
-                        "
+                                ml-4
+                                bg-white dark:bg-white
+                                text-black dark:text-black
+                                hover:bg-[#EF7D4C] hover:text-white
+                                dark:hover:bg-[#EF7D4C] dark:hover:text-white
+                                transition-colors
+                            "
                         onClick={() => (window.location.href = '/espacos')}
                     >
                         <ArrowLeft className="mr-2 h-4 w-4" />
