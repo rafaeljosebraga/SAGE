@@ -15,7 +15,7 @@ class EspacoUserController extends Controller
     public function index()
     {
         $users = User::with('espacos:id,nome')->get();
-        $espacos = Espaco::with('users:id,name')->get();
+        $espacos = Espaco::with(['localizacao', 'responsavel', 'recursos', 'fotos', 'createdBy', 'updatedBy', 'users'])->get();
 
         return Inertia::render('AtribuirPermissoes/Index', [
             'users' => $users,
@@ -199,12 +199,17 @@ class EspacoUserController extends Controller
 
     public function getEspacosForUser($userId)
     {
-        $user = User::with('espacos')->findOrFail($userId);
-        return response()->json($user->espacos);
+        $espacos = Espaco::with(['localizacao', 'users', 'createdBy'])
+            ->whereHas('users', function ($query) use ($userId) {
+                $query->where('users.id', $userId);
+            })
+            ->get();
+        return response()->json($espacos);
     }
 
     public function getUsersForEspaco($espacoId)
     {
+
         $espaco = Espaco::with('users')->findOrFail($espacoId);
         return response()->json($espaco->users);
     }
