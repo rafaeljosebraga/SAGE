@@ -29,6 +29,7 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
     const [selectedFoto, setSelectedFoto] = useState<any | null>(null);
     const [isFotoModalOpen, setIsFotoModalOpen] = useState(false);
     const [scrollToResponsaveis, setScrollToResponsaveis] = useState(false);
+    const [removedEspacos, setRemovedEspacos] = useState<number[]>([]);
 
     const {setData, processing, errors } = useForm<{
         user_id: number;
@@ -38,7 +39,6 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
         espaco_ids: espacosAtribuidos,
     });
 
-    const [removedEspacos, setRemovedEspacos] = useState<number[]>([]);
 
     // Função para atualizar espaços selecionados
     const atualizarEspacosSelecionados = (espacos: number[]) => {
@@ -64,7 +64,6 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
     }, [isModalOpen, scrollToResponsaveis]);
 
     const handleViewDetails = (espaco: Espaco) => {
-
         console.log("ABRINDO MODAL DE DETALHES");
         setSelectedEspaco(espaco);
         setIsModalOpen(true);
@@ -113,21 +112,23 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
         atualizarEspacosSelecionados(newSelected);
     };
 
-
 // Enviar os dados para o controller
 const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Enviando dados para o controller",disposedEspacos);
 
-    if (!selectedUserId || selectedEspacos.length === 0) {
+    if (!selectedUserId || (selectedEspacos.length === 0 && disposedEspacos.length === 0)) {
         return;
     }
 
+    console.log(selectedUserId, selectedEspacos, disposedEspacos);
     router.post(route('espaco-users.store'), {
         user_id: selectedUserId,
         espaco_ids: selectedEspacos,
         espaco_ids_removidos: disposedEspacos,
     }, {
         onSuccess: () => {
+            console.log("Dados enviados deu merda");
             // Limpar seleção após sucesso
             setSelectedUserId(null);
             setSelectedEspacos([]);
@@ -465,6 +466,7 @@ const handleSubmit = (e: React.FormEvent) => {
                                             emptyMessage="Nenhum espaço encontrado."
                                         />
                                     {/* Espaços selecionados */}
+                                    { selectedEspacos.length > 0 && (
                                     <div className="mt-2">
                                         <Label className="text-muted-foreground">Espaços Selecionados</Label>
                                         <div className="flex flex-wrap gap-2 mt-2 min-h-[40px]">
@@ -487,7 +489,9 @@ const handleSubmit = (e: React.FormEvent) => {
                                                 )}
                                         </div>
                                     </div>
+                                    )}
                                     {/* Espaços desmarcados (deselecionados) que estavam atribuídos */}
+                                    { disposedEspacos.length > 0 && (
                                     <div className="mt-2">
                                         <Label className="text-muted-foreground">Espaços Removidos</Label>
                                         <div className="flex flex-wrap gap-2 mt-2 min-h-[40px]">
@@ -510,16 +514,18 @@ const handleSubmit = (e: React.FormEvent) => {
                                                 )}
                                         </div>
                                     </div>
+                                    )}
 
                                     {errors.espaco_ids && (
                                         <p className="text-destructive text-sm">{errors.espaco_ids}</p>
                                     )}
 
+
                                     {/* Botão de salvar */}
                                     <div className="flex justify-end pt-4 border-t mt-auto">
                                         <Button
                                             type="submit"
-                                            disabled={processing || selectedEspacos.length === 0 || !selectedUserId}
+                                            disabled={processing || (selectedEspacos.length === 0 && disposedEspacos.length === 0) || !selectedUserId}
                                             className="gap-2"
                                         >
                                             <Save className="h-4 w-4" />

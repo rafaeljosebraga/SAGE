@@ -43,11 +43,12 @@ class EspacoUserController extends Controller
             'espacosAtribuidos' => $espacosAtribuidos->pluck('id')->toArray(),
         ]);
     }
+
     public function store(Request $request)
     {
         $validatedData = $request->validate([
             'user_id' => 'required|exists:users,id',
-            'espaco_ids' => 'required|array',
+            'espaco_ids' => 'array',
             'espaco_ids.*' => 'exists:espacos,id',
             'espaco_ids_removidos' => 'array', // opcional, pode não vir
             'espaco_ids_removidos.*' => 'exists:espacos,id',
