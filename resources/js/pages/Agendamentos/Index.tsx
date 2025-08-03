@@ -1154,7 +1154,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
             {/* Cabeçalho dos dias da semana */}
             <div className="grid grid-cols-7 gap-1">
                 {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day) => (
-                    <div key={day} className="p-3 text-center font-medium text-muted-foreground bg-muted/50 rounded-lg">
+                    <div key={day} className="p-3 text-center font-medium text-muted-foreground bg-muted rounded-lg">
                         {day}
                     </div>
                 ))}
@@ -1388,7 +1388,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                             className={`p-3 text-center font-medium rounded-lg ${
                                 isCurrentDay 
                                     ? 'bg-primary text-primary-foreground' 
-                                    : 'bg-muted/50 text-muted-foreground'
+                                    : 'bg-muted text-muted-foreground'
                             }`}
                         >
                             <div className="text-sm">{format(day, 'EEE', { locale: ptBR })}</div>
@@ -1576,7 +1576,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                 )}
 
                 {/* Cabeçalho do dia */}
-                <div className="text-center p-4 bg-muted/50 rounded-lg">
+                <div className="text-center p-4 bg-muted rounded-lg">
                     <h3 className="text-lg font-semibold">
                         {format(currentDate, 'EEEE, dd \'de\' MMMM \'de\' yyyy', { locale: ptBR })}
                     </h3>
@@ -1823,7 +1823,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
 
                 {/* Cabeçalho com dias */}
                 <div className="grid gap-1" style={{ gridTemplateColumns: "200px repeat(7, 1fr)" }}>
-                    <div className="p-3 text-center font-medium text-muted-foreground bg-muted/50 rounded-lg">
+                    <div className="p-3 text-center font-medium text-muted-foreground bg-muted rounded-lg">
                         Espaços
                     </div>
                     {days.map((day) => {
@@ -1834,7 +1834,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                 className={`p-3 text-center font-medium rounded-lg ${
                                     isCurrentDay 
                                         ? "bg-primary text-primary-foreground" 
-                                        : "bg-muted/50 text-muted-foreground"
+                                        : "bg-muted text-muted-foreground"
                                 }`}
                             >
                                 <div className="text-sm">{format(day, "EEE", { locale: ptBR })}</div>
