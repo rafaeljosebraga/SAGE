@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
-import { Calendar, Clock, MapPin, User, Users, Filter, Plus, Eye, Edit, Trash2, Settings, AlertTriangle, ChevronLeft, ChevronRight, List, Search, ArrowUpDown, ArrowUp, ArrowDown, RotateCcw, X, Building, Info } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, Users, Filter, Plus, Eye, Pencil, Trash2, Settings, AlertTriangle, ChevronLeft, ChevronRight, List, Search, ArrowUpDown, ArrowUp, ArrowDown, RotateCcw, X, Building, Info } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, addMonths, subMonths, startOfWeek, endOfWeek, addDays, isSameDay, parseISO, addHours, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
@@ -2250,7 +2250,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                                 size="sm"
                                                 onClick={() => router.get(`/agendamentos/${agendamento.id}/editar`)}
                                                 >
-                                                <Edit className="h-4 w-4" />
+                                                <Pencil className="h-4 w-4" />
                                                 </Button>
                                             </TooltipTrigger>
                                             <TooltipContent>
@@ -2718,7 +2718,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                                     size="sm"
                                                     onClick={() => router.get(`/agendamentos/${event.id}/editar`)}
                                                     >
-                                                    <Edit className="h-4 w-4" />
+                                                    <Pencil className="h-4 w-4" />
                                                     </Button>
                                                     </TooltipTrigger>
                                                     <TooltipContent>
