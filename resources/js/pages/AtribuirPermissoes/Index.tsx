@@ -20,7 +20,7 @@ export default function AtribuirPermissoesIndex({ users, espacos }: AtribuirPerm
     const [usuarioSelecionado, setUsuarioSelecionado] = useState<User | null>(null);
     const [espacosDoUsuario, setSalasDoUsuario] = useState<Espaco[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    async function handleViewDetails(id) {
+    async function handleViewDetails(id: number) {
         try {
             const response = await axios.get(`/usuarios/${id}/espacos`);
             setUsuarioSelecionado(users[id]);
@@ -104,6 +104,21 @@ export default function AtribuirPermissoesIndex({ users, espacos }: AtribuirPerm
                             <Button
                                 variant="outline"
                                 size="sm"
+                                onClick={() => handleViewDetails(user.id)}
+                                className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-blue-700 dark:text-blue-700"
+                            >
+                                <Eye className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Visualizar espacos atribuidos</p>
+                        </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant="outline"
+                                size="sm"
                                 asChild
                                 className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-[#EF7D4C] dark:text-[#EF7D4C] hover:text-white dark:hover:text-white"
                                 >
@@ -114,21 +129,6 @@ export default function AtribuirPermissoesIndex({ users, espacos }: AtribuirPerm
                         </TooltipTrigger>
                         <TooltipContent>
                             <p>Atribuir</p>
-                        </TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleViewDetails(user.id)}
-                                className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-blue-700 dark:text-blue-700"
-                            >
-                                <Eye className="h-4 w-4" />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>Visualizar espacos atribuidos</p>
                         </TooltipContent>
                     </Tooltip>
                 </div>

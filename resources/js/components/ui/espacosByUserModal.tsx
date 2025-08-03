@@ -6,12 +6,18 @@ import { X, Users, MapPin } from "lucide-react";
 import { type User, type Espaco, type BreadcrumbItem } from '@/types';
 import {FilterableTable, type ColumnConfig} from "@/components/ui/filterable-table";
 import { ResponsaveisSection } from '@/components/ui/ResponsaveisSection';
+import { UserAvatar } from '@/components/user-avatar';
 
 interface Usuario {
-    id: string;
+    id: number;
     name: string;
     email: string;
-    perfil_acesso: string;
+    perfil_acesso?: string;
+    email_verified_at?: string | null;
+    created_at?: string;
+    updated_at?: string;
+    profile_photo?: string;
+    avatar?: string;
 }
 
 interface ModalDetalhesUsuarioProps {
@@ -74,10 +80,33 @@ export function ModalDetalhesUsuario({ isOpen, onClose, usuario, espacos }: Moda
         }
     };
 
+    // Função para formatar o perfil do usuário
+    const formatPerfil = (perfil: string | undefined) => {
+        if (!perfil) return "Não definido";
+        return perfil.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+    };
+
+    // Função para obter as cores do perfil
+    const getPerfilColor = (perfil: string | undefined) => {
+        if (!perfil) return "bg-gray-100 text-gray-800 border-gray-200";
+
+        switch (perfil.toLowerCase()) {
+            case "administrador":
+                return "bg-[#EF7D4C] text-white border-transparent";
+            case "coordenador":
+                return "bg-[#957157] text-white border-transparent";
+            case "diretor_geral":
+                return "bg-[#F1DEC5] text-gray-600 border-transparent";
+            case "servidores":
+                return "bg-[#285355] text-white border-transparent";
+            default:
+                return "bg-gray-100 text-gray-800 border-gray-200";
+        }
+    };
+
     const handleViewDetailsFromResponsavel = (espaco: Espaco) => {
         console.log('Visualizando detalhes do espaço:', espaco);
         setSelectedEspaco(espaco);
-        setScrollToResponsaveis(true);
     };
 
        const columns : ColumnConfig[] = [
@@ -259,18 +288,20 @@ export function ModalDetalhesUsuario({ isOpen, onClose, usuario, espacos }: Moda
                 {/* Conteúdo */}
                 <div className="p-6 overflow-y-auto flex-1 space-y-6">
                     {/* Dados do Usuário */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="bg-muted/30 p-4 rounded-lg border border-border">
-                            <label className="text-sm font-medium text-muted-foreground">Nome</label>
-                            <p className="text-lg font-semibold">{usuario.name}</p>
-                        </div>
-                        <div className="bg-muted/30 p-4 rounded-lg border border-border">
-                            <label className="text-sm font-medium text-muted-foreground">E-mail</label>
-                            <p className="text-lg font-semibold">{usuario.email}</p>
-                        </div>
-                        <div className="bg-muted/30 p-4 rounded-lg border border-border">
-                            <label className="text-sm font-medium text-muted-foreground">Perfil</label>
-                            <p className="text-lg">{usuario.perfil_acesso}</p>
+                    <div className="bg-muted p-6 rounded-lg border border-border">
+                        <div className="flex items-start gap-4">
+                            <UserAvatar user={usuario as User} size="lg" />
+                            <div className="flex-1">
+                                <div className="flex items-center gap-3 flex-wrap">
+                                    <h3 className="text-xl font-semibold text-card-foreground">{usuario.name}</h3>
+                                    <Badge 
+                                        className={`text-sm ${getPerfilColor(usuario.perfil_acesso)}`}
+                                    >
+                                        {formatPerfil(usuario.perfil_acesso)}
+                                    </Badge>
+                                </div>
+                                <p className="text-muted-foreground mt-1">{usuario.email}</p>
+                            </div>
                         </div>
                     </div>
 
