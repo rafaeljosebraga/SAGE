@@ -218,7 +218,17 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
             <div className="space-y-6">
                 <div className="flex items-center gap-4">
                     <Button variant="outline" size="sm" asChild>
-                        <Link href={getBackUrl()}>
+                        <Link 
+                        href={getBackUrl()}
+                        className="
+                                    ml-4
+                                    bg-white dark:bg-white
+                                    text-black dark:text-black
+                                    hover:bg-[#EF7D4C] hover:text-white
+                                    dark:hover:bg-[#EF7D4C] dark:hover:text-white
+                                    transition-colors
+                                "
+                        >
                             <ArrowLeft className="h-4 w-4 mr-2" />
                             Voltar
                         </Link>
