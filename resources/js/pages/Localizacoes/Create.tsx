@@ -123,10 +123,10 @@ export default function LocalizacoesCreate({ auth }: LocalizacoesCreateProps) {
                                     ml-4
                                     bg-white dark:bg-white
                                     text-black dark:text-black
-                                    hover:bg-[#EF7D4C] hover:text-white
-                                    dark:hover:bg-[#EF7D4C] dark:hover:text-white
+                                    hover:!bg-[#EF7D4C] hover:!text-white
+                                    dark:hover:!bg-[#EF7D4C] dark:hover:!text-white
                                     transition-colors
-                                "
+                        "
                             >
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Voltar
@@ -156,14 +156,14 @@ export default function LocalizacoesCreate({ auth }: LocalizacoesCreateProps) {
                         <Button
                             variant="outline"
                             type="button"
-                            className="
+                        className="
                                     ml-4
                                     bg-white dark:bg-white
                                     text-black dark:text-black
-                                    hover:bg-[#EF7D4C] hover:text-white
-                                    dark:hover:bg-[#EF7D4C] dark:hover:text-white
+                                    hover:!bg-[#EF7D4C] hover:!text-white
+                                    dark:hover:!bg-[#EF7D4C] dark:hover:!text-white
                                     transition-colors
-                            "
+                        "
                             onClick={() => {
                                 window.location.href = '/localizacoes';
                             }}

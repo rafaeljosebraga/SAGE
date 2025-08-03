@@ -224,10 +224,10 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                     ml-4
                                     bg-white dark:bg-white
                                     text-black dark:text-black
-                                    hover:bg-[#EF7D4C] hover:text-white
-                                    dark:hover:bg-[#EF7D4C] dark:hover:text-white
+                                    hover:!bg-[#EF7D4C] hover:!text-white
+                                    dark:hover:!bg-[#EF7D4C] dark:hover:!text-white
                                     transition-colors
-                                "
+                        "
                         >
                             <ArrowLeft className="h-4 w-4 mr-2" />
                             Voltar

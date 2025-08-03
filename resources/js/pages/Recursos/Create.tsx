@@ -114,12 +114,12 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                                 variant="outline"
                                 type="button"
                                 className="
-                                    ml-4
-                                    bg-white dark:bg-white
-                                    text-black dark:text-black
-                                    hover:bg-[#EF7D4C] hover:text-white
-                                    dark:hover:bg-[#EF7D4C] dark:hover:text-white
-                                    transition-colors
+                                            ml-4
+                                            bg-white dark:bg-white
+                                            text-black dark:text-black
+                                            hover:!bg-[#EF7D4C] hover:!text-white
+                                            dark:hover:!bg-[#EF7D4C] dark:hover:!text-white
+                                            transition-colors
                                 "
                             >
                                 <ArrowLeft className="mr-2 h-4 w-4" />
@@ -150,14 +150,14 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                         <Button
                             variant="outline"
                             type="button"
-                            className="
-                                ml-4
-                                bg-white dark:bg-white
-                                text-black dark:text-black
-                                hover:bg-[#EF7D4C] hover:text-white
-                                dark:hover:bg-[#EF7D4C] dark:hover:text-white
-                                transition-colors
-                            "
+                        className="
+                                    ml-4
+                                    bg-white dark:bg-white
+                                    text-black dark:text-black
+                                    hover:!bg-[#EF7D4C] hover:!text-white
+                                    dark:hover:!bg-[#EF7D4C] dark:hover:!text-white
+                                    transition-colors
+                        "
                             onClick={() => {
                                 window.location.href = '/recursos';
                             }}

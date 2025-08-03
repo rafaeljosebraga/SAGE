@@ -422,14 +422,14 @@ const handleSubmit = (e: React.FormEvent) => {
                     <Button asChild variant="ghost" type="button">
                     <Link
                         href={route('espaco-users.index')}
-                         className="
+                        className="
                                     ml-4
                                     bg-white dark:bg-white
                                     text-black dark:text-black
-                                    hover:bg-[#EF7D4C] hover:text-white
-                                    dark:hover:bg-[#EF7D4C] dark:hover:text-white
+                                    hover:!bg-[#EF7D4C] hover:!text-white
+                                    dark:hover:!bg-[#EF7D4C] dark:hover:!text-white
                                     transition-colors
-                                "
+                        "
                     >
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Voltar
