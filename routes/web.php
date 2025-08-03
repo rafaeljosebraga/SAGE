@@ -29,6 +29,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get("usuarios/{user}/editar", [UserController::class, "edit"])->name("users.edit");
         Route::put("usuarios/{user}", [UserController::class, "update"])->name("users.update");
         Route::delete("usuarios/{user}", [UserController::class, "destroy"])->name("users.destroy");
+        Route::get('/usuarios/{id}/espacos', [EspacoUserController::class, 'getEspacosForUser']);
     });
 
     // Rotas para gerenciamento de espaços, localizações e recursos (APENAS Diretor Geral)
@@ -68,6 +69,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get("atribuir-permissoes/{id}/criar", [EspacoUserController::class, "create"])->name("espaco-users.atribuir");
         Route::put("atribuir-permissoes/{espacoUser}", [EspacoUserController::class, "update"])->name("espaco-users.update");
         Route::delete("atribuir-permissoes/{espacoUser}", [EspacoUserController::class, "destroy"])->name("espaco-users.destroy");
+        Route::get('/usuarios/{id}/espacos', [EspacoUserController::class, 'getEspacosForUser']);
 
         // Rotas de Fotos
         Route::resource('fotos', FotoController::class);
@@ -96,3 +98,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
+

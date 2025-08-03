@@ -177,7 +177,7 @@ export function FilterableTable({
                 <Table>
                     <TableHeader>
                         {/* Linha dos cabeçalhos */}
-                        <TableRow className="bg-muted/20">
+                        <TableRow className="bg-card">
                             {columns.map((column) => (
                                 <TableHead
                                     key={column.key}
@@ -190,7 +190,7 @@ export function FilterableTable({
                         </TableRow>
                         
                         {/* Linha dos filtros */}
-                        <TableRow className="bg-muted/30">
+                        <TableRow className="bg-card">
                             {columns.map((column, index) => (
                                 <TableHead key={`filter-${column.key}`} className="py-2">
                                     {column.searchable !== false ? (
@@ -226,7 +226,7 @@ export function FilterableTable({
                                                         placeholder={column.label === 'Recursos' ? "Buscar por nome..." : "Filtrar..."}
                                                         value={filters[column.key] || ''}
                                                         onChange={(e) => updateFilter(column.key, e.target.value)}
-                                                        className="pl-8 pr-16 text-xs bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                                                        className="pl-8 pr-16 text-xs"
                                                     />
                                                     <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
                                                         {column.sortable !== false && (
@@ -276,7 +276,7 @@ export function FilterableTable({
                     <TableBody>
                         {filteredData.length > 0 ? (
                             filteredData.map((item, index) => (
-                                <TableRow key={item.id || index}>
+                                <TableRow key={item.id || index} className="hover:bg-muted/50">
                                     {columns.map((column) => (
                                         <TableCell key={column.key}>
                                             {column.render 
