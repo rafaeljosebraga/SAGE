@@ -113,14 +113,14 @@ export default function AgendamentosCreate({ espacos, recursos, espacoSelecionad
                         
                         <Link 
                         href={`/agendamentos${returnViewParam === 'calendar' ? '?view=calendar' : ''}`}
-                         className="
+                        className="
                                     ml-4
                                     bg-white dark:bg-white
                                     text-black dark:text-black
-                                    hover:bg-[#EF7D4C] hover:text-white
-                                    dark:hover:bg-[#EF7D4C] dark:hover:text-white
+                                    hover:!bg-[#EF7D4C] hover:!text-white
+                                    dark:hover:!bg-[#EF7D4C] dark:hover:!text-white
                                     transition-colors
-                                "
+                        "
                         
                         
                         >
