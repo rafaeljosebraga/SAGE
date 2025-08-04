@@ -736,12 +736,17 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     };
 
     // Função para abrir modal de visualização do dia
-    const handleDayClick = (date: Date, events: Agendamento[]) => {
+    const handleDayClick = (date: Date, events: Agendamento[], espacoId?: number) => {
         if (events.length > 0) {
+            // Se espacoId for fornecido, filtrar apenas eventos desse espaço
+            const filteredEvents = espacoId 
+                ? events.filter(event => event.espaco_id === espacoId)
+                : events;
+                
             setDayViewModal({
                 open: true,
                 selectedDate: date,
-                events: events.sort((a, b) => a.hora_inicio.localeCompare(b.hora_inicio))
+                events: filteredEvents.sort((a, b) => a.hora_inicio.localeCompare(b.hora_inicio))
             });
         } else {
             handleDateSelect(date);
@@ -1880,45 +1885,64 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                     return (
                                         <div
                                             key={`${espaco.id}-${day.toISOString()}`}
-                                            className="h-[96px] w-full p-2 border-2 border-border/100 hover:border-border/60 rounded cursor-pointer hover:bg-muted/30 transition-all duration-200 overflow-hidden"
+                                            className="h-[160px] w-full p-2 border-2 border-border/100 hover:border-border/60 rounded cursor-pointer hover:bg-muted/30 transition-all duration-200 overflow-hidden"
                                             onClick={() => {
                                                 setFormData(prev => ({ ...prev, espaco_id: espaco.id.toString() }));
                                                 handleDateSelect(day);
                                             }}
                                             >
-                                            <div className="space-y-1 h-full overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-muted-foreground/20 hover:scrollbar-thumb-muted-foreground/40">
-                                                {getEventsForDay(day)
-                                                .filter((event) => event.espaco_id === espaco.id)
-                                                .map((event) => (
-                                                    <Tooltip key={event.id}>
-                                                    <TooltipTrigger asChild>
-                                                        <div
-                                                        className={`text-xs p-1 rounded cursor-pointer transition-opacity hover:opacity-80 relative ${getEventBackgroundColor(event)}`}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleEventClick(event);
-                                                        }}
-                                                        style={{
-                                                            maxWidth: "100%",
-                                                            overflow: "hidden",
-                                                            whiteSpace: "nowrap",
-                                                            textOverflow: "ellipsis",
-                                                        }}
-                                                        >
-                                                        <div className="absolute top-0.5 right-0.5">
-                                                            {getStatusIcon(event.status)}
-                                                        </div>
-                                                        <div className="font-medium truncate pr-4">{event.titulo}</div>
-                                                        <div className="text-xs opacity-75 truncate">
-                                                            {event.hora_inicio.substring(0, 5)} - {event.hora_fim.substring(0, 5)}
-                                                        </div>
-                                                        </div>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent>
-                                                        <p>{getEventTooltip(event)}</p>
-                                                    </TooltipContent>
-                                                    </Tooltip>
-                                                ))}
+                                            <div className="space-y-1 h-full pr-1">
+                                                {(() => {
+                                                    const dayEventsForSpace = getEventsForDay(day).filter((event) => event.espaco_id === espaco.id);
+                                                    const maxEvents = 3;
+                                                    const visibleEvents = dayEventsForSpace.slice(0, maxEvents);
+                                                    
+                                                    return (
+                                                        <>
+                                                            {visibleEvents.map((event) => (
+                                                                <Tooltip key={event.id}>
+                                                                <TooltipTrigger asChild>
+                                                                    <div
+                                                                    className={`text-xs p-1 rounded cursor-pointer transition-opacity hover:opacity-80 relative ${getEventBackgroundColor(event)}`}
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleEventClick(event);
+                                                                    }}
+                                                                    style={{
+                                                                        maxWidth: "100%",
+                                                                        overflow: "hidden",
+                                                                        whiteSpace: "nowrap",
+                                                                        textOverflow: "ellipsis",
+                                                                    }}
+                                                                    >
+                                                                    <div className="absolute top-0.5 right-0.5">
+                                                                        {getStatusIcon(event.status)}
+                                                                    </div>
+                                                                    <div className="font-medium truncate pr-4">{event.titulo}</div>
+                                                                    <div className="text-xs opacity-75 truncate">
+                                                                        {event.hora_inicio.substring(0, 5)} - {event.hora_fim.substring(0, 5)}
+                                                                    </div>
+                                                                    </div>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    <p>{getEventTooltip(event)}</p>
+                                                                </TooltipContent>
+                                                                </Tooltip>
+                                                            ))}
+                                                            {dayEventsForSpace.length > maxEvents && (
+                                                                <div 
+                                                                    className="text-xs text-muted-foreground font-medium cursor-pointer hover:text-foreground transition-colors"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleDayClick(day, getEventsForDay(day), espaco.id);
+                                                                    }}
+                                                                >
+                                                                    +{dayEventsForSpace.length - maxEvents} mais
+                                                                </div>
+                                                            )}
+                                                        </>
+                                                    );
+                                                })()}
                                             </div>
                                             </div>
                                     );
