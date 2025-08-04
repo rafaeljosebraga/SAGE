@@ -608,12 +608,22 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                         <h1 className="text-3xl font-bold tracking-tight">Gerenciar Agendamentos</h1>
                     </div>
 
-                    <Button asChild variant="outline" className="bg-sidebar hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 dark:hover:bg-blue-900/30 dark:hover:border-blue-700 dark:hover:text-blue-300">
+                    <Button
+                        asChild
+                        variant="outline"
+                        className="bg-sidebar 
+                                    hover:bg-gray-100 
+                                    hover:border-gray-300 
+                                    hover:text-gray-800 
+                                    dark:hover:bg-gray-800/40 
+                                    dark:hover:border-gray-600 
+                                    dark:hover:text-gray-100"
+                        >
                         <Link href="/agendamentos">
                             <Eye className="h-4 w-4 mr-2" />
                             Ver Todos os Agendamentos
                         </Link>
-                    </Button>
+                        </Button>
                 </div>
 
                 {/* Estatísticas */}
