@@ -374,6 +374,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                                             
                                             router.get(`/agendamentos/${agendamento.id}/editar?${urlParams.toString()}`);
                                         }}
+                                        className="bg-blue-50 hover:bg-blue-100 border-blue-200 hover:border-blue-300 text-blue-700 hover:text-blue-800 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 dark:border-blue-700 dark:hover:border-blue-600 dark:text-blue-300 dark:hover:text-blue-200"
                                     >
                                         <Edit className="h-4 w-4 mr-2" />
                                         Editar
@@ -393,7 +394,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                                         variant="outline"
                                         size="sm"
                                         onClick={handleForceDelete}
-                                        className="text-orange-600 hover:text-orange-700 border-orange-200 hover:border-orange-300 dark:text-orange-400 dark:hover:text-orange-300 dark:border-orange-800 dark:hover:border-orange-700"
+                                        className="bg-orange-50 hover:bg-orange-100 border-orange-200 hover:border-orange-300 text-orange-700 hover:text-orange-800 dark:bg-orange-900/30 dark:hover:bg-orange-900/50 dark:border-orange-700 dark:hover:border-orange-600 dark:text-orange-300 dark:hover:text-orange-200"
                                     >
                                         <Trash2 className="h-4 w-4 mr-2" />
                                         Excluir
@@ -413,7 +414,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                                         variant="outline"
                                         size="sm"
                                         onClick={handleDelete}
-                                        className="text-slate-600 hover:text-slate-700 border-slate-200 hover:border-slate-300 dark:text-slate-400 dark:hover:text-slate-300 dark:border-slate-600 dark:hover:border-slate-500"
+                                        className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-[color,box-shadow] disabled:pointer-events-none  [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive border bg-black/50 hover:bg-black/60 shadow-xs h-8 rounded-md px-3 has-[>svg]:px-2.5 text-white hover:text-white border-slate-200 hover:border-slate-300 dark:text-white dark:hover:text-white dark:border-slate-600 dark:hover:border-slate-500"
                                     >
                                         <Ban className="h-4 w-4 mr-2" />
                                         Cancelar
@@ -433,7 +434,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                                         variant="outline"
                                         size="sm"
                                         onClick={handleUncancel}
-                                        className="text-green-600 hover:text-green-700"
+                                        className="bg-green-50 hover:bg-green-100 border-green-200 hover:border-green-300 text-green-700 hover:text-green-800 dark:bg-green-900/30 dark:hover:bg-green-900/50 dark:border-green-700 dark:hover:border-green-600 dark:text-green-300 dark:hover:text-green-200"
                                     >
                                         <RotateCcw className="h-4 w-4 mr-2" />
                                         Voltar Agendamento
@@ -591,7 +592,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                             <Card className={`border-l-4 ${
                                 agendamento.status === 'aprovado' ? 'border-l-emerald-500' : 
                                 agendamento.status === 'rejeitado' ? 'border-l-rose-500' : 
-                                'border-l-slate-500'
+                                'border-l-black bg-gray-200 dark:bg-gray-800'
                             }`}>
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2">

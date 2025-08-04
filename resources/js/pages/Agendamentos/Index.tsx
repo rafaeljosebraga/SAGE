@@ -2229,13 +2229,16 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                     <div className="flex items-center gap-2 ml-4">
                                         <Tooltip>
                                             <TooltipTrigger asChild>
-                                                <Button 
-                                                    variant="outline" 
-                                                    size="sm" 
+                                              
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
                                                     onClick={() => handleEventClick(agendamento)}
-                                                >
-                                                    <Eye className="h-4 w-4" />
+                                                    className="hover:border-blue-500 group"
+                                                    >
+                                                    <Eye className="h-4 w-4 group-hover:text-blue-500" />
                                                 </Button>
+                                              
                                             </TooltipTrigger>
                                             <TooltipContent>
                                                 <p>Visualizar</p>
