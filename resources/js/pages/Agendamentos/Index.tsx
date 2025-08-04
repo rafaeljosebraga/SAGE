@@ -24,6 +24,7 @@ import { useToast } from '@/hooks/use-toast';
 import { UserAvatar } from '@/components/user-avatar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
+import { useViewMode } from "@/contexts/ViewModeContext";
 import type { PageProps, Agendamento, Espaco, BreadcrumbItem } from '@/types';
 
 interface Props extends PageProps {
@@ -57,7 +58,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         getStatusText,
         getStatusIcon
     } = useAgendamentoColors();
-    
+
     // Usar o hook de toast
     const { toast } = useToast();
 
@@ -69,43 +70,44 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     if (performance.navigation && performance.navigation.type === 1) {
     return true;
     }
-    
+
     // Método 2: Performance Navigation (legado)
     if (performance.navigation && performance.navigation.type === performance.navigation.TYPE_RELOAD) {
     return true;
     }
-    
+
     // Método 3: Verificar se há um timestamp muito recente no sessionStorage
     const pageLoadTime = sessionStorage.getItem('page-load-time');
     const currentTime = Date.now();
-    
+    const { viewMode, setViewMode } = useViewMode();
+
     if (!pageLoadTime) {
     sessionStorage.setItem('page-load-time', currentTime.toString());
     return false;
     }
-    
+
     const timeDiff = currentTime - parseInt(pageLoadTime);
-    
+
     // Se a diferença for muito pequena (menos de 100ms), provavelmente é um refresh
     if (timeDiff < 100) {
     return true;
     }
-    
+
     // Atualizar o timestamp
     sessionStorage.setItem('page-load-time', currentTime.toString());
     return false;
     })();
-    
+
     // Se for refresh, limpar localStorage e usar valores padrão
     if (isPageRefresh) {
     localStorage.removeItem('agendamentos-view-state');
     // console.log('Refresh detectado - localStorage limpo');
     }
-    
+
     // Tentar recuperar o estado anterior do localStorage
     const savedState = localStorage.getItem('agendamentos-view-state');
     let savedViewState = null;
-    
+
     if (savedState) {
     try {
     savedViewState = JSON.parse(savedState);
@@ -113,7 +115,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     console.warn('Erro ao recuperar estado salvo:', error);
     }
     }
-    
+
     // Determinar visualização inicial
     let initialView: ViewMode = 'day'; // padr��o
     if (filters.view === 'list') {
@@ -121,7 +123,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     } else if (savedViewState?.viewMode) {
     initialView = savedViewState.viewMode;
     }
-    
+
     // Determinar data inicial - cada modo preserva sua própria data
     let initialDate = new Date(); // Sempre hoje por padrão
     if (savedViewState?.viewMode && savedViewState?.dates) {
@@ -137,30 +139,30 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     }
     }
     }
-    
+
     // Espaços iniciais - todos selecionados por padrão, ou filtro específico se houver
     let initialEspacos = espacos.map(e => e.id);
     if (filters.espaco_id) {
     initialEspacos = [parseInt(filters.espaco_id)];
     } else if (savedViewState?.selectedEspacos && Array.isArray(savedViewState.selectedEspacos)) {
     // Verificar se os espaços salvos ainda existem
-    const validEspacos = savedViewState.selectedEspacos.filter((id: number) => 
+    const validEspacos = savedViewState.selectedEspacos.filter((id: number) =>
     espacos.some(e => e.id === id)
     );
     if (validEspacos.length > 0) {
     initialEspacos = validEspacos;
     }
     }
-    
+
     return {
     view: initialView,
     date: initialDate,
     espacos: initialEspacos
     };
     };
-    
+
     const initialState = getInitialState();
-    const [viewMode, setViewMode] = useState<ViewMode>(initialState.view);
+    const { viewMode, setViewMode } = useViewMode();
     const [currentDate, setCurrentDate] = useState(initialState.date);
     const [selectedEspacos, setSelectedEspacos] = useState<number[]>(initialState.espacos);
     const [searchEspacos, setSearchEspacos] = useState("");
@@ -181,7 +183,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Agendamentos', href: '/agendamentos' }
     ];
-    
+
     // Estados para o modal de criação
     const [createModal, setCreateModal] = useState<{
         open: boolean;
@@ -189,7 +191,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         selectedTime?: string;
         selectedEspaco?: number;
     }>({ open: false });
-    
+
     const [formData, setFormData] = useState({
         titulo: '',
         espaco_id: '',
@@ -218,7 +220,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     selectedDate: Date | null;
     events: Agendamento[];
     }>({ open: false, selectedDate: null, events: [] });
-    
+
     // Estado para modal de aviso de horário passado
     const [pastTimeModal, setPastTimeModal] = useState<{
     open: boolean;
@@ -233,7 +235,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     open: boolean;
     agendamento: Agendamento | null;
     }>({ open: false, agendamento: null });
-    
+
     // Estado para modal de confirmação de exclusão permanente
     const [forceDeleteModal, setForceDeleteModal] = useState<{
     open: boolean;
@@ -252,7 +254,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         // Recuperar estado atual para preservar datas de outros modos
         const currentState = localStorage.getItem('agendamentos-view-state');
         let existingDates = {};
-        
+
         if (currentState) {
             try {
                 const parsed = JSON.parse(currentState);
@@ -261,19 +263,19 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                 console.warn('Erro ao recuperar estado atual:', error);
             }
         }
-        
+
         // Atualizar apenas a data do modo atual
         const updatedDates = {
             ...existingDates,
             [viewMode]: currentDate.toISOString()
         };
-        
+
         const stateToSave = {
             viewMode,
             selectedEspacos,
             dates: updatedDates
         };
-        
+
         try {
             localStorage.setItem('agendamentos-view-state', JSON.stringify(stateToSave));
         } catch (error) {
@@ -284,7 +286,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     // Filtrar e ordenar espaços
     const filteredAndSortedEspacos = (() => {
         // Primeiro filtrar pela busca
-        let filtered = espacos.filter(espaco => 
+        let filtered = espacos.filter(espaco =>
             espaco.nome.toLowerCase().includes(searchEspacos.toLowerCase()) ||
             espaco.localizacao?.nome.toLowerCase().includes(searchEspacos.toLowerCase())
         );
@@ -351,7 +353,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         setDateSortOrder(prev => {
             const currentOrder = prev[type];
             let newOrder: 'asc' | 'desc' | 'none';
-            
+
             if (currentOrder === 'none') {
                 newOrder = 'asc';
             } else if (currentOrder === 'asc') {
@@ -359,8 +361,8 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
             } else {
                 newOrder = 'none';
             }
-            
-            
+
+
             // Reset nome sort when date sort is activated
             if (newOrder !== 'none') {
                 setNomeSortOrder('none');
@@ -401,7 +403,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     // Função para obter as cores do perfil (igual aos responsáveis)
     const getPerfilColor = (perfil: string | undefined) => {
         if (!perfil) return "bg-gray-100 text-gray-800 border-gray-200";
-        
+
         switch (perfil.toLowerCase()) {
             case "administrador":
                 return "bg-[#EF7D4C] text-white border-transparent";
@@ -425,7 +427,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
 
         // Aplicar filtro de nome se especificado
         if (nomeFilter.trim()) {
-            filtered = filtered.filter(agendamento => 
+            filtered = filtered.filter(agendamento =>
                 agendamento.titulo.toLowerCase().includes(nomeFilter.toLowerCase()) ||
                 agendamento.justificativa?.toLowerCase().includes(nomeFilter.toLowerCase()) ||
                 agendamento.user?.name.toLowerCase().includes(nomeFilter.toLowerCase())
@@ -434,14 +436,14 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
 
         // Aplicar filtro de espaço se especificado
         if (espacoFilter !== 'all') {
-            filtered = filtered.filter(agendamento => 
+            filtered = filtered.filter(agendamento =>
                 agendamento.espaco_id.toString() === espacoFilter
             );
         }
 
         // Aplicar filtro de status se especificado
         if (statusFilter !== 'all') {
-            filtered = filtered.filter(agendamento => 
+            filtered = filtered.filter(agendamento =>
                 agendamento.status === statusFilter
             );
         }
@@ -480,17 +482,17 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                 const timeStrA = a.hora_inicio.split(':').slice(0, 2).join(':'); // Pegar apenas HH:MM
                 const dateStrB = b.data_inicio.split('T')[0];
                 const timeStrB = b.hora_inicio.split(':').slice(0, 2).join(':');
-                
+
                 const dateA = new Date(`${dateStrA}T${timeStrA}:00`);
                 const dateB = new Date(`${dateStrB}T${timeStrB}:00`);
-                
+
                 // Verificar se as datas são válidas
                 if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
                     console.warn('Data inválida encontrada:', { a: a.data_inicio, b: b.data_inicio });
                     return 0;
                 }
-                
-                return dateSortOrder.inicio === 'asc' 
+
+                return dateSortOrder.inicio === 'asc'
                     ? dateA.getTime() - dateB.getTime()
                     : dateB.getTime() - dateA.getTime();
             });
@@ -501,17 +503,17 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                 const timeStrA = a.hora_fim.split(':').slice(0, 2).join(':'); // Pegar apenas HH:MM
                 const dateStrB = b.data_fim.split('T')[0];
                 const timeStrB = b.hora_fim.split(':').slice(0, 2).join(':');
-                
+
                 const dateA = new Date(`${dateStrA}T${timeStrA}:00`);
                 const dateB = new Date(`${dateStrB}T${timeStrB}:00`);
-                
+
                 // Verificar se as datas são válidas
                 if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
                     console.warn('Data inválida encontrada:', { a: a.data_fim, b: b.data_fim });
                     return 0;
                 }
-                
-                return dateSortOrder.fim === 'asc' 
+
+                return dateSortOrder.fim === 'asc'
                     ? dateA.getTime() - dateB.getTime()
                     : dateB.getTime() - dateA.getTime();
             });
@@ -519,12 +521,12 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
 
         return filtered;
     })();
-    
+
     // Calcular total de itens para exibição
     const totalItems = filteredAndSortedAgendamentos.length;
-    
+
     // Filtrar agendamentos pelos espaços selecionados
-    const filteredAgendamentos = agendamentosData.filter(agendamento => 
+    const filteredAgendamentos = agendamentosData.filter(agendamento =>
         selectedEspacos.includes(agendamento.espaco_id)
     );
 
@@ -566,9 +568,9 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                 return {
                     start: startOfWeek(currentDate, { weekStartsOn: 0 }),
                     end: endOfWeek(currentDate, { weekStartsOn: 0 }),
-                    days: eachDayOfInterval({ 
-                        start: startOfWeek(currentDate, { weekStartsOn: 0 }), 
-                        end: endOfWeek(currentDate, { weekStartsOn: 0 }) 
+                    days: eachDayOfInterval({
+                        start: startOfWeek(currentDate, { weekStartsOn: 0 }),
+                        end: endOfWeek(currentDate, { weekStartsOn: 0 })
                     })
                 };
         }
@@ -591,7 +593,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         if (viewMode !== 'list') {
             // Aplicar filtro de nome se especificado
             if (nomeFilter.trim()) {
-                events = events.filter(event => 
+                events = events.filter(event =>
                     event.titulo.toLowerCase().includes(nomeFilter.toLowerCase()) ||
                     event.justificativa?.toLowerCase().includes(nomeFilter.toLowerCase()) ||
                     event.user?.name.toLowerCase().includes(nomeFilter.toLowerCase())
@@ -600,14 +602,14 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
 
             // Aplicar filtro de espaço se especificado
             if (espacoFilter !== 'all') {
-                events = events.filter(event => 
+                events = events.filter(event =>
                     event.espaco_id.toString() === espacoFilter
                 );
             }
 
             // Aplicar filtro de status se especificado
             if (statusFilter !== 'all') {
-                events = events.filter(event => 
+                events = events.filter(event =>
                     event.status === statusFilter
                 );
             }
@@ -640,12 +642,12 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
             // Extrair a hora do slot (ex: "19:00" -> 19)
             const slotHour = parseInt(timeSlot.split(":")[0]);
             const nextSlotTime = `${(slotHour + 1).toString().padStart(2, "0")}:00`;
-            
+
             // Verificar se o evento começa dentro deste slot de hora
             // ou se está ativo durante este slot
             const startsInSlot = eventStart >= timeSlot && eventStart < nextSlotTime;
             const isActiveInSlot = eventStart <= timeSlot && eventEnd > timeSlot;
-            
+
             return startsInSlot || isActiveInSlot;
         });
     };
@@ -654,14 +656,14 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     const isTimeInPast = (date: Date, timeSlot?: string) => {
         const now = new Date();
         const selectedDateTime = new Date(date);
-        
+
         if (timeSlot) {
             const [hours, minutes] = timeSlot.split(':').map(Number);
             selectedDateTime.setHours(hours, minutes, 0, 0);
         } else {
             selectedDateTime.setHours(8, 0, 0, 0); // Horário padrão 08:00
         }
-        
+
         return selectedDateTime <= now;
     };
 
@@ -669,16 +671,16 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         const selectedDate = format(date, 'yyyy-MM-dd');
         const now = new Date();
         const todayStr = format(now, 'yyyy-MM-dd');
-        
+
         let selectedTime = timeSlot || '08:00';
-        
+
         // Se a data selecionada for hoje, verificar se precisa ajustar o horário
         if (selectedDate === todayStr) {
             if (timeSlot) {
                 const [slotHour, slotMinute] = timeSlot.split(':').map(Number);
                 const currentHour = now.getHours();
                 const currentMinute = now.getMinutes();
-                
+
                 // Se o slot clicado é a hora atual, ajustar para o minuto atual + 1
                 if (slotHour === currentHour) {
                     const nextMinute = new Date(now.getTime() + 60000); // Adiciona 1 minuto
@@ -702,10 +704,10 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
             return;
         }
 
-        const endTime = selectedTime ? 
-            `${(parseInt(selectedTime.split(':')[0]) + 1).toString().padStart(2, '0')}:00` : 
+        const endTime = selectedTime ?
+            `${(parseInt(selectedTime.split(':')[0]) + 1).toString().padStart(2, '0')}:00` :
             '09:00';
-        
+
         setFormData({
             titulo: '',
             espaco_id: selectedEspacos[0]?.toString() || '',
@@ -720,12 +722,12 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
             data_fim_recorrencia: '',
             recursos_solicitados: []
         });
-        
-        setCreateModal({ 
-            open: true, 
-            selectedDate, 
-            selectedTime, 
-            selectedEspaco: selectedEspacos[0] 
+
+        setCreateModal({
+            open: true,
+            selectedDate,
+            selectedTime,
+            selectedEspaco: selectedEspacos[0]
         });
     };
 
@@ -810,15 +812,15 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
 
     const canDelete = (agendamento: Agendamento) => {
         // Verificar se pode cancelar (agendamentos pendentes ou aprovados, mas não cancelados)
-        return auth.user.perfil_acesso === 'diretor_geral' && 
+        return auth.user.perfil_acesso === 'diretor_geral' &&
                (agendamento.status === 'pendente' || agendamento.status === 'aprovado');
     };
 
     const canUncancel = (agendamento: Agendamento) => {
         // Verificar se pode descancelar (apenas diretor geral pode descancelar agendamentos cancelados)
-        return auth.user.perfil_acesso === 'diretor_geral' && 
+        return auth.user.perfil_acesso === 'diretor_geral' &&
                agendamento.status === 'cancelado';
-        
+
     };
 
     const canForceDelete = (agendamento: Agendamento) => {
@@ -829,10 +831,10 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     // Função para validar se data e hora estão no passado
     const isDateTimeInPast = (date: string, time: string) => {
         if (!date || !time) return false;
-        
+
         const now = new Date();
         const selectedDateTime = new Date(`${date}T${time}:00`);
-        
+
         return selectedDateTime <= now;
     };
 
@@ -846,20 +848,20 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     const getMinTime = (selectedDate: string) => {
         const today = new Date();
         const todayStr = format(today, 'yyyy-MM-dd');
-        
+
         // Se a data selecionada for hoje, a hora mínima é a hora atual + 1 minuto
         if (selectedDate === todayStr) {
             const nextMinute = new Date(today.getTime() + 60000); // Adiciona 1 minuto
             return format(nextMinute, 'HH:mm');
         }
-        
+
         // Se for uma data futura, pode começar às 00:00
         return '00:00';
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!formData.titulo || !formData.espaco_id || !formData.justificativa) {
             alert('Por favor, preencha todos os campos obrigatórios.');
             return;
@@ -880,7 +882,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         // Validar se data/hora de fim é anterior à de início
         const dataInicio = new Date(`${formData.data_inicio}T${formData.hora_inicio}:00`);
         const dataFim = new Date(`${formData.data_fim}T${formData.hora_fim}:00`);
-        
+
         if (dataFim <= dataInicio) {
             alert('A data e hora de fim deve ser posterior à data e hora de início.');
             return;
@@ -893,7 +895,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
             },
             onError: (errors: any) => {
                 console.log('Erro recebido:', errors);
-                
+
                 // Verificar se há conflitos (pode vir como string ou array)
                 if (errors.conflitos) {
                     // Se for uma string simples, mostrar alerta
@@ -997,10 +999,10 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
 
     // Função para gerar tooltip com informação de "já passou"
     const getEventTooltip = (event: Agendamento, includeTime: boolean = true) => {
-        const baseTooltip = includeTime 
+        const baseTooltip = includeTime
             ? `${event.titulo} - ${event.espaco?.nome || 'Espaço'} - ${event.hora_inicio.substring(0, 5)} às ${event.hora_fim.substring(0, 5)} - ${getStatusText(event.status)}`
             : `${event.titulo} - ${event.espaco?.nome || 'Espaço'} - ${getStatusText(event.status)}`;
-        
+
         const eventPast = isEventPast(event);
         return eventPast ? `${baseTooltip} - JÁ PASSOU` : baseTooltip;
     };
@@ -1016,7 +1018,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                     >
                     <Filter className="h-4 w-4" />
                     Filtros
-                    {(nomeFilter || espacoFilter !== 'all' || statusFilter !== 'all' || dataInicioFilter || dataFimFilter || 
+                    {(nomeFilter || espacoFilter !== 'all' || statusFilter !== 'all' || dataInicioFilter || dataFimFilter ||
                         nomeSortOrder !== 'none' || dateSortOrder.inicio !== 'none' || dateSortOrder.fim !== 'none') && (
                         <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
                             !
@@ -1125,8 +1127,8 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                     <Label className="mb-2 opacity-0">Ações</Label>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
-                                            <Button 
-                                                variant="outline" 
+                                            <Button
+                                                variant="outline"
                                                 size="sm"
                                                 onClick={() => {
                                                     setNomeFilter('');
@@ -1171,12 +1173,12 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                         <div
                             key={day.toISOString()}
                             className={`min-h-[120px] p-2 border-2 border-border/100 hover:border-border/60 rounded-lg cursor-pointer transition-all duration-200 ${
-                                isCurrentMonth 
-                                    ? 'bg-background hover:bg-muted/50' 
+                                isCurrentMonth
+                                    ? 'bg-background hover:bg-muted/50'
                                     : 'bg-muted/30 hover:bg-muted/40'
                             } ${
-                                isCurrentDay 
-                                    ? 'ring-2 ring-primary shadow-md border-primary/50' 
+                                isCurrentDay
+                                    ? 'ring-2 ring-primary shadow-md border-primary/50'
                                     : 'hover:shadow-sm'
                             }`}
                             onClick={() => handleDayClick(day, dayEvents)}
@@ -1351,8 +1353,8 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                     <Label className="mb-2 opacity-0">Ações</Label>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
-                                            <Button 
-                                                variant="outline" 
+                                            <Button
+                                                variant="outline"
                                                 size="sm"
                                                 onClick={() => {
                                                     setNomeFilter('');
@@ -1383,11 +1385,11 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                 {days.map((day) => {
                     const isCurrentDay = isToday(day);
                     return (
-                        <div 
-                            key={day.toISOString()} 
+                        <div
+                            key={day.toISOString()}
                             className={`p-3 text-center font-medium rounded-lg ${
-                                isCurrentDay 
-                                    ? 'bg-primary text-primary-foreground' 
+                                isCurrentDay
+                                    ? 'bg-primary text-primary-foreground'
                                     : 'bg-muted text-muted-foreground'
                             }`}
                         >
@@ -1408,7 +1410,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                         <div className="p-2 text-sm text-muted-foreground font-medium bg-muted/30 rounded-lg flex items-center justify-center">
                             {timeSlot}
                         </div>
-                        
+
                         {/* Colunas dos dias */}
                         {days.map((day) => {
                             const events = getEventsForTimeSlot(day, timeSlot);
@@ -1451,7 +1453,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
 
     const renderDayView = () => {
         const dayEvents = getEventsForDay(currentDate);
-        
+
         return (
             <div className="space-y-4">
                 {/* Botão de Filtros */}
@@ -1551,8 +1553,8 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                         <Label className="mb-2 opacity-0">Ações</Label>
                                         <Tooltip>
                                             <TooltipTrigger asChild>
-                                                <Button 
-                                                    variant="outline" 
+                                                <Button
+                                                    variant="outline"
                                                     size="sm"
                                                     onClick={() => {
                                                         setNomeFilter('');
@@ -1641,7 +1643,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         const timelineEspacos = (() => {
             // Primeiro filtrar pelos espaços selecionados
             let filtered = espacos.filter(espaco => selectedEspacos.includes(espaco.id));
-            
+
             // Depois filtrar pela busca de agendamentos
             if (searchAgendamentos) {
                 const espacosComAgendamentos = new Set();
@@ -1674,7 +1676,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                             !
                             </Badge>
                         )}
-                        </Button>   
+                        </Button>
                     <div className="text-sm text-muted-foreground">
                         {timelineEspacos.length} de {espacos.filter(e => selectedEspacos.includes(e.id)).length} espaços
                     </div>
@@ -1794,8 +1796,8 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                         <Label className="mb-2 opacity-0">Ações</Label>
                                         <Tooltip>
                                             <TooltipTrigger asChild>
-                                                <Button 
-                                                    variant="outline" 
+                                                <Button
+                                                    variant="outline"
                                                     size="sm"
                                                     onClick={() => {
                                                         setNomeFilter('');
@@ -1829,11 +1831,11 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                     {days.map((day) => {
                         const isCurrentDay = isToday(day);
                         return (
-                            <div 
-                                key={day.toISOString()} 
+                            <div
+                                key={day.toISOString()}
                                 className={`p-3 text-center font-medium rounded-lg ${
-                                    isCurrentDay 
-                                        ? "bg-primary text-primary-foreground" 
+                                    isCurrentDay
+                                        ? "bg-primary text-primary-foreground"
                                         : "bg-muted text-muted-foreground"
                                 }`}
                             >
@@ -1985,9 +1987,9 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                     />
                                     <Tooltip>
                                         <TooltipTrigger asChild>
-                                            <Button 
-                                                variant="ghost" 
-                                                size="sm" 
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
                                                 onClick={toggleNomeSort}
                                                 className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
                                             >
@@ -2051,9 +2053,9 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                     />
                                     <Tooltip>
                                         <TooltipTrigger asChild>
-                                            <Button 
-                                                variant="ghost" 
-                                                size="sm" 
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
                                                 onClick={() => toggleDateSort('inicio')}
                                                 className="absolute right-1 top-1/2 transform -translate-y-1/2 h-5 w-5 p-0 hover:bg-muted"
                                             >
@@ -2078,9 +2080,9 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                     />
                                     <Tooltip>
                                         <TooltipTrigger asChild>
-                                            <Button 
-                                                variant="ghost" 
-                                                size="sm" 
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
                                                 onClick={() => toggleDateSort('fim')}
                                                 className="absolute right-1 top-1/2 transform -translate-y-1/2 h-5 w-5 p-0 hover:bg-muted"
                                             >
@@ -2095,14 +2097,14 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                             </div>
 
                             {/* Botão Limpar Filtros - só aparece quando há filtros ativos */}
-                            {(nomeFilter || espacoFilter !== 'all' || (statusFilter !== 'all' && statusFilter !== 'all') || dataInicioFilter || dataFimFilter || 
+                            {(nomeFilter || espacoFilter !== 'all' || (statusFilter !== 'all' && statusFilter !== 'all') || dataInicioFilter || dataFimFilter ||
                               nomeSortOrder !== 'none' || dateSortOrder.inicio !== 'none' || dateSortOrder.fim !== 'none') && (
                                 <div className="flex flex-col">
                                     <Label className="mb-2 opacity-0">Ações</Label>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
-                                            <Button 
-                                                variant="outline" 
+                                            <Button
+                                                variant="outline"
                                                 size="sm"
                                                 onClick={() => {
                                                     // Limpar todos os filtros e ordenações
@@ -2198,7 +2200,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                                                 return dateStr;
                                                             }
                                                         };
-                                                        
+
                                                         const formatTime = (timeStr: string) => {
                                                             try {
                                                                 // Extrair apenas HH:MM se vier com segundos
@@ -2207,12 +2209,12 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                                                 return timeStr;
                                                             }
                                                         };
-                                                        
+
                                                         const dataInicioFormatted = formatDate(agendamento.data_inicio);
                                                         const dataFimFormatted = formatDate(agendamento.data_fim);
                                                         const horaInicioFormatted = formatTime(agendamento.hora_inicio);
                                                         const horaFimFormatted = formatTime(agendamento.hora_fim);
-                                                        
+
                                                         if (agendamento.data_inicio === agendamento.data_fim) {
                                                             return `${dataInicioFormatted} das ${horaInicioFormatted} às ${horaFimFormatted}`;
                                                         } else {
@@ -2229,13 +2231,15 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                     <div className="flex items-center gap-2 ml-4">
                                         <Tooltip>
                                             <TooltipTrigger asChild>
-                                                <Button 
-                                                    variant="outline" 
-                                                    size="sm" 
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
                                                     onClick={() => handleEventClick(agendamento)}
-                                                >
-                                                    <Eye className="h-4 w-4" />
+                                                    className="hover:border-blue-500 group"
+                                                    >
+                                                    <Eye className="h-4 w-4 group-hover:text-blue-500" />
                                                 </Button>
+                                              
                                             </TooltipTrigger>
                                             <TooltipContent>
                                                 <p>Visualizar</p>
@@ -2314,7 +2318,13 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
             <Head title="Agendamentos" />
 
             <div className="space-y-6">
-                <div className="flex items-center justify-between">
+
+
+
+
+
+
+                <div className="flex items-center justify-between mt-6">
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight">
                             &nbsp;&nbsp;&nbsp;Agendamentos</h1>
@@ -2367,6 +2377,14 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                         </Button>
                     </div>
                 </div>
+
+
+
+
+
+
+
+
 
                 {/* Controles e Filtros */}
                 {viewMode !== 'list' ? (
@@ -2787,7 +2805,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                         </div>
 
                         <DialogFooter>
-                            <Button 
+                            <Button
                                 onClick={() => setPastTimeModal({ open: false })}
                                 className="w-full"
                             >

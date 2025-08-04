@@ -577,13 +577,12 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
             <Head title="Gerenciar Agendamentos" />
 
             <div className="space-y-6">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mt-6 mx-6">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">
-                            &nbsp;&nbsp;&nbsp;Gerenciar Agendamentos</h1>
+                        <h1 className="text-3xl font-bold tracking-tight">Gerenciar Agendamentos</h1>
                     </div>
 
-                    <Button asChild variant="outline">
+                    <Button asChild variant="outline" className="bg-sidebar hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 dark:hover:bg-blue-900/30 dark:hover:border-blue-700 dark:hover:text-blue-300">
                         <Link href="/agendamentos">
                             <Eye className="h-4 w-4 mr-2" />
                             Ver Todos os Agendamentos
@@ -1029,7 +1028,7 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                                             <div className="flex items-center gap-2 ml-4">
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
-                                                        <Button variant="outline" size="sm" asChild>
+                                                        <Button variant="outline" size="sm" asChild className="hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 dark:hover:bg-blue-900/30 dark:hover:border-blue-700 dark:hover:text-blue-300">
                                                             <Link href={`/agendamentos/${agendamento.id}?from=gerenciar&${new URLSearchParams(filters).toString()}`}>
                                                                 <Eye className="h-4 w-4" />
                                                             </Link>
