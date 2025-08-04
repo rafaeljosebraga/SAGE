@@ -56,6 +56,10 @@ class ProfileController extends Controller
 
         $user->save();
 
+        // Forçar refresh dos dados do usuário na sessão
+        $freshUser = $user->fresh();
+        auth()->setUser($freshUser);
+
         return to_route('profile.edit')->with('status', 'profile-updated');
     }
 

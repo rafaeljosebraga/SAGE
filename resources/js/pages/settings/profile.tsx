@@ -1,7 +1,7 @@
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Transition } from '@headlessui/react';
 import { Head, Link, useForm, usePage, router } from '@inertiajs/react';
-import { FormEventHandler, useRef, useState } from 'react';
+import { FormEventHandler, useRef, useState, useEffect } from 'react';
 
 import DeleteUser from '@/components/delete-user';
 import HeadingSmall from '@/components/heading-small';
@@ -39,36 +39,61 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
         profile_photo: null,
     });
 
-    const refreshSystemAfterPhotoUpdate = (photoUrl?: string) => {
-        const timestamp = Date.now();
-        
-        // Disparar evento customizado para notificar outros componentes
-        window.dispatchEvent(new CustomEvent('profile-photo-updated', { 
-            detail: { timestamp, userId: auth.user.id } 
-        }));
+    // Sincronizar dados do formulário quando os dados do usuário mudarem
+    useEffect(() => {
+        // Só atualizar se os dados realmente mudaram
+        if (data.name !== auth.user.name || data.email !== auth.user.email) {
+            setData('name', auth.user.name);
+            setData('email', auth.user.email);
+            setData('profile_photo', null);
+        }
+    }, [auth.user.name, auth.user.email, auth.user.updated_at]);
 
-        // Invalidar cache de todas as imagens de perfil na aplicação
-        const profileImages = document.querySelectorAll('img[src*="profile_photo"], img[src*="/storage/"], img[alt*="perfil"], img[alt*="profile"]');
-        profileImages.forEach((img: Element) => {
-            const imgElement = img as HTMLImageElement;
-            const originalSrc = imgElement.src.split('?')[0]; // Remove query params existentes
-            imgElement.src = originalSrc + '?v=' + timestamp;
-        });
-
-        // Forçar atualização de todas as imagens de avatar na aplicação
+    const refreshSystemAfterPhotoUpdate = () => {
+        // Forçar limpeza COMPLETA de TODOS os caches do Inertia.js (igual ao perfil)
         setTimeout(() => {
-            const allAvatars = document.querySelectorAll('img[alt*="' + auth.user.name + '"]');
-            allAvatars.forEach((img: Element) => {
-                const imgElement = img as HTMLImageElement;
-                const originalSrc = imgElement.src.split('?')[0];
-                imgElement.src = originalSrc + '?v=' + timestamp;
-            });
-        }, 100);
-
-        // Refresh automático do sistema para dar tempo do toast aparecer
-        setTimeout(() => {
-            window.location.reload();
-        }, 2500);
+            // Método 1: Limpar TODOS os estados do histórico
+            if (window.history) {
+                const historyLength = window.history.length;
+                for (let i = 0; i < historyLength; i++) {
+                    try {
+                        const state = window.history.state;
+                        if (state) {
+                            // Limpar cache, props, auth, tudo
+                            delete state.cache;
+                            delete state.props;
+                            delete state.auth;
+                            window.history.replaceState(null, '', window.location.href);
+                        }
+                    } catch (e) {
+                        // Silently handle errors
+                    }
+                }
+            }
+            
+            // Método 2: Limpar localStorage e sessionStorage do Inertia
+            try {
+                Object.keys(localStorage).forEach(key => {
+                    if (key.includes('inertia') || key.includes('auth') || key.includes('user')) {
+                        localStorage.removeItem(key);
+                    }
+                });
+                Object.keys(sessionStorage).forEach(key => {
+                    if (key.includes('inertia') || key.includes('auth') || key.includes('user')) {
+                        sessionStorage.removeItem(key);
+                    }
+                });
+            } catch (e) {
+                // Silently handle errors
+            }
+            
+            // Método 3: Forçar reload completo com timestamp para quebrar cache
+            const timestamp = Date.now();
+            const url = new URL(window.location.href);
+            url.searchParams.set('_t', timestamp.toString());
+            
+            window.location.href = url.toString();
+        }, 2500); // Dar tempo para o toast aparecer
     };
 
     const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -104,7 +129,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                     });
                     
                     // Refresh automático do sistema após atualização da foto
-                    refreshSystemAfterPhotoUpdate(currentPhotoUrl || undefined);
+                    refreshSystemAfterPhotoUpdate();
                 },
                 onError: (errors) => {
                     console.error('Erro ao atualizar perfil:', errors);
@@ -120,8 +145,6 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
     };
 
     const handlePhotoRemove = () => {
-        const oldPhotoUrl = currentPhotoUrl;
-        
         router.delete(route('profile.photo.remove'), {
             preserveScroll: true,
             onSuccess: () => {
@@ -136,7 +159,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                 });
                 
                 // Refresh automático do sistema após remoção da foto
-                refreshSystemAfterPhotoUpdate(oldPhotoUrl || undefined);
+                refreshSystemAfterPhotoUpdate();
             },
             onError: (errors) => {
                 console.error('Erro ao remover foto:', errors);
@@ -156,17 +179,67 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
         // Usar o patch do useForm
         patch(route('profile.update'), {
             preserveScroll: true,
-            onSuccess: () => {
-                // Mostrar toast de sucesso por 5 segundos
+            onSuccess: (page: any) => {
+                // Mostrar toast de sucesso
                 toast({
                     title: "Perfil atualizado com sucesso!",
                     description: "Suas informações pessoais foram salvas.",
                     duration: 5000,
                 });
+
+                // Atualizar o formulário imediatamente com os dados corretos retornados
+                if (page.props.auth?.user) {
+                    const updatedUser = page.props.auth.user;
+                    setData('name', updatedUser.name);
+                    setData('email', updatedUser.email);
+                }
+
+                // Forçar limpeza COMPLETA de TODOS os caches do Inertia.js
+                setTimeout(() => {
+                    // Método 1: Limpar TODOS os estados do histórico
+                    if (window.history) {
+                        const historyLength = window.history.length;
+                        for (let i = 0; i < historyLength; i++) {
+                            try {
+                                const state = window.history.state;
+                                if (state) {
+                                    // Limpar cache, props, auth, tudo
+                                    delete state.cache;
+                                    delete state.props;
+                                    delete state.auth;
+                                    window.history.replaceState(null, '', window.location.href);
+                                }
+                            } catch (e) {
+                                // Silently handle errors
+                            }
+                        }
+                    }
+                    
+                    // Método 2: Limpar localStorage e sessionStorage do Inertia
+                    try {
+                        Object.keys(localStorage).forEach(key => {
+                            if (key.includes('inertia') || key.includes('auth') || key.includes('user')) {
+                                localStorage.removeItem(key);
+                            }
+                        });
+                        Object.keys(sessionStorage).forEach(key => {
+                            if (key.includes('inertia') || key.includes('auth') || key.includes('user')) {
+                                sessionStorage.removeItem(key);
+                            }
+                        });
+                    } catch (e) {
+                        // Silently handle errors
+                    }
+                    
+                    // Método 3: Forçar reload completo com timestamp para quebrar cache
+                    const timestamp = Date.now();
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('_t', timestamp.toString());
+                    
+                    window.location.href = url.toString();
+                }, 500);
             },
             onError: (errors: any) => {
-                console.error('Erro ao atualizar perfil:', errors);
-                
                 // Mostrar toast de erro
                 const errorMessages = Object.values(errors).flat();
                 const errorMessage = errorMessages.length > 0 ? errorMessages[0] as string : "Erro ao atualizar perfil";
@@ -177,7 +250,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                     variant: "destructive",
                     duration: 5000,
                 });
-            },
+            }
         });
     };
 
