@@ -121,6 +121,7 @@ export function ModalDetalhesUsuario({ isOpen, onClose, usuario, espacos }: Moda
             key: 'capacidade',
             label: 'Capacidade',
             type: 'number',
+            minValue: 0,
             render: (value) => (
                 <div className="flex items-center gap-1">
                     <Users className="h-4 w-4 text-gray-500" />
@@ -294,7 +295,7 @@ export function ModalDetalhesUsuario({ isOpen, onClose, usuario, espacos }: Moda
                             <div className="flex-1">
                                 <div className="flex items-center gap-3 flex-wrap">
                                     <h3 className="text-xl font-semibold text-card-foreground">{usuario.name}</h3>
-                                    <Badge 
+                                    <Badge
                                         className={`text-sm ${getPerfilColor(usuario.perfil_acesso)}`}
                                     >
                                         {formatPerfil(usuario.perfil_acesso)}
