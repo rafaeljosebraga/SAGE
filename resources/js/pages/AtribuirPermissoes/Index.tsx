@@ -20,10 +20,13 @@ export default function AtribuirPermissoesIndex({ users, espacos }: AtribuirPerm
     const [usuarioSelecionado, setUsuarioSelecionado] = useState<User | null>(null);
     const [espacosDoUsuario, setSalasDoUsuario] = useState<Espaco[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+
     async function handleViewDetails(id: number) {
         try {
+            console.log(users);
+            console.log('Buscando espaços para o usuário ID:', id);
             const response = await axios.get(`/usuarios/${id}/espacos`);
-            setUsuarioSelecionado(users[id]);
+            setUsuarioSelecionado(users.find(user => user.id === id) || null);
             setSalasDoUsuario(response.data); // é a lista de espacos
             setIsModalOpen(true);
         } catch (error) {
@@ -58,6 +61,7 @@ export default function AtribuirPermissoesIndex({ users, espacos }: AtribuirPerm
                 return "bg-gray-100 text-gray-800 border-gray-200";
         }
     };
+
 
     const columns: ColumnConfig[] = [
         {
@@ -111,7 +115,7 @@ export default function AtribuirPermissoesIndex({ users, espacos }: AtribuirPerm
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p>Visualizar espacos atribuidos</p>
+                            <p>Visualizar espacos atribuidos, associados a {user.name}</p>
                         </TooltipContent>
                     </Tooltip>
                     <Tooltip>

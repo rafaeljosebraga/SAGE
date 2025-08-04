@@ -39,9 +39,9 @@ interface FilterableTableProps {
 
 type SortDirection = 'asc' | 'desc' | null;
 
-export function FilterableTable({ 
-    data, 
-    columns, 
+export function FilterableTable({
+    data,
+    columns,
     className = '',
     emptyMessage = 'Nenhum item encontrado.'
 }: FilterableTableProps) {
@@ -54,14 +54,14 @@ export function FilterableTable({
         if (column.getValue) {
             return column.getValue(item);
         }
-        
+
         const keys = column.key.split('.');
         let value = item;
-        
+
         for (const key of keys) {
             value = value?.[key];
         }
-        
+
         return String(value || '');
     };
 
@@ -76,7 +76,7 @@ export function FilterableTable({
                 if (column) {
                     filtered = filtered.filter(item => {
                         // Usar getSearchValue se disponível, senão usar getValue
-                        const value = column.getSearchValue 
+                        const value = column.getSearchValue
                             ? column.getSearchValue(item).toLowerCase()
                             : getColumnValue(item, column).toLowerCase();
                         return value.includes(filterValue.toLowerCase());
@@ -92,18 +92,18 @@ export function FilterableTable({
                 filtered = [...filtered].sort((a, b) => {
                     const aValue = getColumnValue(a, column);
                     const bValue = getColumnValue(b, column);
-                    
+
                     // Tentar converter para número se possível
                     const aNum = Number(aValue);
                     const bNum = Number(bValue);
-                    
+
                     let comparison = 0;
                     if (!isNaN(aNum) && !isNaN(bNum)) {
                         comparison = aNum - bNum;
                     } else {
                         comparison = aValue.localeCompare(bValue, 'pt-BR');
                     }
-                    
+
                     return sortDirection === 'asc' ? comparison : -comparison;
                 });
             }
@@ -158,13 +158,13 @@ export function FilterableTable({
         if (sortColumn !== columnKey) {
             return <ArrowUpDown className="h-4 w-4 text-gray-400" />;
         }
-        
+
         if (sortDirection === 'asc') {
             return <ArrowUp className="h-4 w-4 text-blue-600" />;
         } else if (sortDirection === 'desc') {
             return <ArrowDown className="h-4 w-4 text-blue-600" />;
         }
-        
+
         return <ArrowUpDown className="h-4 w-4 text-gray-400" />;
     };
 
@@ -188,7 +188,7 @@ export function FilterableTable({
                                 </TableHead>
                             ))}
                         </TableRow>
-                        
+
                         {/* Linha dos filtros */}
                         <TableRow className="bg-card">
                             {columns.map((column, index) => (
@@ -223,6 +223,7 @@ export function FilterableTable({
                                                     <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4" />
                                                     <Input
                                                         type={column.type === 'number' ? 'number' : 'text'}
+                                                        min={column.minValue}
                                                         placeholder={column.label === 'Recursos' ? "Buscar por nome..." : "Filtrar..."}
                                                         value={filters[column.key] || ''}
                                                         onChange={(e) => updateFilter(column.key, e.target.value)}
@@ -279,7 +280,7 @@ export function FilterableTable({
                                 <TableRow key={item.id || index} className="hover:bg-muted/50">
                                     {columns.map((column) => (
                                         <TableCell key={column.key}>
-                                            {column.render 
+                                            {column.render
                                                 ? column.render(getColumnValue(item, column), item)
                                                 : getColumnValue(item, column)
                                             }
@@ -300,7 +301,7 @@ export function FilterableTable({
                     </TableBody>
                 </Table>
             </div>
-            
+
             {/* Contagem de registros no final da tabela */}
             <div className="mt-3 px-1">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
