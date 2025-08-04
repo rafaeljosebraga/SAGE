@@ -787,7 +787,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                                     <Button 
                                         variant="outline" 
                                         size="sm" 
-                                        className="w-full"
+                                        className="w-full cursor-pointer"
                                         onClick={() => setIsEspacoModalOpen(true)}
                                     >
                                         Ver Detalhes do Espaço
