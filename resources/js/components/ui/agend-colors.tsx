@@ -151,12 +151,13 @@ export const useAgendamentoColors = () => {
             case 'rejeitado':
                 return 'bg-rose-100 dark:bg-rose-900/30 text-rose-800 dark:text-rose-200 border-rose-200 dark:border-rose-700';
             case 'cancelado':
-                return 'bg-gray-900 dark:bg-gray-900 text-white dark:text-gray-100 border-gray-900 dark:border-gray-900';
+                return 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600';
             default:
                 return 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600';
         }
     };
 
+    // Função para obter cor de fundo do evento (para calendário)
     // Função para gerar identificador único para série de agendamentos
     const getEventSeriesId = (agendamento: Agendamento): string => {
         // Para agendamentos recorrentes, usar uma combinação que seja igual para toda a série
@@ -172,7 +173,6 @@ export const useAgendamentoColors = () => {
         return baseId;
     };
 
-    // Função para obter cor de fundo do evento (para calendário)
     const getEventBackgroundColor = (agendamento: Agendamento): string => {
         // Se o evento já passou, usar cinza
         if (isEventPast(agendamento)) {
@@ -193,36 +193,25 @@ export const useAgendamentoColors = () => {
         return `${color.bg} ${color.text}`;
     };
 
-    // Função para obter cor da borda baseada no status (NOVA FUNÇÃO)
-    const getStatusBorderColor = (status: string): string => {
-        switch (status) {
-            case 'pendente':
-                return 'border-l-orange-500';
-            case 'aprovado':
-                return 'border-l-emerald-500';
-            case 'rejeitado':
-                return 'border-l-rose-500';
-            case 'cancelado':
-                return 'border-l-gray-900';
-            default:
-                return 'border-l-slate-500';
-        }
-    };
-
-    // Função para obter cor da borda do agendamento (para cards) - ATUALIZADA
+    // Função para obter cor da borda do agendamento (para cards)
     const getEventBorderColor = (agendamento: Agendamento): string => {
-        // Priorizar cores baseadas no status do agendamento
-        return getStatusBorderColor(agendamento.status);
-    };
-
-    // Função para obter classes de fundo do card baseado no status
-    const getCardBackgroundColor = (status: string): string => {
-        switch (status) {
-            case 'cancelado':
-                return 'bg-gray-200/90 dark:bg-gray-700/50'; // Fundo mais escuro no tema claro, mais claro no tema escuro para cancelados
-            default:
-                return '';
+        // Se o evento já passou, usar cinza
+        if (isEventPast(agendamento)) {
+            return 'border-l-gray-500';
         }
+
+        // Usar identificador da série para que agendamentos recorrentes tenham a mesma cor
+        const seriesId = getEventSeriesId(agendamento);
+        const hash1 = generateHash(`primary_${seriesId}`);
+        const hash2 = generateHash(`secondary_${seriesId}`);
+        const hash3 = generateHash(`tertiary_${seriesId}`);
+        
+        // Combinar os hashes de forma única
+        const combinedHash = Math.abs(hash1 + (hash2 * 17) + (hash3 * 23));
+        const colorIndex = getDistributedColorIndex(combinedHash, colorPalette.length);
+        const color = colorPalette[colorIndex];
+        
+        return color.border;
     };
 
     // Função para obter cor de fundo do status (para calendário)
@@ -235,7 +224,7 @@ export const useAgendamentoColors = () => {
             case 'rejeitado':
                 return 'bg-red-300 dark:bg-red-600/80 text-red-900 dark:text-red-100';
             case 'cancelado':
-                return 'bg-gray-900 dark:bg-gray-900 text-white dark:text-gray-100';
+                return 'bg-gray-300 dark:bg-gray-600/80 text-gray-900 dark:text-gray-100';
             default:
                 return 'bg-gray-300 dark:bg-gray-600/80 text-gray-900 dark:text-gray-100';
         }
@@ -280,8 +269,8 @@ export const useAgendamentoColors = () => {
                 );
             case 'cancelado':
                 return (
-                    <div className="w-4 h-4 rounded-full bg-gray-900 dark:bg-gray-900 flex items-center justify-center shadow-sm shrink-0">
-                        <Ban className="h-2.5 w-2.5 text-white dark:text-white" />
+                    <div className="w-4 h-4 rounded-full bg-gray-500 dark:bg-gray-400 flex items-center justify-center shadow-sm shrink-0">
+                        <Ban className="h-2.5 w-2.5 text-white dark:text-gray-900" />
                     </div>
                 );
             default:
@@ -297,8 +286,6 @@ export const useAgendamentoColors = () => {
         getStatusColor,
         getEventBackgroundColor,
         getEventBorderColor,
-        getStatusBorderColor,
-        getCardBackgroundColor,
         getStatusBgColor,
         getStatusText,
         getStatusIcon,
@@ -383,7 +370,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
                 </div>
             )}
             {getStatusIcon(status)}
-        </div>
+i        </div>
     );
 };
 

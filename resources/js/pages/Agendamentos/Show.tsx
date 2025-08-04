@@ -42,7 +42,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
     }>({ open: false });
     
     // Usar o hook de cores
-    const { getStatusColor, getStatusText, getEventBorderColor, getCardBackgroundColor } = useAgendamentoColors();
+    const { getStatusColor, getStatusText, getEventBorderColor } = useAgendamentoColors();
     // Usar o hook de toast
     const { toast } = useToast();
     
@@ -374,7 +374,6 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                                             
                                             router.get(`/agendamentos/${agendamento.id}/editar?${urlParams.toString()}`);
                                         }}
-                                        className="bg-blue-100/80 hover:bg-blue-200/90 dark:bg-slate-700/60 dark:hover:bg-slate-600/70"
                                     >
                                         <Edit className="h-4 w-4 mr-2" />
                                         Editar
@@ -394,7 +393,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                                         variant="outline"
                                         size="sm"
                                         onClick={handleForceDelete}
-                                        className="text-orange-600 hover:text-orange-700 border-orange-200 hover:border-orange-300 dark:text-orange-400 dark:hover:text-orange-300 dark:border-orange-800 dark:hover:border-orange-700 bg-orange-100/80 hover:bg-orange-200/90 dark:bg-orange-900/60 dark:hover:bg-orange-800/70"
+                                        className="text-orange-600 hover:text-orange-700 border-orange-200 hover:border-orange-300 dark:text-orange-400 dark:hover:text-orange-300 dark:border-orange-800 dark:hover:border-orange-700"
                                     >
                                         <Trash2 className="h-4 w-4 mr-2" />
                                         Excluir
@@ -414,7 +413,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                                         variant="outline"
                                         size="sm"
                                         onClick={handleDelete}
-                                        className="text-white hover:text-white border-gray-800 hover:border-gray-700 dark:text-white dark:hover:text-white dark:border-white dark:hover:border-gray-300 bg-gray-900 hover:bg-gray-800 dark:bg-gray-900 dark:hover:bg-gray-800"
+                                        className="text-slate-600 hover:text-slate-700 border-slate-200 hover:border-slate-300 dark:text-slate-400 dark:hover:text-slate-300 dark:border-slate-600 dark:hover:border-slate-500"
                                     >
                                         <Ban className="h-4 w-4 mr-2" />
                                         Cancelar
@@ -434,7 +433,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                                         variant="outline"
                                         size="sm"
                                         onClick={handleUncancel}
-                                        className="bg-green-100/80 hover:bg-green-200/90 dark:bg-green-900/60 dark:hover:bg-green-800/70 text-green-700 hover:text-green-800 dark:text-green-300 dark:hover:text-green-200 border-green-200 hover:border-green-300 dark:border-green-800 dark:hover:border-green-700"
+                                        className="text-green-600 hover:text-green-700"
                                     >
                                         <RotateCcw className="h-4 w-4 mr-2" />
                                         Voltar Agendamento
@@ -550,7 +549,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
 
                         {/* Status e Aprovação */}
                         {agendamento.status === 'pendente' && (
-                            <Card className={`border-l-4 ${getEventBorderColor(agendamento)}`}>
+                            <Card className="border-l-4 border-l-orange-500">
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2">
                                         <Clock className="h-5 w-5" />
@@ -589,7 +588,11 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                         )}
 
                         {(agendamento.status === 'rejeitado' || agendamento.status === 'aprovado' || agendamento.status === 'cancelado') && (
-                            <Card className={`border-l-4 ${getEventBorderColor(agendamento)} ${getCardBackgroundColor(agendamento.status)}`}>
+                            <Card className={`border-l-4 ${
+                                agendamento.status === 'aprovado' ? 'border-l-emerald-500' : 
+                                agendamento.status === 'rejeitado' ? 'border-l-rose-500' : 
+                                'border-l-slate-500'
+                            }`}>
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2">
                                         <MessageSquare className="h-5 w-5" />
