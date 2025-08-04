@@ -583,9 +583,9 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                             &nbsp;&nbsp;&nbsp;Gerenciar Agendamentos</h1>
                     </div>
 
-                    <Button asChild variant="outline">
+                    <Button asChild variant="outline" className="bg-white hover:bg-gray-50 text-black hover:text-black dark:bg-[#285355] dark:hover:bg-[#1e3f41] dark:text-white dark:hover:text-white dark:border-[#285355] dark:hover:border-[#1e3f41] px-6 py-2 mr-4 mt-2 group">
                         <Link href="/agendamentos">
-                            <Eye className="h-4 w-4 mr-2" />
+                            <Eye className="h-4 w-4 mr-3 group-hover:text-blue-500" />
                             Ver Todos os Agendamentos
                         </Link>
                     </Button>
@@ -1029,9 +1029,9 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                                             <div className="flex items-center gap-2 ml-4">
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
-                                                        <Button variant="outline" size="sm" asChild>
+                                                        <Button variant="outline" size="sm" asChild className="hover:border-blue-500 group">
                                                             <Link href={`/agendamentos/${agendamento.id}?from=gerenciar&${new URLSearchParams(filters).toString()}`}>
-                                                                <Eye className="h-4 w-4" />
+                                                                <Eye className="h-4 w-4 group-hover:text-blue-500" />
                                                             </Link>
                                                         </Button>
                                                     </TooltipTrigger>
@@ -1049,7 +1049,7 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                                                                     variant="outline"
                                                                     size="sm"
                                                                     onClick={() => handleApproveConfirm(agendamento)}
-                                                                    className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                                                                    className="text-white hover:text-white border-emerald-600 hover:border-emerald-700 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-700 dark:border-emerald-600 dark:hover:border-emerald-700"
                                                                 >
                                                                     <Check className="h-4 w-4" />
                                                                 </Button>
@@ -1065,7 +1065,7 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                                                                     variant="outline"
                                                                     size="sm"
                                                                     onClick={() => handleReject(agendamento)}
-                                                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                                    className="text-white hover:text-white border-rose-600 hover:border-rose-700 bg-rose-600 hover:bg-rose-700 dark:bg-rose-600 dark:hover:bg-rose-700 dark:border-rose-600 dark:hover:border-rose-700"
                                                                 >
                                                                     <X className="h-4 w-4" />
                                                                 </Button>
