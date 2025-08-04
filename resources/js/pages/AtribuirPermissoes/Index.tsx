@@ -143,7 +143,7 @@ export default function AtribuirPermissoesIndex({ users, espacos }: AtribuirPerm
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Atribuir Permissões" />
-            <div className="space-y-6">
+            <div className="space-y-6 mt-6 mx-6">
                 <div>
                     <h1 className="text-3xl font-bold text-foreground">&nbsp;&nbsp;&nbsp;Atribuir Permissões</h1>
                     <FilterableTable
