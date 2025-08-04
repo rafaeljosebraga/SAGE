@@ -603,7 +603,7 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
             <Head title="Gerenciar Agendamentos" />
 
             <div className="space-y-6">
-                <div className="flex items-center justify-between mt-6 mx-6">
+                <div className="flex items-center justify-between mt-6 mx-2">
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight">Gerenciar Agendamentos</h1>
                     </div>
@@ -1035,7 +1035,7 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                                                     )}
 
                                                     {agendamento.status === 'rejeitado' && agendamento.motivo_rejeicao && (
-                                                        <Alert>
+                                                        <Alert className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100">
                                                             <XCircle className="h-4 w-4" />
                                                             <AlertDescription>
                                                                 <strong>Motivo da rejeição:</strong> {agendamento.motivo_rejeicao}
