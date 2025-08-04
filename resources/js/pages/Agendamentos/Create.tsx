@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 
+import { useToast } from '@/hooks/use-toast';
 import type { PageProps, Espaco, Recurso, BreadcrumbItem } from '@/types';
 
 interface Props extends PageProps {
@@ -22,6 +23,7 @@ interface Props extends PageProps {
 }
 
 export default function AgendamentosCreate({ espacos, recursos, espacoSelecionado, returnView }: Props) {
+    const { toast } = useToast();
     const [selectedEspaco, setSelectedEspaco] = useState<Espaco | null>(espacoSelecionado || null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -73,11 +75,22 @@ export default function AgendamentosCreate({ espacos, recursos, espacoSelecionad
             preserveState: true,
             preserveScroll: true,
             onSuccess: () => {
-                // Sucesso será tratado pelo redirect do backend
+                toast({
+                    title: 'Agendamento criado com sucesso!',
+                    description: 'Sua solicitação foi enviada para aprovação.',
+                    variant: 'success',
+                    duration: 5000,
+                });
                 setIsSubmitting(false);
             },
             onError: (errors) => {
-                console.error('Erro ao criar agendamento:', errors);
+                const errorMessage = Object.values(errors).flat()[0] as string || 'Erro ao criar agendamento';
+                toast({
+                    title: 'Erro ao criar agendamento',
+                    description: errorMessage,
+                    variant: 'destructive',
+                    duration: 5000,
+                });
                 setIsSubmitting(false);
             },
             onFinish: () => {

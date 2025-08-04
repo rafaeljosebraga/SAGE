@@ -44,6 +44,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAgendamentoColors, StatusBadge } from '@/components/ui/agend-colors';
 import { UserAvatar } from '@/components/user-avatar';
+import { useToast } from '@/hooks/use-toast';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -79,6 +80,7 @@ interface Props extends PageProps {
 export default function GerenciarAgendamentos({ agendamentos, espacos, estatisticas, filters, auth }: Props) {
     // Usar o hook de cores
     const { getStatusColor, getStatusText, getEventBorderColor } = useAgendamentoColors();
+    const { toast } = useToast();
     
     const [rejectionDialog, setRejectionDialog] = useState<{ open: boolean; agendamento: Agendamento | null }>({
         open: false,
@@ -485,11 +487,21 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
     const handleApproveConfirm = (agendamento: Agendamento) => {
         router.post(`/agendamentos/${agendamento.id}/aprovar`, {}, {
             onSuccess: () => {
+                toast({
+                    title: 'Agendamento aprovado!',
+                    description: 'O agendamento foi aprovado com sucesso.',
+                    variant: 'success',
+                    duration: 5000,
+                });
                 router.reload();
             },
             onError: (errors) => {
-                console.error('Erro ao aprovar agendamento:', errors);
-                alert('Erro ao aprovar agendamento. Verifique se não há conflitos de horário.');
+                const errorMessage = Object.values(errors).flat()[0] as string || 'Erro ao aprovar agendamento. Verifique se não há conflitos de horário.';
+                toast({
+                    title: 'Erro ao aprovar agendamento',
+                    description: errorMessage,
+                    variant: 'destructive',
+                });
             }
         });
     };
@@ -502,7 +514,11 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
 
     const confirmReject = () => {
         if (!rejectionDialog.agendamento || !rejectionReason.trim()) {
-            alert('Por favor, informe o motivo da rejeição.');
+            toast({
+                title: 'Motivo obrigatório',
+                description: 'Por favor, informe o motivo da rejeição.',
+                variant: 'destructive',
+            });
             return;
         }
 
@@ -510,13 +526,23 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
             motivo_rejeicao: rejectionReason
         }, {
             onSuccess: () => {
+                toast({
+                    title: 'Agendamento rejeitado!',
+                    description: 'O agendamento foi rejeitado com sucesso.',
+                    variant: 'success',
+                    duration: 5000,
+                });
                 setRejectionDialog({ open: false, agendamento: null });
                 setRejectionReason('');
                 router.reload();
             },
             onError: (errors) => {
-                console.error('Erro ao rejeitar agendamento:', errors);
-                alert('Erro ao rejeitar agendamento.');
+                const errorMessage = Object.values(errors).flat()[0] as string || 'Erro ao rejeitar agendamento.';
+                toast({
+                    title: 'Erro ao rejeitar agendamento',
+                    description: errorMessage,
+                    variant: 'destructive',
+                });
             }
         });
     };
