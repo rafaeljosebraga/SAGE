@@ -22,6 +22,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, UserPlus } from 'lucide-react';
 import { FormEvent } from 'react';
 import { FormEventHandler, useState, useEffect, useRef } from 'react';
+import { useUnsavedChanges } from '@/contexts/unsaved-changes-context';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -53,7 +54,7 @@ export default function Create({ perfilAcesso }: Props) {
         password: '',
         password_confirmation: '',
     });
-
+    const { setHasUnsavedChanges } = useUnsavedChanges();
     useEffect(() => {
         const inicial = {
             name: '',
@@ -71,11 +72,12 @@ export default function Create({ perfilAcesso }: Props) {
             data.password_confirmation !== inicial.password_confirmation;
 
         setFormAlterado(preenchido);
+        setHasUnsavedChanges(preenchido);
         }, [data]);
 
     const submit = (e: FormEvent) => {
         e.preventDefault();
-        post('/usuarios', { 
+        post('/usuarios', {
             onSuccess: () => {
                 reset();
                 toast({
@@ -171,7 +173,7 @@ export default function Create({ perfilAcesso }: Props) {
                         </CardTitle>
                         <CardDescription>Preencha os dados para criar um novo usuário no sistema</CardDescription>
                     </CardHeader>
-                    <CardContent>  
+                    <CardContent>
                         <form onSubmit={submit} className="space-y-6" noValidate>
                             <div className="space-y-2">
                                 <Label htmlFor="name">Nome *</Label>
@@ -289,10 +291,10 @@ export default function Create({ perfilAcesso }: Props) {
                                             >
                                                 Sim, cancelar
                                             </AlertDialogAction>
-        
+
                                         </AlertDialogFooter>
                                     </AlertDialogContent>
-                                </AlertDialog>    
+                                </AlertDialog>
                             </div>
                         </form>
                     </CardContent>

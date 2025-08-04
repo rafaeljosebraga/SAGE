@@ -29,7 +29,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Save } from 'lucide-react';
 import { type User, type BreadcrumbItem } from '@/types';
 import { FormEventHandler, useState, useEffect, useRef, ChangeEvent } from 'react';
-
+import { useUnsavedChanges } from '@/contexts/unsaved-changes-context';
 interface RecursosCreateProps {
     auth: {
         user: User;
@@ -49,6 +49,7 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
         modelo: '',
         observacoes: '',
     });
+    const { setHasUnsavedChanges } = useUnsavedChanges();
 
     useEffect(() => {
         const inicial = {
@@ -71,6 +72,7 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
             data.observacoes.trim() !== inicial.observacoes;
 
         setFormAlterado(preenchido);
+        setHasUnsavedChanges(preenchido);
         }, [data]);
 
     const submit: FormEventHandler = (e) => {
@@ -319,7 +321,7 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                             type="submit"
                             disabled={processing}
                             className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black"
-                     
+
                         >
                             <Save className="mr-2 h-4 w-4" />
                             {processing ? 'Salvando...' : 'Salvar Recurso'}
@@ -350,7 +352,7 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
 
                                 </AlertDialogFooter>
                             </AlertDialogContent>
-                        </AlertDialog>                        
+                        </AlertDialog>
                     </div>
                 </form>
             </div>

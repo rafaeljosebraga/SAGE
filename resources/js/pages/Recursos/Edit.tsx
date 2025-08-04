@@ -29,6 +29,8 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Save } from 'lucide-react';
 import { type User, type Recurso, type BreadcrumbItem } from '@/types';
 import { FormEventHandler, ChangeEvent, useState, useEffect, useRef } from 'react';
+import { useUnsavedChanges } from '@/contexts/unsaved-changes-context';
+
 
 interface RecursosEditProps {
     auth: {
@@ -38,6 +40,7 @@ interface RecursosEditProps {
 }
 
 export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
+    const { setHasUnsavedChanges } = useUnsavedChanges();
     const { toast } = useToast();
     useToastDismissOnClick(); // Hook para dismissar toast ao clicar em botões
     const [formAlterado, setFormAlterado] = useState(false);
@@ -103,7 +106,9 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
         normalizeString(data.modelo) !== normalizeString(recursoOriginal.current.modelo) ||
         normalizeString(data.observacoes) !== normalizeString(recursoOriginal.current.observacoes);
 
-    setFormAlterado(houveAlteracao);
+        setFormAlterado(houveAlteracao);
+        setHasUnsavedChanges(houveAlteracao);
+
     }, [data]);
 
     return (

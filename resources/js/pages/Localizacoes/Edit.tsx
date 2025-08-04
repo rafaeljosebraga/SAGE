@@ -19,6 +19,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Save } from 'lucide-react';
 import { type User, type Localizacao, type BreadcrumbItem } from '@/types';
 import { FormEventHandler, ChangeEvent, useState, useEffect, useRef } from 'react';
+import { useUnsavedChanges } from '@/contexts/unsaved-changes-context';
 
 interface LocalizacoesEditProps {
     auth: {
@@ -45,12 +46,14 @@ export default function LocalizacoesEdit({ auth, localizacao }: LocalizacoesEdit
         { title: 'Editar Localização', href: route('localizacoes.edit', localizacao.id) }
     ];
 
+    const { setHasUnsavedChanges } = useUnsavedChanges();
     useEffect(() => {
         const houveAlteracao =
             data.nome !== localizacao.nome ||
             data.descricao !== localizacao.descricao;
 
         setFormAlterado(houveAlteracao);
+        setHasUnsavedChanges(houveAlteracao);
     }, [data, localizacao]);
 
 

@@ -21,7 +21,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Save } from 'lucide-react';
 import { type User, type BreadcrumbItem } from '@/types';
 import { FormEventHandler, ChangeEvent, useState, useEffect, useRef } from 'react';
-
+import { useUnsavedChanges } from '@/contexts/unsaved-changes-context';
 interface LocalizacoesCreateProps {
     auth: {
         user: User;
@@ -29,15 +29,16 @@ interface LocalizacoesCreateProps {
 }
 
 export default function LocalizacoesCreate({ auth }: LocalizacoesCreateProps) {
-    
+
     const { toast } = useToast();
     useToastDismissOnClick(); // Hook para dismissar toast ao clicar em botões
     const [arquivosOriginais, setArquivosOriginais] = useState<File[]>([]);
     const [formAlterado, setFormAlterado] = useState(false);
     const [deveScrollParaErro, setDeveScrollParaErro] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const { setHasUnsavedChanges } = useUnsavedChanges();
     const submitTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-    
+
     const { data, setData, reset, post, processing, errors } = useForm({
         nome: '',
         descricao: '',
@@ -100,6 +101,7 @@ export default function LocalizacoesCreate({ auth }: LocalizacoesCreateProps) {
             data.descricao.trim() !== inicial.descricao;
 
         setFormAlterado(alterado);
+        setHasUnsavedChanges(alterado);
         }, [data]);
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -250,7 +252,7 @@ export default function LocalizacoesCreate({ auth }: LocalizacoesCreateProps) {
 
                                 </AlertDialogFooter>
                             </AlertDialogContent>
-                        </AlertDialog>              
+                        </AlertDialog>
                     </div>
                 </form>
             </div>

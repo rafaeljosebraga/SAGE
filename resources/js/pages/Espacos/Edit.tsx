@@ -30,6 +30,7 @@ import { ArrowLeft, Save } from 'lucide-react';
 import { type User, type Localizacao, type Recurso, type Espaco, type Foto, type BreadcrumbItem } from '@/types';
 import { FormEventHandler, ChangeEvent, useState, useEffect, useRef } from 'react';
 import { UserAvatar } from '@/components/user-avatar';
+import { useUnsavedChanges } from '@/contexts/unsaved-changes-context';
 
 // Tipo para o formulário de edição
 type EspacoEditFormData = {
@@ -56,7 +57,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
     const [fotosAtuais, setFotosAtuais] = useState<Foto[]>(espaco.fotos || []);
     const [deveScrollParaErro, setDeveScrollParaErro] = useState(false);
     const [formAlterado, setFormAlterado] = useState(false);
-
+    const { setHasUnsavedChanges } = useUnsavedChanges();
     const formatPerfil = (perfil: string | undefined) => {
         if (!perfil) return "Não definido";
         return perfil.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
@@ -64,7 +65,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
 
     const getPerfilColor = (perfil: string | undefined) => {
         if (!perfil) return "bg-gray-100 text-gray-800 border-gray-200";
-        
+
         switch (perfil.toLowerCase()) {
             case "administrador":
                 return "bg-[#EF7D4C] text-white border-transparent";
@@ -96,7 +97,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
             // Mapeamento de campos para painéis
             const mapeamentoCampoParaPainel = {
                 'nome': 'painel-informacoes-basicas',
-                'capacidade': 'painel-informacoes-basicas', 
+                'capacidade': 'painel-informacoes-basicas',
                 'descricao': 'painel-informacoes-basicas',
                 'localizacao_id': 'painel-configuracoes',
                 'status': 'painel-configuracoes',
@@ -106,35 +107,35 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
 
             // Ordem de prioridade dos campos para scroll
             const camposOrdem = ['nome', 'capacidade', 'descricao', 'localizacao_id', 'status', 'recursos', 'fotos'];
-            
+
             // Encontrar o primeiro campo com erro
             const primeiroErro = camposOrdem.find(campo => errors[campo as keyof typeof errors]);
-            
+
             if (primeiroErro) {
                 const painelId = mapeamentoCampoParaPainel[primeiroErro as keyof typeof mapeamentoCampoParaPainel];
                 const painel = document.getElementById(painelId);
-                
+
                 if (painel) {
                     // Verificar se o painel cabe inteiro na tela
                     const painelRect = painel.getBoundingClientRect();
                     const viewportHeight = window.innerHeight;
                     const painelHeight = painelRect.height;
-                    
+
                     // Se o painel cabe na tela, centralizar; senão, mostrar o topo
                     const scrollBehavior = painelHeight <= viewportHeight * 0.8 ? 'center' : 'start';
-                    
+
                     painel.scrollIntoView({
                         behavior: 'smooth',
                         block: scrollBehavior as ScrollLogicalPosition,
                         inline: 'nearest'
                     });
-                    
+
                     console.log(`Scroll para painel: ${painelId} (campo: ${primeiroErro})`);
                 } else {
                     console.log(`Painel não encontrado: ${painelId}`);
                 }
             }
-            
+
             // Resetar o flag após fazer o scroll
             setDeveScrollParaErro(false);
         }
@@ -142,10 +143,10 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        
+
         // Ativar o flag para fazer scroll em caso de erro
         setDeveScrollParaErro(true);
-        
+
         put(`/espacos/${espaco.id}`);
     };
 
@@ -192,7 +193,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
         } else {
             novosRecursos = data.recursos.filter(id => id !== recursoId);
         }
-        
+
         setData('recursos', novosRecursos);
         if (errors.recursos) {
             clearErrors('recursos');
@@ -214,14 +215,14 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
             created_at: foto.created_at || '',
             updated_at: foto.updated_at || '',
         }));
-        
+
         setFotosAtuais(fotosConvertidas);
-        
+
         // Limpar erro de fotos se houver pelo menos 1 foto
         if (fotosConvertidas.length > 0 && errors.fotos) {
             clearErrors('fotos');
         }
-        
+
         // Limpar a classe vermelha do painel de fotos quando uma foto for adicionada
         if (fotosConvertidas.length > 0) {
             const painelFotos = document.getElementById('painel-fotos');
@@ -242,6 +243,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
             JSON.stringify(data.recursos.sort()) !== JSON.stringify((espaco.recursos?.map(r => r.id).sort()) || []);
 
         setFormAlterado(houveAlteracao);
+        setHasUnsavedChanges(houveAlteracao);
     }, [data, espaco]);
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -263,13 +265,12 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                                 variant="outline"
                                 className="
                                     ml-4
-                                    bg-white dark:bg-black
-                                    text-[#EF7D4C] dark:text-[#EF7D4C]
-                                    border border-[#EF7D4C]
-                                    hover:bg-[#EF7D4C] hover:text-white
-                                    dark:hover:bg-[#EF7D4C] dark:hover:text-white
+                                    bg-white dark:bg-white
+                                    text-black dark:text-black
+                                    hover:!bg-[#EF7D4C] hover:!text-white
+                                    dark:hover:!bg-[#EF7D4C] dark:hover:!text-white
                                     transition-colors
-                                "
+                        "
                             >
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Voltar
@@ -298,13 +299,12 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                         type="button"
                         variant="outline"
                         className="
-                            ml-4
-                            bg-white dark:bg-black
-                            text-[#EF7D4C] dark:text-[#EF7D4C]
-                            border border-[#EF7D4C]
-                            hover:bg-[#EF7D4C] hover:text-white
-                            dark:hover:bg-[#EF7D4C] dark:hover:text-white
-                            transition-colors
+                                    ml-4
+                                    bg-white dark:bg-white
+                                    text-black dark:text-black
+                                    hover:!bg-[#EF7D4C] hover:!text-white
+                                    dark:hover:!bg-[#EF7D4C] dark:hover:!text-white
+                                    transition-colors
                         "
                         onClick={() => (window.location.href = '/espacos')}
                     >
@@ -383,7 +383,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                                         value={data.localizacao_id}
                                         onValueChange={handleLocalizacaoChange}
                                     >
-                                        <SelectTrigger 
+                                        <SelectTrigger
                                             id="localizacao_id"
                                             className={errors.localizacao_id ? 'border-red-500' : ''}
                                         >
@@ -408,7 +408,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                                         value={data.status}
                                         onValueChange={handleStatusChange}
                                     >
-                                        <SelectTrigger 
+                                        <SelectTrigger
                                             id="status"
                                             className={errors.status ? 'border-red-500' : ''}
                                         >
@@ -452,7 +452,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                                             <Checkbox
                                                 id={`recurso-${recurso.id}`}
                                                 checked={data.recursos.includes(recurso.id)}
-                                                onCheckedChange={(checked) => 
+                                                onCheckedChange={(checked) =>
                                                     handleRecursoChange(recurso.id, Boolean(checked))
                                                 }
                                             />
@@ -477,7 +477,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                         <CardContent>
                             {(() => {
                                 const responsaveis: Array<User & { tipo: string }> = [];
-                                
+
                                 // Adicionar o criador do espaço
                                 if (espaco.createdBy) {
                                     responsaveis.push({
@@ -485,7 +485,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                                         tipo: 'Criador'
                                     });
                                 }
-                                
+
                                 // Adicionar usuários com permissão (excluindo o criador se já estiver na lista)
                                 if (espaco.users && espaco.users.length > 0) {
                                     espaco.users.forEach((user: User) => {
@@ -497,7 +497,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                                         }
                                     });
                                 }
-                                
+
                                 return responsaveis.length > 0 ? (
                                     <div className="space-y-4">
                                         {responsaveis.map((responsavel, index) => (
@@ -537,7 +537,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
                 </form>
 
                 {/* Seção de Fotos - Separada do formulário - OBRIGATÓRIA */}
-                <Card 
+                <Card
                     id="painel-fotos"
                     className={errors.fotos ? 'border-red-500' : ''}
                     data-testid="fotos-card"

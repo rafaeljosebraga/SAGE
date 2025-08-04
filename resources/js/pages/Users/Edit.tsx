@@ -20,6 +20,7 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Edit as EditIcon } from 'lucide-react';
 import { FormEvent, ChangeEvent, useState, useEffect, useRef } from 'react';
+import { useUnsavedChanges } from '@/contexts/unsaved-changes-context';
 
 interface User {
     id: number;
@@ -51,6 +52,7 @@ export default function Edit({ user, perfilAcesso }: Props) {
     ];
 
     const [formAlterado, setFormAlterado] = useState(false);
+    const { setHasUnsavedChanges } = useUnsavedChanges();
 
     const { data, setData, reset, put, processing, errors, clearErrors } = useForm({
         name: user.name,
@@ -92,6 +94,7 @@ export default function Edit({ user, perfilAcesso }: Props) {
             normalizeString(data.perfil_acesso) !== normalizeString(user.perfil_acesso);
 
         setFormAlterado(houveAlteracao);
+        setHasUnsavedChanges(houveAlteracao);
         }, [data, user]);
 
     return (
@@ -218,7 +221,7 @@ export default function Edit({ user, perfilAcesso }: Props) {
                                 </Select>
                                 {errors.perfil_acesso && <p className="text-sm text-red-500">{errors.perfil_acesso}</p>}
                             </div>
-                            
+
                             {(errors as any).error && <p className="text-sm text-red-500">{(errors as any).error}</p>}
 
                             <div className="flex gap-4 pt-4">
