@@ -2369,6 +2369,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                     <div className="flex items-center gap-4">
                         <div className="flex items-center border rounded-lg">
                             <Button
+                                className="cursor-pointer"
                                 variant={viewMode === 'month' ? 'default' : 'ghost'}
                                 size="sm"
                                 onClick={() => setViewMode('month')}
@@ -2377,6 +2378,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                 Mês
                             </Button>
                             <Button
+                                className="cursor-pointer"
                                 variant={viewMode === 'week' ? 'default' : 'ghost'}
                                 size="sm"
                                 onClick={() => setViewMode('week')}
@@ -2384,6 +2386,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                 Semana
                             </Button>
                             <Button
+                                className="cursor-pointer"
                                 variant={viewMode === 'day' ? 'default' : 'ghost'}
                                 size="sm"
                                 onClick={() => setViewMode('day')}
@@ -2391,6 +2394,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                 Dia
                             </Button>
                             <Button
+                                className="cursor-pointer"
                                 variant={viewMode === 'timeline' ? 'default' : 'ghost'}
                                 size="sm"
                                 onClick={() => setViewMode('timeline')}
@@ -2398,6 +2402,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                 Timeline
                             </Button>
                             <Button
+                                className="cursor-pointer"
                                 variant={viewMode === 'list' ? 'default' : 'ghost'}
                                 size="sm"
                                 onClick={() => setViewMode('list')}
@@ -2407,20 +2412,12 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                             </Button>
                         </div>
 
-                        <Button onClick={() => setCreateModal({ open: true })}>
+                        <Button className="cursor-pointer" onClick={() => setCreateModal({ open: true })}>
                             <Plus className="h-4 w-4 mr-2" />
                             Novo Agendamento
                         </Button>
                     </div>
                 </div>
-
-
-
-
-
-
-
-
 
                 {/* Controles e Filtros */}
                 {viewMode !== 'list' ? (
