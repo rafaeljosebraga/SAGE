@@ -1030,7 +1030,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                 <Button
                     variant="outline"
                     onClick={() => setShowFilters(!showFilters)}
-                    className="flex items-center gap-2 bg-white dark:bg-muted border border-border hover:bg-muted/40 dark:hover:bg-muted/60"
+                    className="flex items-center cursor-pointer gap-2 bg-white dark:bg-muted border border-border hover:bg-muted/40 dark:hover:bg-muted/60"
                     >
                     <Filter className="h-4 w-4" />
                     Filtros
@@ -1257,7 +1257,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                 <Button
                     variant="outline"
                     onClick={() => setShowFilters(!showFilters)}
-                    className="flex items-center gap-2 bg-white dark:bg-muted border border-border hover:bg-muted/40 dark:hover:bg-muted/60"
+                    className="flex items-center gap-2 cursor-pointer bg-white dark:bg-muted border border-border hover:bg-muted/40 dark:hover:bg-muted/60"
                     >
                     <Filter className="h-4 w-4" />
                     Filtros
@@ -1477,7 +1477,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                     <Button
                         variant="outline"
                         onClick={() => setShowFilters(!showFilters)}
-                        className="flex items-center gap-2 bg-white dark:bg-muted border border-border hover:bg-muted/40 dark:hover:bg-muted/60"
+                        className="flex items-center cursor-pointer gap-2 bg-white dark:bg-muted border border-border hover:bg-muted/40 dark:hover:bg-muted/60"
                         >
                         <Filter className="h-4 w-4" />
                         Filtros
@@ -1683,7 +1683,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                     <Button
                         variant="outline"
                         onClick={() => setShowFilters(!showFilters)}
-                        className="flex items-center gap-2 bg-white dark:bg-muted border border-border hover:bg-muted/40 dark:hover:bg-muted/60"
+                        className="flex items-center cursor-pointer gap-2 bg-white dark:bg-muted border border-border hover:bg-muted/40 dark:hover:bg-muted/60"
                         >
                         <Filter className="h-4 w-4" />
                         Filtros
@@ -1973,14 +1973,18 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                 <Button
                     variant="outline"
                     onClick={() => setShowFilters(!showFilters)}
-                    className="flex items-center gap-2 bg-white dark:bg-muted border border-border hover:bg-muted/40 dark:hover:bg-muted/60"
+                    className="flex items-center gap-2 
+                                bg-white text-black hover:bg-gray-200 
+                                dark:bg-muted dark:text-white dark:hover:bg-muted/70
+                                cursor-pointer
+                                border border-border"
                     >
                     <Filter className="h-4 w-4" />
                     Filtros
                     {(nomeFilter || espacoFilter !== 'all' || statusFilter !== 'all' || dataInicioFilter || dataFimFilter) && (
-                    <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                        <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
                         !
-                    </Badge>
+                        </Badge>
                     )}
                     </Button>
                 <div className="text-sm text-muted-foreground">
