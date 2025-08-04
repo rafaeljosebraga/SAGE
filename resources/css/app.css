@@ -242,4 +242,17 @@
         filter: invert(1);
         cursor: pointer;
     }
+
+    /* Ícone do relógio em inputs de hora */
+    input[type="time"]::-webkit-calendar-picker-indicator {
+        filter: invert(0); /* preto no light */
+        cursor: pointer;
+    }
+
+    .dark input[type="time"]::-webkit-calendar-picker-indicator {
+        filter: invert(1); /* branco no dark */
+        cursor: pointer;
+    }
+
+
 }
