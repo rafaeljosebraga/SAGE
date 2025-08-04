@@ -197,8 +197,9 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                 toast({
                     title: "Agendamento atualizado com sucesso!",
                     description: "As alterações foram salvas.",
-                    variant: "success",
+                    variant: 'success',
                     duration: 5000,
+                    className: 'bg-green-500 text-white',
                 });
                 
                 // Aguardar 1 segundo e redirecionar para a tela anterior
@@ -518,7 +519,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                     <div className="space-y-4">
                                         <Button
                                             type="submit"
-                                            className="w-full"
+                                            className="w-full cursor-pointer"
                                             disabled={processing}
                                         >
                                             {processing ? 'Salvando...' : 'Salvar Alterações'}

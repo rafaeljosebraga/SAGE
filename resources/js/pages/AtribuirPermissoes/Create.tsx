@@ -1,3 +1,4 @@
+import { toast } from '@/hooks/use-toast';
 import { useState, useEffect } from 'react';
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
@@ -112,31 +113,37 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
         atualizarEspacosSelecionados(newSelected);
     };
 
-// Enviar os dados para o controller
-const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Enviando dados para o controller",disposedEspacos);
+    // Enviar os dados para o controller
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        console.log("Enviando dados para o controller",disposedEspacos);
 
-    if (!selectedUserId || (selectedEspacos.length === 0 && disposedEspacos.length === 0)) {
-        return;
-    }
+        if (!selectedUserId || (selectedEspacos.length === 0 && disposedEspacos.length === 0)) {
+            return;
+        }
 
-    console.log(selectedUserId, selectedEspacos, disposedEspacos);
-    router.post(route('espaco-users.store'), {
-        user_id: selectedUserId,
-        espaco_ids: selectedEspacos,
-        espaco_ids_removidos: disposedEspacos,
-    }, {
-        onSuccess: () => {
-            console.log("Dados enviados deu merda");
-            // Limpar seleção após sucesso
-            setSelectedUserId(null);
-            setSelectedEspacos([]);
-            setData('espaco_ids', []);
-            setSearchTerm('');
-        },
-    });
-};
+        console.log(selectedUserId, selectedEspacos, disposedEspacos);
+        router.post(route('espaco-users.store'), {
+            user_id: selectedUserId,
+            espaco_ids: selectedEspacos,
+            espaco_ids_removidos: disposedEspacos,
+        }, {
+            onSuccess: () => {
+                toast({
+                    title: 'Permissões atualizadas!',
+                    description: 'As permissões foram salvas com sucesso.',
+                    variant: 'success',
+                    duration: 5000, // 5 segundos
+                    className: 'bg-green-500 text-white',
+                });
+
+                setSelectedUserId(null);
+                setSelectedEspacos([]);
+                setData('espaco_ids', []);
+                setSearchTerm('');
+            },
+        });
+    };
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('pt-BR', {
@@ -424,13 +431,13 @@ const handleSubmit = (e: React.FormEvent) => {
                     <Link
                         href={route('espaco-users.index')}
                         className="
-                                    ml-4
-                                    bg-white dark:bg-white
-                                    text-black dark:text-black
-                                    hover:!bg-[#EF7D4C] hover:!text-white
-                                    dark:hover:!bg-[#EF7D4C] dark:hover:!text-white
-                                    transition-colors
-                        "
+                                ml-1
+                                bg-white dark:bg-white 
+                                text-black dark:text-black
+                                hover:bg-gray-100 dark:hover:bg-gray-200
+                                cursor-pointer
+                                transition-colors
+                                "
                     >
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Voltar
@@ -523,7 +530,7 @@ const handleSubmit = (e: React.FormEvent) => {
                                         <Button
                                             type="submit"
                                             disabled={processing || (selectedEspacos.length === 0 && disposedEspacos.length === 0) || !selectedUserId}
-                                            className="gap-2"
+                                            className="gap-2 cursor-pointer"
                                         >
                                             <Save className="h-4 w-4" />
                                             {processing ? 'Salvando...' : 'Salvar Permissões'}

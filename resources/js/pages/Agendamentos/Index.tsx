@@ -1030,7 +1030,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                 <Button
                     variant="outline"
                     onClick={() => setShowFilters(!showFilters)}
-                    className="flex items-center gap-2 bg-white dark:bg-muted border border-border hover:bg-muted/40 dark:hover:bg-muted/60"
+                    className="flex items-center cursor-pointer gap-2 bg-white dark:bg-muted border border-border hover:bg-muted/40 dark:hover:bg-muted/60"
                     >
                     <Filter className="h-4 w-4" />
                     Filtros
@@ -1257,7 +1257,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                 <Button
                     variant="outline"
                     onClick={() => setShowFilters(!showFilters)}
-                    className="flex items-center gap-2 bg-white dark:bg-muted border border-border hover:bg-muted/40 dark:hover:bg-muted/60"
+                    className="flex items-center gap-2 cursor-pointer bg-white dark:bg-muted border border-border hover:bg-muted/40 dark:hover:bg-muted/60"
                     >
                     <Filter className="h-4 w-4" />
                     Filtros
@@ -1492,7 +1492,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                     <Button
                         variant="outline"
                         onClick={() => setShowFilters(!showFilters)}
-                        className="flex items-center gap-2 bg-white dark:bg-muted border border-border hover:bg-muted/40 dark:hover:bg-muted/60"
+                        className="flex items-center cursor-pointer gap-2 bg-white dark:bg-muted border border-border hover:bg-muted/40 dark:hover:bg-muted/60"
                         >
                         <Filter className="h-4 w-4" />
                         Filtros
@@ -1698,7 +1698,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                     <Button
                         variant="outline"
                         onClick={() => setShowFilters(!showFilters)}
-                        className="flex items-center gap-2 bg-white dark:bg-muted border border-border hover:bg-muted/40 dark:hover:bg-muted/60"
+                        className="flex items-center cursor-pointer gap-2 bg-white dark:bg-muted border border-border hover:bg-muted/40 dark:hover:bg-muted/60"
                         >
                         <Filter className="h-4 w-4" />
                         Filtros
@@ -1988,14 +1988,18 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                 <Button
                     variant="outline"
                     onClick={() => setShowFilters(!showFilters)}
-                    className="flex items-center gap-2 bg-white dark:bg-muted border border-border hover:bg-muted/40 dark:hover:bg-muted/60"
+                    className="flex items-center gap-2 
+                                bg-white text-black hover:bg-gray-200 
+                                dark:bg-muted dark:text-white dark:hover:bg-muted/70
+                                cursor-pointer
+                                border border-border"
                     >
                     <Filter className="h-4 w-4" />
                     Filtros
                     {(nomeFilter || espacoFilter !== 'all' || statusFilter !== 'all' || dataInicioFilter || dataFimFilter) && (
-                    <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                        <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
                         !
-                    </Badge>
+                        </Badge>
                     )}
                     </Button>
                 <div className="text-sm text-muted-foreground">
@@ -2380,6 +2384,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                     <div className="flex items-center gap-4">
                         <div className="flex items-center border rounded-lg">
                             <Button
+                                className="cursor-pointer"
                                 variant={viewMode === 'month' ? 'default' : 'ghost'}
                                 size="sm"
                                 onClick={() => setViewMode('month')}
@@ -2388,6 +2393,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                 Mês
                             </Button>
                             <Button
+                                className="cursor-pointer"
                                 variant={viewMode === 'week' ? 'default' : 'ghost'}
                                 size="sm"
                                 onClick={() => setViewMode('week')}
@@ -2395,6 +2401,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                 Semana
                             </Button>
                             <Button
+                                className="cursor-pointer"
                                 variant={viewMode === 'day' ? 'default' : 'ghost'}
                                 size="sm"
                                 onClick={() => setViewMode('day')}
@@ -2402,6 +2409,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                 Dia
                             </Button>
                             <Button
+                                className="cursor-pointer"
                                 variant={viewMode === 'timeline' ? 'default' : 'ghost'}
                                 size="sm"
                                 onClick={() => setViewMode('timeline')}
@@ -2409,6 +2417,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                 Timeline
                             </Button>
                             <Button
+                                className="cursor-pointer"
                                 variant={viewMode === 'list' ? 'default' : 'ghost'}
                                 size="sm"
                                 onClick={() => setViewMode('list')}
@@ -2418,20 +2427,12 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                             </Button>
                         </div>
 
-                        <Button onClick={() => setCreateModal({ open: true })}>
+                        <Button className="cursor-pointer" onClick={() => setCreateModal({ open: true })}>
                             <Plus className="h-4 w-4 mr-2" />
                             Novo Agendamento
                         </Button>
                     </div>
                 </div>
-
-
-
-
-
-
-
-
 
                 {/* Controles e Filtros */}
                 {viewMode !== 'list' ? (
@@ -2445,13 +2446,13 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                         {getViewTitle()}
                                     </CardTitle>
                                     <div className="flex items-center gap-2">
-                                        <Button variant="outline" size="sm" onClick={() => navigateDate('prev')}>
+                                        <Button className="cursor-pointer" variant="outline" size="sm" onClick={() => navigateDate('prev')}>
                                             <ChevronLeft className="h-4 w-4" />
                                         </Button>
-                                        <Button variant="outline" size="sm" onClick={() => setCurrentDate(new Date())}>
+                                        <Button className="cursor-pointer" variant="outline" size="sm" onClick={() => setCurrentDate(new Date())}>
                                             Hoje
                                         </Button>
-                                        <Button variant="outline" size="sm" onClick={() => navigateDate('next')}>
+                                        <Button className="cursor-pointer" variant="outline" size="sm" onClick={() => navigateDate('next')}>
                                             <ChevronRight className="h-4 w-4" />
                                         </Button>
                                     </div>
