@@ -151,7 +151,7 @@ export const useAgendamentoColors = () => {
             case 'rejeitado':
                 return 'bg-rose-100 dark:bg-rose-900/30 text-rose-800 dark:text-rose-200 border-rose-200 dark:border-rose-700';
             case 'cancelado':
-                return 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600';
+                return 'bg-black dark:bg-black text-white dark:text-white border-black dark:border-black';
             default:
                 return 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600';
         }
@@ -224,7 +224,7 @@ export const useAgendamentoColors = () => {
             case 'rejeitado':
                 return 'bg-red-300 dark:bg-red-600/80 text-red-900 dark:text-red-100';
             case 'cancelado':
-                return 'bg-gray-300 dark:bg-gray-600/80 text-gray-900 dark:text-gray-100';
+                return 'bg-black dark:bg-black text-white dark:text-white';
             default:
                 return 'bg-gray-300 dark:bg-gray-600/80 text-gray-900 dark:text-gray-100';
         }
@@ -269,8 +269,8 @@ export const useAgendamentoColors = () => {
                 );
             case 'cancelado':
                 return (
-                    <div className="w-4 h-4 rounded-full bg-gray-500 dark:bg-gray-400 flex items-center justify-center shadow-sm shrink-0">
-                        <Ban className="h-2.5 w-2.5 text-white dark:text-gray-900" />
+                    <div className="w-4 h-4 rounded-full bg-black dark:bg-black flex items-center justify-center shadow-sm shrink-0">
+                        <Ban className="h-2.5 w-2.5 text-white dark:text-white" />
                     </div>
                 );
             default:
