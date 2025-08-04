@@ -2434,13 +2434,13 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                         {getViewTitle()}
                                     </CardTitle>
                                     <div className="flex items-center gap-2">
-                                        <Button variant="outline" size="sm" onClick={() => navigateDate('prev')}>
+                                        <Button className="cursor-pointer" variant="outline" size="sm" onClick={() => navigateDate('prev')}>
                                             <ChevronLeft className="h-4 w-4" />
                                         </Button>
-                                        <Button variant="outline" size="sm" onClick={() => setCurrentDate(new Date())}>
+                                        <Button className="cursor-pointer" variant="outline" size="sm" onClick={() => setCurrentDate(new Date())}>
                                             Hoje
                                         </Button>
-                                        <Button variant="outline" size="sm" onClick={() => navigateDate('next')}>
+                                        <Button className="cursor-pointer" variant="outline" size="sm" onClick={() => navigateDate('next')}>
                                             <ChevronRight className="h-4 w-4" />
                                         </Button>
                                     </div>
