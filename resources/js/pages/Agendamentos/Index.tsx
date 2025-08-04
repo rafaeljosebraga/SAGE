@@ -867,29 +867,40 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!formData.titulo || !formData.espaco_id || !formData.justificativa) {
-            alert('Por favor, preencha todos os campos obrigatórios.');
+        const { titulo, espaco_id, justificativa, data_inicio, hora_inicio, data_fim, hora_fim } = formData;
+
+        // Validação de campos obrigatórios
+        if (!titulo || !espaco_id || !justificativa || !data_inicio || !data_fim || !hora_inicio || !hora_fim) {
+            toast({
+                variant: 'destructive',
+                title: 'Campos obrigatórios não preenchidos',
+                description: 'Por favor, preencha todos os campos obrigatórios.',
+            });
             return;
         }
 
         // Validar se data/hora de início está no passado
-        if (isDateTimeInPast(formData.data_inicio, formData.hora_inicio)) {
+        if (isDateTimeInPast(data_inicio, hora_inicio)) {
             setPastTimeModal({ open: true });
             return;
         }
 
         // Validar se data/hora de fim está no passado
-        if (isDateTimeInPast(formData.data_fim, formData.hora_fim)) {
+        if (isDateTimeInPast(data_fim, hora_fim)) {
             setPastTimeModal({ open: true });
             return;
         }
 
-        // Validar se data/hora de fim é anterior à de início
-        const dataInicio = new Date(`${formData.data_inicio}T${formData.hora_inicio}:00`);
-        const dataFim = new Date(`${formData.data_fim}T${formData.hora_fim}:00`);
+        // Validar se data/hora de fim é anterior ou igual à de início
+        const dataInicio = new Date(`${data_inicio}T${hora_inicio}:00`);
+        const dataFim = new Date(`${data_fim}T${hora_fim}:00`);
 
         if (dataFim <= dataInicio) {
-            alert('A data e hora de fim deve ser posterior à data e hora de início.');
+            toast({
+                variant: 'destructive',
+                title: 'Data/hora inválida',
+                description: 'A data e hora de fim devem ser posteriores à data e hora de início.',
+            });
             return;
         }
 
@@ -2210,13 +2221,11 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <Clock className="h-4 w-4" />
+                                                <Clock className="h-4 w-4 text-black dark:text-white" />
                                                 <span>
                                                     {(() => {
-                                                        // Formatar período de forma mais legível
                                                         const formatDate = (dateStr: string) => {
                                                             try {
-                                                                // Extrair apenas a parte da data (YYYY-MM-DD) se vier com timezone
                                                                 const dateOnly = dateStr.split('T')[0];
                                                                 const [year, month, day] = dateOnly.split('-');
                                                                 return `${day}/${month}/${year}`;
@@ -2227,7 +2236,6 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
 
                                                         const formatTime = (timeStr: string) => {
                                                             try {
-                                                                // Extrair apenas HH:MM se vier com segundos
                                                                 return timeStr.split(':').slice(0, 2).join(':');
                                                             } catch {
                                                                 return timeStr;
@@ -2463,7 +2471,6 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                         value={formData.titulo}
                                         onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
                                         placeholder="Ex: Reunião de Planejamento"
-                                        required
                                     />
                                 </div>
 
@@ -2494,7 +2501,6 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                         value={formData.data_inicio}
                                         onChange={(e) => setFormData({ ...formData, data_inicio: e.target.value })}
                                         min={getMinDate()}
-                                        required
                                     />
                                 </div>
 
@@ -2506,7 +2512,6 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                         value={formData.hora_inicio}
                                         onChange={(e) => setFormData({ ...formData, hora_inicio: e.target.value })}
                                         min={formData.data_inicio ? getMinTime(formData.data_inicio) : undefined}
-                                        required
                                     />
                                 </div>
 
@@ -2518,7 +2523,6 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                         value={formData.data_fim}
                                         onChange={(e) => setFormData({ ...formData, data_fim: e.target.value })}
                                         min={formData.data_inicio || getMinDate()}
-                                        required
                                     />
                                 </div>
 
@@ -2534,7 +2538,6 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                                 ? formData.hora_inicio
                                                 : formData.data_fim ? getMinTime(formData.data_fim) : undefined
                                         }
-                                        required
                                     />
                                 </div>
                             </div>
@@ -2547,7 +2550,6 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                     onChange={(e) => setFormData({ ...formData, justificativa: e.target.value })}
                                     placeholder="Descreva o motivo do agendamento..."
                                     rows={3}
-                                    required
                                 />
                             </div>
 

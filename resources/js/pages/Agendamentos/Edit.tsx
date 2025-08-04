@@ -40,6 +40,12 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
         message: string;
     }>({ open: false, message: "" });
 
+    // Estado para modal de erro de validação
+    const [validationErrorModal, setValidationErrorModal] = useState<{
+        open: boolean;
+        message: string;
+    }>({ open: false, message: "" });
+
     // Função para obter URL de retorno baseada nos parâmetros da URL atual
     const getBackUrl = () => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -150,25 +156,38 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
         recursos_solicitados: agendamento.recursos_solicitados || [] as number[],
     });
 
+    
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         
         // Validação adicional no frontend
         if (!data.data_inicio || !data.hora_inicio || !data.data_fim || !data.hora_fim) {
-            alert('Por favor, preencha todos os campos de data e horário.');
+            toast({
+                title: "Campos obrigatórios",
+                description: "Por favor, preencha todos os campos de data e horário.",
+                variant: "destructive",
+            });
             return;
         }
 
         // Validar formato da hora
         const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
         if (!timeRegex.test(data.hora_inicio) || !timeRegex.test(data.hora_fim)) {
-            alert('Por favor, insira horários válidos no formato HH:MM.');
+            toast({
+                title: "Formato de hora inválido",
+                description: "Por favor, insira horários válidos no formato HH:MM.",
+                variant: "destructive",
+            });
             return;
         }
 
         // Validar se a hora de fim é posterior à hora de início no mesmo dia
         if (data.data_inicio === data.data_fim && data.hora_fim <= data.hora_inicio) {
-            alert('A hora de fim deve ser posterior à hora de início.');
+            toast({
+                title: "Horário inválido",
+                description: "A hora de fim deve ser posterior à hora de início.",
+                variant: "destructive",
+            });
             return;
         }
 
@@ -178,6 +197,8 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                 toast({
                     title: "Agendamento atualizado com sucesso!",
                     description: "As alterações foram salvas.",
+                    variant: "success",
+                    duration: 5000,
                 });
                 
                 // Aguardar 1 segundo e redirecionar para a tela anterior
@@ -221,13 +242,13 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                         <Link 
                         href={getBackUrl()}
                         className="
-                                    ml-4
-                                    bg-white dark:bg-white
-                                    text-black dark:text-black
-                                    hover:!bg-[#EF7D4C] hover:!text-white
-                                    dark:hover:!bg-[#EF7D4C] dark:hover:!text-white
-                                    transition-colors
-                        "
+                                ml-1
+                                bg-white dark:bg-white 
+                                text-black dark:text-black
+                                hover:bg-gray-100 dark:hover:bg-gray-200
+                                cursor-pointer
+                                transition-colors
+                                "
                         >
                             <ArrowLeft className="h-4 w-4 mr-2" />
                             Voltar
@@ -544,7 +565,30 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
+
+                {/* Modal de Erro de Validação */}
+                <Dialog open={validationErrorModal.open} onOpenChange={(open) => setValidationErrorModal({ open, message: "" })}>
+                    <DialogContent className="max-w-md">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                                <AlertTriangle className="h-5 w-5 text-red-600" />
+                                Erro de Validação
+                            </DialogTitle>
+                            <DialogDescription className="py-4 text-base">
+                                {validationErrorModal.message}
+                            </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                            <Button
+                                onClick={() => setValidationErrorModal({ open: false, message: "" })}
+                                className="w-full"
+                            >
+                                OK
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
         </AppLayout>
-    );
+    );  
 }
