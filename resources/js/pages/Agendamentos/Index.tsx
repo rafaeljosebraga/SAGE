@@ -2317,7 +2317,13 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
             <Head title="Agendamentos" />
 
             <div className="space-y-6">
-                <div className="flex items-center justify-between">
+
+
+
+
+
+
+                <div className="flex items-center justify-between mt-6">
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight">
                             &nbsp;&nbsp;&nbsp;Agendamentos</h1>
@@ -2370,6 +2376,14 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                         </Button>
                     </div>
                 </div>
+
+
+
+
+
+
+
+
 
                 {/* Controles e Filtros */}
                 {viewMode !== 'list' ? (
