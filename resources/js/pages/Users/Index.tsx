@@ -63,7 +63,7 @@ export default function UsersIndex({ auth, users, flash }: UsersIndexProps) {
                 toast({
                     title: "Usuário excluído",
                     description: "O usuário foi excluído com sucesso.",
-                    variant: "success",
+                    variant: 'success',
                     duration: 5000, // 5 segundos
                 });
             },
