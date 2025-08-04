@@ -65,10 +65,10 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
             });
         }, 100);
 
-        // Refresh automático do sistema após 500ms para garantir que tudo seja atualizado
+        // Refresh automático do sistema para dar tempo do toast aparecer
         setTimeout(() => {
             window.location.reload();
-        }, 500);
+        }, 2500);
     };
 
     const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -153,16 +153,10 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
 
+        // Usar o patch do useForm
         patch(route('profile.update'), {
-            forceFormData: true,
             preserveScroll: true,
             onSuccess: () => {
-                setPhotoPreview(null);
-                setData('profile_photo', null);
-                if (fileInputRef.current) {
-                    fileInputRef.current.value = '';
-                }
-                
                 // Mostrar toast de sucesso por 5 segundos
                 toast({
                     title: "Perfil atualizado com sucesso!",
@@ -170,7 +164,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                     duration: 5000,
                 });
             },
-            onError: (errors) => {
+            onError: (errors: any) => {
                 console.error('Erro ao atualizar perfil:', errors);
                 
                 // Mostrar toast de erro
@@ -311,16 +305,6 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
 
                         <div className="flex items-center gap-4">
                             <Button disabled={processing}>Salvar</Button>
-
-                            <Transition
-                                show={recentlySuccessful}
-                                enter="transition ease-in-out"
-                                enterFrom="opacity-0"
-                                leave="transition ease-in-out"
-                                leaveTo="opacity-0"
-                            >
-                                <p className="text-sm text-neutral-600">Saved</p>
-                            </Transition>
                         </div>
                     </form>
                 </div>

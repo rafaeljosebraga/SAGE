@@ -2717,9 +2717,9 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                                 <div className="flex items-center gap-2">
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
-                                                            <Button variant="outline" size="sm" asChild>
+                                                            <Button variant="outline" size="sm" asChild className="hover:border-blue-500 group">
                                                                 <Link href={`/agendamentos/${event.id}`}>
-                                                                    <Eye className="h-4 w-4" />
+                                                                    <Eye className="h-4 w-4 group-hover:text-blue-500" />
                                                                 </Link>
                                                             </Button>
                                                         </TooltipTrigger>
@@ -2728,7 +2728,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                                         </TooltipContent>
                                                     </Tooltip>
 
-                                                    {canEdit(event) && (
+                                                    {/* {canEdit(event) && (
                                                     <Tooltip>
                                                     <TooltipTrigger asChild>
                                                     <Button
@@ -2743,21 +2743,28 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                                     <p>Editar</p>
                                                     </TooltipContent>
                                                     </Tooltip>
-                                                    )}
+                                                    )} */}
 
-                                                    {canDelete(event) && (
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleDelete(event);
-                                                            }}
-                                                            className="text-red-600 hover:text-red-700"
-                                                        >
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
-                                                    )}
+                                                    {/* {canDelete(event) && (
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleDelete(event);
+                                                                    }}
+                                                                    className="text-orange-600 hover:text-orange-700"
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </Button>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>Excluir</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    )} */}
                                                 </div>
                                             </div>
                                         </div>
