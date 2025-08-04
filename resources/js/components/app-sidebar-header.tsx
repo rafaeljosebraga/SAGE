@@ -45,7 +45,7 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                 <TooltipTrigger asChild>
                     <button
                         onClick={toggleTheme}
-                        className="relative text-muted-foreground hover:text-foreground transition-all duration-300 p-2 rounded-lg hover:bg-sidebar-accent/50 hover:scale-105 active:scale-95"
+                        className="cursor-pointer relative text-muted-foreground hover:text-foreground transition-all duration-300 p-2 rounded-lg hover:bg-sidebar-accent/50 hover:scale-105 active:scale-95"
                     >
                         <div className="relative w-5 h-5">
                             {/* Sun Icon */}
