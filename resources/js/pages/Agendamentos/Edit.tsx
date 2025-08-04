@@ -519,7 +519,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                     <div className="space-y-4">
                                         <Button
                                             type="submit"
-                                            className="w-full"
+                                            className="w-full cursor-pointer"
                                             disabled={processing}
                                         >
                                             {processing ? 'Salvando...' : 'Salvar Alterações'}
