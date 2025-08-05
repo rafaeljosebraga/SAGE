@@ -13,6 +13,17 @@ import { FilterableTable, type ColumnConfig } from '@/components/ui/filterable-t
 import { type User, type Espaco, type BreadcrumbItem } from '@/types';
 import { UserAvatar } from '@/components/user-avatar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface AtribuirPermissoesCreateProps {
     Users: User[];
@@ -31,6 +42,7 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
     const [isFotoModalOpen, setIsFotoModalOpen] = useState(false);
     const [scrollToResponsaveis, setScrollToResponsaveis] = useState(false);
     const [removedEspacos, setRemovedEspacos] = useState<number[]>([]);
+    const [formAlterado, setFormAlterado] = useState(false);
 
     const {setData, processing, errors } = useForm<{
         user_id: number;
@@ -47,6 +59,19 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
         setData('espaco_ids', espacos);
         setRemovedEspacos([]); // Limpa removidos ao atualizar atribuídos
     };
+
+    // useEffect para detectar mudanças no formulário (checkboxes)
+    useEffect(() => {
+        // Comparar o estado atual com o estado inicial
+        const espacosIniciais = [...espacosAtribuidos].sort((a, b) => a - b);
+        const espacosAtuais = [...selectedEspacos].sort((a, b) => a - b);
+        
+        // Verificar se houve mudanças
+        const houveMudancas = espacosIniciais.length !== espacosAtuais.length || 
+                             !espacosIniciais.every((id, index) => id === espacosAtuais[index]);
+        
+        setFormAlterado(houveMudancas);
+    }, [selectedEspacos, espacosAtribuidos]);
 
     useEffect(() => {
         if (isModalOpen && scrollToResponsaveis) {
@@ -427,22 +452,65 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
             <Head title="Atribuir Permissões" />
             <div className="space-y-6">
                 <div className="flex items-center gap-4">
-                    <Button asChild variant="ghost" type="button">
-                    <Link
-                        href={route('espaco-users.index')}
-                        className="
-                                ml-1
-                                bg-white dark:bg-white 
+                    {formAlterado ? (
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    type="button"
+                                    className="
+                                        ml-0
+                                        bg-white dark:bg-white
+                                        text-black dark:text-black
+                                        hover:bg-gray-100 dark:hover:bg-gray-200
+                                        cursor-pointer
+                                        transition-colors
+                                    "
+                                >
+                                    <ArrowLeft className="mr-2 h-4 w-4" />
+                                    Voltar
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Tem certeza que deseja voltar?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        As alterações nas permissões serão perdidas.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Não</AlertDialogCancel>
+                                    <AlertDialogAction
+                                        onClick={() => {
+                                            router.visit(route('espaco-users.index'));
+                                        }}
+                                        className="bg-red-600 hover:bg-red-700"
+                                    >
+                                        Sim, voltar
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    ) : (
+                        <Button
+                            variant="outline"
+                            type="button"
+                            className="
+                                ml-0
+                                bg-white dark:bg-white
                                 text-black dark:text-black
                                 hover:bg-gray-100 dark:hover:bg-gray-200
                                 cursor-pointer
                                 transition-colors
-                                "
-                    >
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Voltar
-                    </Link>
-                    </Button>
+                            "
+                            onClick={() => {
+                                router.visit(route('espaco-users.index'));
+                            }}
+                        >
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Voltar
+                        </Button>
+                    )}
 
                     <h1 className="text-3xl font-bold text-foreground">Atribuir Permissões</h1>
                 </div>

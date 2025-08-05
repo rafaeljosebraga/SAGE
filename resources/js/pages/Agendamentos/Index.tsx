@@ -191,6 +191,38 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         selectedTime?: string;
         selectedEspaco?: number;
     }>({ open: false });
+    // Estado para confirmação de cancelamento do formulário de criação
+    const [showCancelCreateConfirm, setShowCancelCreateConfirm] = useState(false);
+    // Estado para controlar se o modal de criação pode ser fechado
+    const [forceCreateModalOpen, setForceCreateModalOpen] = useState(false);
+
+    // Função para verificar se o formulário foi alterado
+    const isFormDirty = () => {
+        const initial = {
+            titulo: '',
+            espaco_id: '',
+            data_inicio: '',
+            hora_inicio: '',
+            data_fim: '',
+            hora_fim: '',
+            justificativa: '',
+            observacoes: '',
+            recorrente: false,
+            tipo_recorrencia: '',
+            data_fim_recorrencia: '',
+            recursos_solicitados: [] as string[]
+        };
+        // Checagem rasa
+        return Object.keys(initial).some(
+            (key) => {
+                const typedKey = key as keyof typeof initial;
+                if (Array.isArray(initial[typedKey])) {
+                    return (formData[typedKey] && (formData[typedKey] as string[]).length > 0);
+                }
+                return formData[typedKey] !== initial[typedKey];
+            }
+        );
+    };
 
     const [formData, setFormData] = useState({
         titulo: '',
@@ -2471,8 +2503,24 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                 )}
 
                 {/* Modal de Criação */}
-                <Dialog open={createModal.open} onOpenChange={(open) => setCreateModal({ open })}>
-                    <DialogContent className="max-w-2xl max-h-[90vh] rounded-2xl flex flex-col">
+                <Dialog open={createModal.open} onOpenChange={(open) => {
+                    if (!open) {
+                        if (isFormDirty()) {
+                            setShowCancelCreateConfirm(true);
+                        } else {
+                            setCreateModal({ open: false });
+                            resetForm();
+                        }
+                    }
+                }} modal={true}>
+                    <DialogContent className="max-w-2xl max-h-[90vh] rounded-2xl flex flex-col" onInteractOutside={(e) => {
+                        // Se o formulário foi alterado, mostrar confirmação
+                        if (isFormDirty()) {
+                            e.preventDefault();
+                            setShowCancelCreateConfirm(true);
+                        }
+                        // Se não foi alterado, permite fechar normalmente (não previne o evento)
+                    }}>
                         <DialogHeader className="flex-shrink-0 pb-4">
                             <DialogTitle>Novo Agendamento</DialogTitle>
                         </DialogHeader>
@@ -2624,7 +2672,14 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                         </div>
 
                         <DialogFooter className="flex-shrink-0 border-t pt-4 mt-4">
-                            <Button type="button" variant="outline" onClick={() => setCreateModal({ open: false })}>
+                            <Button type="button" variant="outline" onClick={() => {
+                                if (isFormDirty()) {
+                                    setShowCancelCreateConfirm(true);
+                                } else {
+                                    setCreateModal({ open: false });
+                                    resetForm();
+                                }
+                            }}>
                                 Cancelar
                             </Button>
                             <Button type="submit" form="agendamento-form">
@@ -2632,7 +2687,42 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                             </Button>
                         </DialogFooter>
                     </DialogContent>
-                </Dialog>
+                    </Dialog>
+                    
+                    {/* Modal de confirmação de cancelamento do formulário de criação */}
+                    <Dialog open={showCancelCreateConfirm} onOpenChange={setShowCancelCreateConfirm}>
+                    <DialogContent className="max-w-md">
+                    <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                    Cancelar criação de agendamento
+                    </DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4">
+                    <p className="text-center text-muted-foreground">
+                    Deseja realmente cancelar e voltar? O progresso feito será perdido!
+                    </p>
+                    </div>
+                    <DialogFooter className="gap-2">
+                    <Button
+                    variant="outline"
+                    onClick={() => setShowCancelCreateConfirm(false)}
+                    >
+                    Não
+                    </Button>
+                    <Button
+                    variant="destructive"
+                    onClick={() => {
+                    setShowCancelCreateConfirm(false);
+                    setCreateModal({ open: false });
+                    resetForm();
+                    }}
+                    >
+                    Sim, cancelar e voltar
+                    </Button>
+                    </DialogFooter>
+                    </DialogContent>
+                    </Dialog>
 
                 {/* Modal de Conflito */}
                 <Dialog open={conflictModal.open} onOpenChange={(open) => setConflictModal({ ...conflictModal, open })}>
