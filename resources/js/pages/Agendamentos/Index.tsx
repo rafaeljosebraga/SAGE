@@ -699,7 +699,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         return selectedDateTime <= now;
     };
 
-    const handleDateSelect = (date: Date, timeSlot?: string) => {
+    const handleDateSelect = (date: Date, timeSlot?: string, preserveEspaco?: boolean) => {
         const selectedDate = format(date, 'yyyy-MM-dd');
         const now = new Date();
         const todayStr = format(now, 'yyyy-MM-dd');
@@ -740,9 +740,9 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
             `${(parseInt(selectedTime.split(':')[0]) + 1).toString().padStart(2, '0')}:00` :
             '09:00';
 
-        setFormData({
+        setFormData(prev => ({
             titulo: '',
-            espaco_id: selectedEspacos[0]?.toString() || '',
+            espaco_id: preserveEspaco ? prev.espaco_id : '',
             data_inicio: selectedDate,
             hora_inicio: selectedTime,
             data_fim: selectedDate,
@@ -753,7 +753,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
             tipo_recorrencia: '',
             data_fim_recorrencia: '',
             recursos_solicitados: []
-        });
+        }));
 
         setCreateModal({
             open: true,
@@ -1468,7 +1468,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                     className="min-h-[60px] p-1 border-2 border-border/100 hover:border-border/60 rounded cursor-pointer hover:bg-muted/30 transition-all duration-200"
                                     onClick={() => handleDateSelect(day, timeSlot)}
                                 >
-                                    {events.map((event) => (
+                                    {events.slice(0, 3).map((event) => (
                                         <Tooltip key={event.id}>
                                             <TooltipTrigger asChild>
                                                 <div
@@ -1490,6 +1490,21 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                             </TooltipContent>
                                         </Tooltip>
                                     ))}
+                                    {events.length > 3 && (
+                                        <div 
+                                            className="text-xs text-muted-foreground font-medium cursor-pointer hover:text-foreground transition-colors"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setDayViewModal({
+                                                    open: true,
+                                                    selectedDate: day,
+                                                    events: events.sort((a, b) => a.hora_inicio.localeCompare(b.hora_inicio))
+                                                });
+                                            }}
+                                        >
+                                            +{events.length - 3} mais
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })}
@@ -1931,7 +1946,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                             className="h-[160px] w-full p-2 border-2 border-border/100 hover:border-border/60 rounded cursor-pointer hover:bg-muted/30 transition-all duration-200 overflow-hidden"
                                             onClick={() => {
                                                 setFormData(prev => ({ ...prev, espaco_id: espaco.id.toString() }));
-                                                handleDateSelect(day);
+                                                handleDateSelect(day, undefined, true);
                                             }}
                                             >
                                             <div className="space-y-1 h-full pr-1">
