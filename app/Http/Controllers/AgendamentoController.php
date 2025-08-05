@@ -44,21 +44,21 @@ class AgendamentoController extends Controller
         // Se for visualização de lista, usar paginação
         if ($request->get('view') === 'list') {
             $agendamentos = $query->orderBy('created_at', 'desc')
-                                 ->orderBy('data_inicio', 'desc')
-                                 ->orderBy('hora_inicio', 'desc')
-                                 ->paginate(15);
+                ->orderBy('data_inicio', 'desc')
+                ->orderBy('hora_inicio', 'desc')
+                ->paginate(15);
         } else {
             // Para visualizações de calendário, buscar todos os agendamentos sem limitação de tempo
             $agendamentos = $query->orderBy('data_inicio')
-                                 ->orderBy('hora_inicio')
-                                 ->get();
+                ->orderBy('hora_inicio')
+                ->get();
         }
 
         $espacos = Espaco::where('disponivel_reserva', true)
-                         ->where('status', 'ativo')
-                         ->with('localizacao')
-                         ->orderBy('nome')
-                         ->get();
+            ->where('status', 'ativo')
+            ->with('localizacao')
+            ->orderBy('nome')
+            ->get();
 
         return Inertia::render('Agendamentos/Index', [
             'agendamentos' => $agendamentos,
@@ -73,19 +73,19 @@ class AgendamentoController extends Controller
     public function create(Request $request)
     {
         $espacos = Espaco::with(['localizacao', 'recursos'])
-                         ->where('disponivel_reserva', true)
-                         ->where('status', 'ativo')
-                         ->orderBy('nome')
-                         ->get();
+            ->where('disponivel_reserva', true)
+            ->where('status', 'ativo')
+            ->orderBy('nome')
+            ->get();
 
         $recursos = Recurso::where('status', 'disponivel')
-                          ->orderBy('nome')
-                          ->get(['id', 'nome', 'descricao']);
+            ->orderBy('nome')
+            ->get(['id', 'nome', 'descricao']);
 
         $espacoSelecionado = null;
         if ($request->filled('espaco_id')) {
             $espacoSelecionado = Espaco::with(['localizacao', 'recursos'])
-                                      ->find($request->espaco_id);
+                ->find($request->espaco_id);
         }
 
         return Inertia::render('Agendamentos/Create', [
@@ -121,14 +121,16 @@ class AgendamentoController extends Controller
 
         // Verificar se o espaço est�� disponível
         $espaco = Espaco::findOrFail($validated['espaco_id']);
-        
+
         if (!$espaco->disponivel_reserva) {
             return back()->withErrors(['espaco_id' => 'Este espaço não está disponível para reserva.']);
         }
 
         // Validar horários (hora fim deve ser maior que hora início no mesmo dia)
-        if ($validated['data_inicio'] === $validated['data_fim'] && 
-            $validated['hora_fim'] <= $validated['hora_inicio']) {
+        if (
+            $validated['data_inicio'] === $validated['data_fim'] &&
+            $validated['hora_fim'] <= $validated['hora_inicio']
+        ) {
             return back()->withErrors(['hora_fim' => 'A hora de fim deve ser posterior à hora de início.']);
         }
 
@@ -151,50 +153,50 @@ class AgendamentoController extends Controller
                     $query->where(function ($q) use ($validated) {
                         // Caso 1: Agendamento existente começa antes e termina depois do início do novo
                         $q->where('data_inicio', '<=', $validated['data_inicio'])
-                          ->where('data_fim', '>=', $validated['data_inicio'])
-                          ->where(function ($timeQ) use ($validated) {
-                              $timeQ->where('data_inicio', '<', $validated['data_inicio'])
-                                   ->orWhere(function ($innerQ) use ($validated) {
-                                       $innerQ->where('data_inicio', '=', $validated['data_inicio'])
-                                              ->where('hora_inicio', '<', $validated['hora_fim']);
-                                   });
-                          })
-                          ->where(function ($timeQ) use ($validated) {
-                              $timeQ->where('data_fim', '>', $validated['data_inicio'])
-                                   ->orWhere(function ($innerQ) use ($validated) {
-                                       $innerQ->where('data_fim', '=', $validated['data_inicio'])
-                                              ->where('hora_fim', '>', $validated['hora_inicio']);
-                                   });
-                          });
+                            ->where('data_fim', '>=', $validated['data_inicio'])
+                            ->where(function ($timeQ) use ($validated) {
+                                $timeQ->where('data_inicio', '<', $validated['data_inicio'])
+                                    ->orWhere(function ($innerQ) use ($validated) {
+                                        $innerQ->where('data_inicio', '=', $validated['data_inicio'])
+                                            ->where('hora_inicio', '<', $validated['hora_fim']);
+                                    });
+                            })
+                            ->where(function ($timeQ) use ($validated) {
+                                $timeQ->where('data_fim', '>', $validated['data_inicio'])
+                                    ->orWhere(function ($innerQ) use ($validated) {
+                                        $innerQ->where('data_fim', '=', $validated['data_inicio'])
+                                            ->where('hora_fim', '>', $validated['hora_inicio']);
+                                    });
+                            });
                     })->orWhere(function ($q) use ($validated) {
                         // Caso 2: Agendamento existente começa antes do fim do novo e termina depois
                         $q->where('data_inicio', '<=', $validated['data_fim'])
-                          ->where('data_fim', '>=', $validated['data_fim'])
-                          ->where(function ($timeQ) use ($validated) {
-                              $timeQ->where('data_inicio', '<', $validated['data_fim'])
-                                   ->orWhere(function ($innerQ) use ($validated) {
-                                       $innerQ->where('data_inicio', '=', $validated['data_fim'])
-                                              ->where('hora_inicio', '<', $validated['hora_fim']);
-                                   });
-                          });
+                            ->where('data_fim', '>=', $validated['data_fim'])
+                            ->where(function ($timeQ) use ($validated) {
+                                $timeQ->where('data_inicio', '<', $validated['data_fim'])
+                                    ->orWhere(function ($innerQ) use ($validated) {
+                                        $innerQ->where('data_inicio', '=', $validated['data_fim'])
+                                            ->where('hora_inicio', '<', $validated['hora_fim']);
+                                    });
+                            });
                     })->orWhere(function ($q) use ($validated) {
                         // Caso 3: Agendamento existente está completamente dentro do novo período
                         $q->where('data_inicio', '>=', $validated['data_inicio'])
-                          ->where('data_fim', '<=', $validated['data_fim'])
-                          ->where(function ($timeQ) use ($validated) {
-                              $timeQ->where('data_inicio', '>', $validated['data_inicio'])
-                                   ->orWhere(function ($innerQ) use ($validated) {
-                                       $innerQ->where('data_inicio', '=', $validated['data_inicio'])
-                                              ->where('hora_inicio', '>=', $validated['hora_inicio']);
-                                   });
-                          })
-                          ->where(function ($timeQ) use ($validated) {
-                              $timeQ->where('data_fim', '<', $validated['data_fim'])
-                                   ->orWhere(function ($innerQ) use ($validated) {
-                                       $innerQ->where('data_fim', '=', $validated['data_fim'])
-                                              ->where('hora_fim', '<=', $validated['hora_fim']);
-                                   });
-                          });
+                            ->where('data_fim', '<=', $validated['data_fim'])
+                            ->where(function ($timeQ) use ($validated) {
+                                $timeQ->where('data_inicio', '>', $validated['data_inicio'])
+                                    ->orWhere(function ($innerQ) use ($validated) {
+                                        $innerQ->where('data_inicio', '=', $validated['data_inicio'])
+                                            ->where('hora_inicio', '>=', $validated['hora_inicio']);
+                                    });
+                            })
+                            ->where(function ($timeQ) use ($validated) {
+                                $timeQ->where('data_fim', '<', $validated['data_fim'])
+                                    ->orWhere(function ($innerQ) use ($validated) {
+                                        $innerQ->where('data_fim', '=', $validated['data_fim'])
+                                            ->where('hora_fim', '<=', $validated['hora_fim']);
+                                    });
+                            });
                     });
                 })
                 ->with(['user', 'espaco'])
@@ -213,7 +215,7 @@ class AgendamentoController extends Controller
 
         // Se foi forçado com conflitos, marcar como prioridade alta
         if ($conflitos->isNotEmpty() && ($validated['force_create'] ?? false)) {
-            $validated['observacoes'] = ($validated['observacoes'] ?? '') . 
+            $validated['observacoes'] = ($validated['observacoes'] ?? '') .
                 "\n\n[SOLICITAÇÃO DE PRIORIDADE] Este agendamento foi solicitado com prioridade sobre agendamentos conflitantes.";
         }
 
@@ -227,9 +229,9 @@ class AgendamentoController extends Controller
         } else {
             $message = 'Solicitação de agendamento criada com sucesso! Aguarde aprovação.';
         }
-        
+
         if ($conflitos->isNotEmpty() && ($validated['force_create'] ?? false)) {
-            $message = $agendamentos->count() > 1 
+            $message = $agendamentos->count() > 1
                 ? "Solicitações de agendamento com prioridade criadas! {$agendamentos->count()} agendamentos recorrentes foram criados. O diretor analisará os conflitos."
                 : 'Solicitação de agendamento com prioridade criada! O diretor analisará os conflitos.';
         }
@@ -253,13 +255,13 @@ class AgendamentoController extends Controller
     public function show(Agendamento $agendamento)
     {
         $agendamento->load([
-            'espaco.localizacao', 
-            'espaco.fotos', 
+            'espaco.localizacao',
+            'espaco.fotos',
             'espaco.recursos',
             'espaco.users',
             'espaco.createdBy',
             'espaco.updatedBy',
-            'user', 
+            'user',
             'aprovadoPor'
         ]);
 
@@ -294,14 +296,14 @@ class AgendamentoController extends Controller
         $agendamentoFormatado['hora_fim'] = $agendamento->hora_fim ? substr($agendamento->hora_fim, 0, 5) : '';
 
         $espacos = Espaco::with(['localizacao', 'recursos'])
-                         ->where('disponivel_reserva', true)
-                         ->where('status', 'ativo')
-                         ->orderBy('nome')
-                         ->get();
+            ->where('disponivel_reserva', true)
+            ->where('status', 'ativo')
+            ->orderBy('nome')
+            ->get();
 
         $recursos = Recurso::where('status', 'disponivel')
-                          ->orderBy('nome')
-                          ->get(['id', 'nome', 'descricao']);
+            ->orderBy('nome')
+            ->get(['id', 'nome', 'descricao']);
 
         return Inertia::render('Agendamentos/Edit', [
             'agendamento' => $agendamentoFormatado,
@@ -340,14 +342,16 @@ class AgendamentoController extends Controller
 
         // Verificar se o espaço está disponível
         $espaco = Espaco::findOrFail($validated['espaco_id']);
-        
+
         if (!$espaco->disponivel_reserva) {
             return back()->withErrors(['espaco_id' => 'Este espaço não está disponível para reserva.']);
         }
 
         // Validar horários (hora fim deve ser maior que hora início no mesmo dia)
-        if ($validated['data_inicio'] === $validated['data_fim'] && 
-            $validated['hora_fim'] <= $validated['hora_inicio']) {
+        if (
+            $validated['data_inicio'] === $validated['data_fim'] &&
+            $validated['hora_fim'] <= $validated['hora_inicio']
+        ) {
             return back()->withErrors(['hora_fim' => 'A hora de fim deve ser posterior à hora de início.']);
         }
 
@@ -375,7 +379,7 @@ class AgendamentoController extends Controller
         }
 
         return redirect()->route('agendamentos.index')
-                        ->with('success', 'Agendamento atualizado com sucesso!');
+            ->with('success', 'Agendamento atualizado com sucesso!');
     }
 
     /**
@@ -384,7 +388,7 @@ class AgendamentoController extends Controller
     public function destroy(Agendamento $agendamento)
     {
         // Verificar permissão
-        if (auth()->user()->perfil_acesso !== 'diretor_geral') { 
+        if (auth()->user()->perfil_acesso !== 'diretor_geral') {
             abort(403, 'Você não tem permissão para cancelar este agendamento.');
         }
 
@@ -400,7 +404,7 @@ class AgendamentoController extends Controller
         }
 
         return redirect()->route('agendamentos.index')
-                        ->with('success', 'Agendamento cancelado com sucesso!');
+            ->with('success', 'Agendamento cancelado com sucesso!');
     }
 
     /**
@@ -409,8 +413,8 @@ class AgendamentoController extends Controller
     public function gerenciar(Request $request)
     {
         $query = Agendamento::with(['espaco.localizacao', 'user', 'aprovadoPor'])
-                           ->representantesDeGrupo()
-                           ->comContadorGrupo();
+            ->representantesDeGrupo()
+            ->comContadorGrupo();
 
         // Filtros
         if ($request->filled('espaco_id')) {
@@ -446,31 +450,32 @@ class AgendamentoController extends Controller
         // Filtro específico para aprovados hoje
         if ($request->filled('aprovado_hoje') && $request->aprovado_hoje === 'true') {
             $query->where('status', 'aprovado')
-                  ->whereDate('aprovado_em', today());
+                ->whereDate('aprovado_em', today());
         }
 
         // Filtro específico para rejeitados hoje
         if ($request->filled('rejeitado_hoje') && $request->rejeitado_hoje === 'true') {
             $query->where('status', 'rejeitado')
-                  ->whereDate('aprovado_em', today());
+                ->whereDate('aprovado_em', today());
         }
 
         // Filtro específico para agendamentos do mês atual
         if ($request->filled('mes_atual') && $request->mes_atual === 'true') {
             $query->whereMonth('created_at', now()->month)
-                  ->whereYear('created_at', now()->year);
+                ->whereYear('created_at', now()->year);
         }
 
         // Para garantir que todos os agendamentos sejam carregados, usar get() em vez de paginate()
         // quando não há filtros específicos ou quando o frontend precisa de todos os dados
         $agendamentos = $query->orderBy('created_at', 'desc')
-                             ->get();
+            ->get();
 
         // Simular estrutura de paginação para compatibilidade com o frontend
+        $perPage = max($agendamentos->count(), 1); //Impedir crash por quantidade de agendamentos == 0
         $paginatedAgendamentos = new \Illuminate\Pagination\LengthAwarePaginator(
             $agendamentos,
             $agendamentos->count(),
-            $agendamentos->count(), // Todos os itens em uma página
+            $perPage,
             1,
             ['path' => request()->url()]
         );
@@ -482,29 +487,29 @@ class AgendamentoController extends Controller
         });
 
         $espacos = Espaco::where('disponivel_reserva', true)
-                         ->where('status', 'ativo')
-                         ->orderBy('nome')
-                         ->get(['id', 'nome']);
+            ->where('status', 'ativo')
+            ->orderBy('nome')
+            ->get(['id', 'nome']);
 
         // Estatísticas - contar apenas representantes de grupo para evitar duplicação
         $hoje = now()->format('Y-m-d');
-        
+
         $estatisticas = [
             'pendentes' => Agendamento::representantesDeGrupo()->where('status', 'pendente')->count(),
             'aprovados_hoje' => Agendamento::representantesDeGrupo()
-                                          ->where('status', 'aprovado')
-                                          ->whereNotNull('aprovado_em')
-                                          ->whereRaw('DATE(aprovado_em) = ?', [$hoje])
-                                          ->count(),
+                ->where('status', 'aprovado')
+                ->whereNotNull('aprovado_em')
+                ->whereRaw('DATE(aprovado_em) = ?', [$hoje])
+                ->count(),
             'rejeitados_hoje' => Agendamento::representantesDeGrupo()
-                                           ->where('status', 'rejeitado')
-                                           ->whereNotNull('aprovado_em')
-                                           ->whereRaw('DATE(aprovado_em) = ?', [$hoje])
-                                           ->count(),
+                ->where('status', 'rejeitado')
+                ->whereNotNull('aprovado_em')
+                ->whereRaw('DATE(aprovado_em) = ?', [$hoje])
+                ->count(),
             'total_mes' => Agendamento::representantesDeGrupo()
-                                     ->whereMonth('created_at', now()->month)
-                                     ->whereYear('created_at', now()->year)
-                                     ->count(),
+                ->whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year)
+                ->count(),
         ];
 
         return Inertia::render('Agendamentos/Gerenciar', [
@@ -532,11 +537,11 @@ class AgendamentoController extends Controller
         // Se faz parte de um grupo de recorrência, aprovar todos os agendamentos do grupo
         if ($agendamento->grupo_recorrencia) {
             $agendamentosDoGrupo = Agendamento::where('grupo_recorrencia', $agendamento->grupo_recorrencia)
-                                             ->where('status', 'pendente')
-                                             ->get();
+                ->where('status', 'pendente')
+                ->get();
 
             $totalAprovados = $agendamentosDoGrupo->count();
-            
+
             foreach ($agendamentosDoGrupo as $agendamentoGrupo) {
                 $agendamentoGrupo->update([
                     'status' => 'aprovado',
@@ -545,7 +550,7 @@ class AgendamentoController extends Controller
                 ]);
             }
 
-            $message = $totalAprovados > 1 
+            $message = $totalAprovados > 1
                 ? "Grupo de agendamentos recorrentes aprovado com sucesso! {$totalAprovados} agendamentos foram aprovados."
                 : 'Agendamento aprovado com sucesso!';
         } else {
@@ -583,11 +588,11 @@ class AgendamentoController extends Controller
         // Se faz parte de um grupo de recorrência, rejeitar todos os agendamentos do grupo
         if ($agendamento->grupo_recorrencia) {
             $agendamentosDoGrupo = Agendamento::where('grupo_recorrencia', $agendamento->grupo_recorrencia)
-                                             ->where('status', 'pendente')
-                                             ->get();
+                ->where('status', 'pendente')
+                ->get();
 
             $totalRejeitados = $agendamentosDoGrupo->count();
-            
+
             foreach ($agendamentosDoGrupo as $agendamentoGrupo) {
                 $agendamentoGrupo->update([
                     'status' => 'rejeitado',
@@ -597,7 +602,7 @@ class AgendamentoController extends Controller
                 ]);
             }
 
-            $message = $totalRejeitados > 1 
+            $message = $totalRejeitados > 1
                 ? "Grupo de agendamentos recorrentes rejeitado. {$totalRejeitados} agendamentos foram rejeitados."
                 : 'Agendamento rejeitado.';
         } else {
@@ -626,14 +631,14 @@ class AgendamentoController extends Controller
 
         // Buscar todos os agendamentos sem limitação de tempo para o calendário
         $agendamentos = $query->orderBy('data_inicio')
-                             ->orderBy('hora_inicio')
-                             ->get();
+            ->orderBy('hora_inicio')
+            ->get();
 
         $espacos = Espaco::where('disponivel_reserva', true)
-                         ->where('status', 'ativo')
-                         ->with('localizacao')
-                         ->orderBy('nome')
-                         ->get();
+            ->where('status', 'ativo')
+            ->with('localizacao')
+            ->orderBy('nome')
+            ->get();
 
         return Inertia::render('Agendamentos/Calendar', [
             'agendamentos' => $agendamentos,
@@ -657,7 +662,7 @@ class AgendamentoController extends Controller
         ]);
 
         $espaco = Espaco::findOrFail($validated['espaco_id']);
-        
+
         $disponivel = $espaco->estaDisponivel(
             $validated['data_inicio'],
             $validated['hora_inicio'],
@@ -678,7 +683,7 @@ class AgendamentoController extends Controller
     public function descancelar(Agendamento $agendamento)
     {
         // Verificar permissão
-        if (auth()->user()->perfil_acesso !== 'diretor_geral') { 
+        if (auth()->user()->perfil_acesso !== 'diretor_geral') {
             abort(403, 'Você não tem permissão para descancelar este agendamento.');
         }
 
@@ -700,7 +705,7 @@ class AgendamentoController extends Controller
         }
 
         return redirect()->route('agendamentos.index')
-                        ->with('success', 'Agendamento descancelado com sucesso! Status alterado para pendente.');
+            ->with('success', 'Agendamento descancelado com sucesso! Status alterado para pendente.');
     }
 
     /**
@@ -709,7 +714,7 @@ class AgendamentoController extends Controller
     public function forceDelete(Agendamento $agendamento)
     {
         // Verificar permissão - apenas diretor geral pode excluir permanentemente
-        if (auth()->user()->perfil_acesso !== 'diretor_geral') { 
+        if (auth()->user()->perfil_acesso !== 'diretor_geral') {
             abort(403, 'Você não tem permissão para excluir este agendamento.');
         }
 
@@ -723,11 +728,11 @@ class AgendamentoController extends Controller
         // Para requisições Inertia, redirecionar para a lista de agendamentos
         if (request()->header('X-Inertia')) {
             return redirect()->route('agendamentos.index')
-                           ->with('success', "Agendamento '{$titulo}' foi excluído permanentemente.");
+                ->with('success', "Agendamento '{$titulo}' foi excluído permanentemente.");
         }
 
         return redirect()->route('agendamentos.index')
-                        ->with('success', "Agendamento '{$titulo}' foi excluído permanentemente.");
+            ->with('success', "Agendamento '{$titulo}' foi excluído permanentemente.");
     }
 
     /**
@@ -751,17 +756,17 @@ class AgendamentoController extends Controller
         $dataInicio = Carbon::parse($validated['data_inicio']);
         $dataFim = Carbon::parse($validated['data_fim']);
         $dataFimRecorrencia = Carbon::parse($validated['data_fim_recorrencia']);
-        
+
         // Criar datetime completo com horários
         $horaInicio = Carbon::parse($validated['hora_inicio']);
         $horaFim = Carbon::parse($validated['hora_fim']);
-        
+
         $dataHoraInicio = $dataInicio->copy()->setTime($horaInicio->hour, $horaInicio->minute);
         $dataHoraFim = $dataFim->copy()->setTime($horaFim->hour, $horaFim->minute);
-        
+
         // Calcular a duração do agendamento original
         $duracaoEmMinutos = $dataHoraInicio->diffInMinutes($dataHoraFim);
-        
+
         $dataHoraAtual = $dataHoraInicio->copy();
         $contador = 0;
         $maxAgendamentos = 8760; // Limite de segurança (365 dias * 24 horas)
@@ -808,3 +813,4 @@ class AgendamentoController extends Controller
         return $agendamentos;
     }
 }
+
