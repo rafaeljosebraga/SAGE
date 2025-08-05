@@ -1171,7 +1171,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                             variant="outline"
                             onClick={() => setDeleteModal({ open: false })}
                         >
-                            Cancelar
+                            Não
                         </Button>
                         <Button
                             variant="destructive"
@@ -1210,7 +1210,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                             variant="outline"
                             onClick={() => setUncancelModal({ open: false })}
                         >
-                            Cancelar
+                            Não
                         </Button>
                         <Button
                             variant="default"
