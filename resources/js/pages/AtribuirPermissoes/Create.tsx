@@ -517,101 +517,104 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
 
                     <h1 className="text-3xl font-bold text-foreground">Atribuir Permissões</h1>
                 </div>
-                <form onSubmit={handleSubmit}>
+                <div>
                     <div>
+                        <div>
 
-                        {/* Painel de seleção de espaços */}
-                        <div className="lg:col-span-2">
-                            <Card className="h-full">
-                                <CardHeader>
-                                    <div className="flex justify-between items-center">
-                                        <CardTitle className="text-lg">Selecionar Espaços</CardTitle>
-                                        <div className="text-sm text-muted-foreground">
-                                            {selectedEspacos.length} selecionados
+                            {/* Painel de seleção de espaços */}
+                            <div className="lg:col-span-2">
+                                <Card className="h-full">
+                                    <CardHeader>
+                                        <div className="flex justify-between items-center">
+                                            <CardTitle className="text-lg">Selecionar Espaços</CardTitle>
+                                            <div className="text-sm text-muted-foreground">
+                                                {selectedEspacos.length} selecionados
+                                            </div>
                                         </div>
-                                    </div>
-                                </CardHeader>
-                                <CardContent className="space-y-4 flex flex-col h-[calc(100%-65px)]">
+                                    </CardHeader>
+                                    <CardContent className="space-y-4 flex flex-col h-[calc(100%-65px)]">
 
 
-                                    {/* Lista de espaços */}
+                                        {/* Lista de espaços */}
                                         <FilterableTable
                                             data={espacos}
                                             columns={columns}
                                             emptyMessage="Nenhum espaço encontrado."
                                         />
-                                    {/* Espaços selecionados */}
-                                    { selectedEspacos.length > 0 && (
-                                    <div className="mt-2">
-                                        <Label className="text-muted-foreground">Espaços Selecionados</Label>
-                                        <div className="flex flex-wrap gap-2 mt-2 min-h-[40px]">
-                                            {selectedEspacos.length > 0 ? (
-                                                espacos
-                                                .filter(e => selectedEspacos.includes(e.id))
-                                                .map(espaco => (
-                                                    <Badge
-                                                        key={espaco.id}
-                                                        variant="secondary"
-                                                        className="px-3 py-1"
-                                                    >
-                                                        {espaco.nome}
-                                                    </Badge>
-                                                ))
-                                            ) : (
-                                                    <span className="text-muted-foreground text-sm">
-                                                        Nenhum espaço selecionado
-                                                    </span>
-                                                )}
-                                        </div>
-                                    </div>
-                                    )}
-                                    {/* Espaços desmarcados (deselecionados) que estavam atribuídos */}
-                                    { disposedEspacos.length > 0 && (
-                                    <div className="mt-2">
-                                        <Label className="text-muted-foreground">Espaços Removidos</Label>
-                                        <div className="flex flex-wrap gap-2 mt-2 min-h-[40px]">
-                                            {espacosAtribuidos.filter(id => !selectedEspacos.includes(id)).length > 0 ? (
-                                                espacos
-                                                .filter(e => espacosAtribuidos.includes(e.id) && !selectedEspacos.includes(e.id))
-                                                .map(espaco => (
-                                                    <Badge
-                                                        key={espaco.id}
-                                                        variant="destructive"
-                                                        className="px-3 py-1"
-                                                    >
-                                                        {espaco.nome}
-                                                    </Badge>
-                                                ))
-                                            ) : (
-                                                    <span className="text-muted-foreground text-sm">
-                                                        Nenhum espaço removido
-                                                    </span>
-                                                )}
-                                        </div>
-                                    </div>
-                                    )}
+                                        {/* Espaços selecionados */}
+                                        { selectedEspacos.length > 0 && (
+                                            <div className="mt-2">
+                                                <Label className="text-muted-foreground">Espaços Selecionados</Label>
+                                                <div className="flex flex-wrap gap-2 mt-2 min-h-[40px]">
+                                                    {selectedEspacos.length > 0 ? (
+                                                        espacos
+                                                        .filter(e => selectedEspacos.includes(e.id))
+                                                        .map(espaco => (
+                                                            <Badge
+                                                                key={espaco.id}
+                                                                variant="secondary"
+                                                                className="px-3 py-1"
+                                                            >
+                                                                {espaco.nome}
+                                                            </Badge>
+                                                        ))
+                                                    ) : (
+                                                            <span className="text-muted-foreground text-sm">
+                                                                Nenhum espaço selecionado
+                                                            </span>
+                                                        )}
+                                                </div>
+                                            </div>
+                                        )}
+                                        {/* Espaços desmarcados (deselecionados) que estavam atribuídos */}
+                                        { disposedEspacos.length > 0 && (
+                                            <div className="mt-2">
+                                                <Label className="text-muted-foreground">Espaços Removidos</Label>
+                                                <div className="flex flex-wrap gap-2 mt-2 min-h-[40px]">
+                                                    {espacosAtribuidos.filter(id => !selectedEspacos.includes(id)).length > 0 ? (
+                                                        espacos
+                                                        .filter(e => espacosAtribuidos.includes(e.id) && !selectedEspacos.includes(e.id))
+                                                        .map(espaco => (
+                                                            <Badge
+                                                                key={espaco.id}
+                                                                variant="destructive"
+                                                                className="px-3 py-1"
+                                                            >
+                                                                {espaco.nome}
+                                                            </Badge>
+                                                        ))
+                                                    ) : (
+                                                            <span className="text-muted-foreground text-sm">
+                                                                Nenhum espaço removido
+                                                            </span>
+                                                        )}
+                                                </div>
+                                            </div>
+                                        )}
 
-                                    {errors.espaco_ids && (
-                                        <p className="text-destructive text-sm">{errors.espaco_ids}</p>
-                                    )}
+                                        {errors.espaco_ids && (
+                                            <p className="text-destructive text-sm">{errors.espaco_ids}</p>
+                                        )}
 
 
-                                    {/* Botão de salvar */}
-                                    <div className="flex justify-end pt-4 border-t mt-auto">
-                                        <Button
-                                            type="submit"
-                                            disabled={processing || (selectedEspacos.length === 0 && disposedEspacos.length === 0) || !selectedUserId}
-                                            className="gap-2 cursor-pointer"
-                                        >
-                                            <Save className="h-4 w-4" />
-                                            {processing ? 'Salvando...' : 'Salvar Permissões'}
-                                        </Button>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                                        {/* Botão de salvar */}
+                                        <form onSubmit={handleSubmit} className="flex justify-end pt-4 border-t mt-auto">
+                                            <Button
+                                                type="submit"
+                                                disabled={processing || (selectedEspacos.length === 0 && disposedEspacos.length === 0) || !selectedUserId}
+                                                className="gap-2 cursor-pointer"
+                                            >
+                                                <Save className="h-4 w-4" />
+                                                {processing ? 'Salvando...' : 'Salvar Permissões'}
+                                            </Button>
+                                        </form>
+                                    </CardContent>
+                                </Card>
+                            </div>
                         </div>
                     </div>
-                </form>
+
+                </div>
             </div>
 
             {/* Modal de Detalhes do Espaço */}
@@ -865,7 +868,7 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
                         </div>
 
                         {/* Footer do Modal */}
-                        <div className="flex justify-end gap-3 p-6 border-t border-border bg-muted/20 flex-shrink-0">
+                        <form on className="flex justify-end gap-3 p-6 border-t border-border bg-muted/20 flex-shrink-0">
                             <Button
                                 onClick={() => {
                                     closeModal();
@@ -876,7 +879,7 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
                                 <Pencil className="mr-2 h-4 w-4" />
                                 Editar
                             </Button>
-                        </div>
+                        </form>
                     </div>
                 </div>
             )}
