@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('agendamentos', function (Blueprint $table) {
             $table->string('grupo_recorrencia')->nullable()->after('data_fim_recorrencia');
             $table->boolean('is_representante_grupo')->default(false)->after('grupo_recorrencia');
-            
+
             $table->index(['grupo_recorrencia']);
         });
     }
@@ -30,3 +30,4 @@ return new class extends Migration
         });
     }
 };
+
