@@ -333,7 +333,15 @@ export function PhotoUpload({
                             size="lg"
                             onClick={() => fileInputRef.current?.click()}
                             disabled={uploading || fotosLocal.length >= maxFiles}
-                            className="min-w-[200px]"
+                            className="
+                                min-w-[200px]
+                                bg-gray dark:bg-white 
+                                text-black dark:text-black 
+                                hover:bg-gray-100 dark:hover:bg-gray-200 
+                                cursor-pointer 
+                                transition-colors
+                                border-black
+                            "
                         >
                             {uploading ? (
                                 <>
