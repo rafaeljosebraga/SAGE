@@ -13,6 +13,7 @@ import { FilterableTable, type ColumnConfig } from '@/components/ui/filterable-t
 import { type User, type Espaco, type BreadcrumbItem } from '@/types';
 import { UserAvatar } from '@/components/user-avatar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useUnsavedChanges } from '@/contexts/unsaved-changes-context';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -43,6 +44,7 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
     const [scrollToResponsaveis, setScrollToResponsaveis] = useState(false);
     const [removedEspacos, setRemovedEspacos] = useState<number[]>([]);
     const [formAlterado, setFormAlterado] = useState(false);
+    const { setHasUnsavedChanges } = useUnsavedChanges();
 
     const {setData, processing, errors } = useForm<{
         user_id: number;
@@ -65,12 +67,13 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
         // Comparar o estado atual com o estado inicial
         const espacosIniciais = [...espacosAtribuidos].sort((a, b) => a - b);
         const espacosAtuais = [...selectedEspacos].sort((a, b) => a - b);
-        
+
         // Verificar se houve mudanças
-        const houveMudancas = espacosIniciais.length !== espacosAtuais.length || 
+        const houveMudancas = espacosIniciais.length !== espacosAtuais.length ||
                              !espacosIniciais.every((id, index) => id === espacosAtuais[index]);
-        
+
         setFormAlterado(houveMudancas);
+        setHasUnsavedChanges(houveMudancas);
     }, [selectedEspacos, espacosAtribuidos]);
 
     useEffect(() => {
