@@ -405,7 +405,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                                         value={data.nome}
                                         onChange={(e) => handleNomeChange(e.target.value)}
                                         placeholder="Nome do espaço"
-                                        className={errors.nome ? 'border-red-500' : ''}
+                                        className={errors.nome ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}
                                     />
                                     {errors.nome && (
                                         <p className="text-sm text-red-500">{errors.nome}</p>
@@ -421,7 +421,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                                         onChange={(e) => handleCapacidadeChange(e.target.value)}
                                         placeholder="Ex: 50"
                                         min="1"
-                                        className={errors.capacidade ? 'border-red-500' : ''}
+                                        className={errors.capacidade ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}
                                     />
                                     {errors.capacidade && (
                                         <p className="text-sm text-red-500">{errors.capacidade}</p>
@@ -437,7 +437,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                                     onChange={(e) => handleDescricaoChange(e.target.value)}
                                     placeholder="Descreva o espaço..."
                                     rows={3}
-                                    className={errors.descricao ? 'border-red-500' : ''}
+                                    className={errors.descricao ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}
                                 />
                                 {errors.descricao && (
                                     <p className="text-sm text-red-500">{errors.descricao}</p>
@@ -460,7 +460,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                                     >
                                         <SelectTrigger
                                             id="localizacao_id"
-                                            className={errors.localizacao_id ? 'border-red-500' : ''}
+                                            className={errors.localizacao_id ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}
                                         >
                                             <SelectValue placeholder="Selecione uma localização" />
                                         </SelectTrigger>
@@ -485,7 +485,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                                     >
                                         <SelectTrigger
                                             id="status"
-                                            className={errors.status ? 'border-red-500' : ''}
+                                            className={errors.status ? 'border-red-500 bg-white border-red dark:bg-black' : 'bg-white border-black dark:bg-black'}
                                         >
                                             <SelectValue />
                                         </SelectTrigger>
