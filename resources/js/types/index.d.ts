@@ -163,6 +163,7 @@ export interface Agendamento {
     recursos_solicitados?: number[];
     grupo_recorrencia?: string;
     is_representante_grupo?: boolean;
+    color_index?: number;
     total_grupo?: number;
     info_grupo?: {
         total: number;

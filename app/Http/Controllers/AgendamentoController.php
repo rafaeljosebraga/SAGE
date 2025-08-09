@@ -101,15 +101,6 @@ class AgendamentoController extends Controller
      */
     public function store(Request $request)
     {
-        \Log::info('🔍 [AGENDAMENTO DEBUG] Store method iniciado', [
-            'timestamp' => now()->toISOString(),
-            'user_id' => auth()->id(),
-            'request_all' => $request->all(),
-            'request_method' => $request->method(),
-            'request_url' => $request->url(),
-            'headers' => $request->headers->all()
-        ]);
-
         $validated = $request->validate([
             'espaco_id' => 'required|exists:espacos,id',
             'titulo' => 'required|string|max:255',
@@ -221,6 +212,13 @@ class AgendamentoController extends Controller
 
         $validated['user_id'] = auth()->id();
         $validated['recursos_solicitados'] = $validated['recursos_solicitados'] ?? [];
+
+        // Gerar índice de cor único baseado em dados únicos do agendamento
+        $colorSeed = $validated['titulo'] . $validated['espaco_id'] . $validated['user_id'] . 
+                     $validated['hora_inicio'] . $validated['hora_fim'] . $validated['justificativa'];
+        
+        // Obter color_index único (sem duplicatas)
+        $validated['color_index'] = \App\Helpers\ColorHelper::generateUniqueColorIndex($colorSeed);
 
         // Se foi forçado com conflitos, marcar como prioridade alta
         if ($conflitos->isNotEmpty() && ($validated['force_create'] ?? false)) {
@@ -378,6 +376,11 @@ class AgendamentoController extends Controller
         }
 
         $validated['recursos_solicitados'] = $validated['recursos_solicitados'] ?? [];
+
+        // Regenerar color_index único se houve mudança nos dados que afetam a cor
+        $colorSeed = $validated['titulo'] . $validated['espaco_id'] . auth()->id() . 
+                     $validated['hora_inicio'] . $validated['hora_fim'] . $validated['justificativa'];
+        $validated['color_index'] = \App\Helpers\ColorHelper::generateUniqueColorIndex($colorSeed, $agendamento->id);
 
         $agendamento->update($validated);
 
@@ -752,10 +755,8 @@ class AgendamentoController extends Controller
         // Se não é recorrente, criar apenas um agendamento
         if (!($validated['recorrente'] ?? false) || empty($validated['tipo_recorrencia']) || empty($validated['data_fim_recorrencia'])) {
             try {
-                \Log::info('Criando agendamento único', $validated);
                 $agendamento = Agendamento::create($validated);
                 $agendamentos->push($agendamento);
-                \Log::info('Agendamento criado com sucesso', ['id' => $agendamento->id]);
                 return $agendamentos;
             } catch (\Exception $e) {
                 \Log::error('Erro ao criar agendamento único: ' . $e->getMessage(), [

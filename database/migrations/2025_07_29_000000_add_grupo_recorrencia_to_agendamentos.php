@@ -12,11 +12,28 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('agendamentos', function (Blueprint $table) {
-            $table->string('grupo_recorrencia')->nullable()->after('data_fim_recorrencia');
-            $table->boolean('is_representante_grupo')->default(false)->after('grupo_recorrencia');
-
-            $table->index(['grupo_recorrencia']);
+            // Verificar se as colunas já existem antes de adicionar
+            if (!Schema::hasColumn('agendamentos', 'grupo_recorrencia')) {
+                $table->string('grupo_recorrencia')->nullable()->after('data_fim_recorrencia');
+            }
+            
+            if (!Schema::hasColumn('agendamentos', 'is_representante_grupo')) {
+                $table->boolean('is_representante_grupo')->default(false)->after('grupo_recorrencia');
+            }
+            
+            if (!Schema::hasColumn('agendamentos', 'color_index')) {
+                $table->integer('color_index')->nullable()->after('recursos_solicitados');
+            }
         });
+        
+        // Adicionar índice separadamente para evitar conflitos
+        try {
+            Schema::table('agendamentos', function (Blueprint $table) {
+                $table->index(['grupo_recorrencia']);
+            });
+        } catch (\Exception $e) {
+            // Índice já existe, ignorar erro
+        }
     }
 
     /**
@@ -26,7 +43,7 @@ return new class extends Migration
     {
         Schema::table('agendamentos', function (Blueprint $table) {
             $table->dropIndex(['grupo_recorrencia']);
-            $table->dropColumn(['grupo_recorrencia', 'is_representante_grupo']);
+            $table->dropColumn(['grupo_recorrencia', 'is_representante_grupo', 'color_index']);
         });
     }
 };

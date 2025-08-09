@@ -88,6 +88,74 @@ const colorPalette = [
     { bg: 'bg-teal-400 dark:bg-teal-500', text: 'text-teal-900 dark:text-teal-50', border: 'border-l-teal-600' },
     { bg: 'bg-cyan-400 dark:bg-cyan-500', text: 'text-cyan-900 dark:text-cyan-50', border: 'border-l-cyan-600' },
     { bg: 'bg-emerald-400 dark:bg-emerald-500', text: 'text-emerald-900 dark:text-emerald-50', border: 'border-l-emerald-600' },
+    
+    // Tons mais escuros para contraste
+    { bg: 'bg-blue-500 dark:bg-blue-400', text: 'text-white dark:text-blue-900', border: 'border-l-blue-700' },
+    { bg: 'bg-blue-600 dark:bg-blue-300', text: 'text-white dark:text-blue-900', border: 'border-l-blue-800' },
+    { bg: 'bg-purple-500 dark:bg-purple-400', text: 'text-white dark:text-purple-900', border: 'border-l-purple-700' },
+    { bg: 'bg-purple-600 dark:bg-purple-300', text: 'text-white dark:text-purple-900', border: 'border-l-purple-800' },
+    { bg: 'bg-pink-500 dark:bg-pink-400', text: 'text-white dark:text-pink-900', border: 'border-l-pink-700' },
+    { bg: 'bg-pink-600 dark:bg-pink-300', text: 'text-white dark:text-pink-900', border: 'border-l-pink-800' },
+    { bg: 'bg-green-500 dark:bg-green-400', text: 'text-white dark:text-green-900', border: 'border-l-green-700' },
+    { bg: 'bg-green-600 dark:bg-green-300', text: 'text-white dark:text-green-900', border: 'border-l-green-800' },
+    { bg: 'bg-yellow-500 dark:bg-yellow-400', text: 'text-yellow-900 dark:text-yellow-900', border: 'border-l-yellow-700' },
+    { bg: 'bg-yellow-600 dark:bg-yellow-300', text: 'text-white dark:text-yellow-900', border: 'border-l-yellow-800' },
+    { bg: 'bg-red-500 dark:bg-red-400', text: 'text-white dark:text-red-900', border: 'border-l-red-700' },
+    { bg: 'bg-red-600 dark:bg-red-300', text: 'text-white dark:text-red-900', border: 'border-l-red-800' },
+    
+    // Tons vibrantes extras
+    { bg: 'bg-orange-400 dark:bg-orange-500', text: 'text-orange-900 dark:text-orange-50', border: 'border-l-orange-600' },
+    { bg: 'bg-orange-500 dark:bg-orange-400', text: 'text-white dark:text-orange-900', border: 'border-l-orange-700' },
+    { bg: 'bg-amber-400 dark:bg-amber-500', text: 'text-amber-900 dark:text-amber-50', border: 'border-l-amber-600' },
+    { bg: 'bg-amber-500 dark:bg-amber-400', text: 'text-amber-900 dark:text-amber-900', border: 'border-l-amber-700' },
+    { bg: 'bg-lime-400 dark:bg-lime-500', text: 'text-lime-900 dark:text-lime-50', border: 'border-l-lime-600' },
+    { bg: 'bg-lime-500 dark:bg-lime-400', text: 'text-lime-900 dark:text-lime-900', border: 'border-l-lime-700' },
+    
+    // Tons escuros intensos para agendamentos importantes
+    { bg: 'bg-blue-700 dark:bg-blue-200', text: 'text-white dark:text-blue-900', border: 'border-l-blue-900' },
+    { bg: 'bg-purple-700 dark:bg-purple-200', text: 'text-white dark:text-purple-900', border: 'border-l-purple-900' },
+    { bg: 'bg-pink-700 dark:bg-pink-200', text: 'text-white dark:text-pink-900', border: 'border-l-pink-900' },
+    { bg: 'bg-green-700 dark:bg-green-200', text: 'text-white dark:text-green-900', border: 'border-l-green-900' },
+    { bg: 'bg-yellow-700 dark:bg-yellow-200', text: 'text-white dark:text-yellow-900', border: 'border-l-yellow-900' },
+    { bg: 'bg-red-700 dark:bg-red-200', text: 'text-white dark:text-red-900', border: 'border-l-red-900' },
+    { bg: 'bg-indigo-700 dark:bg-indigo-200', text: 'text-white dark:text-indigo-900', border: 'border-l-indigo-900' },
+    { bg: 'bg-teal-700 dark:bg-teal-200', text: 'text-white dark:text-teal-900', border: 'border-l-teal-900' },
+    
+    // Cores ultra vibrantes para destaque máximo
+    { bg: 'bg-blue-800 dark:bg-blue-100', text: 'text-white dark:text-blue-900', border: 'border-l-blue-900' },
+    { bg: 'bg-purple-800 dark:bg-purple-100', text: 'text-white dark:text-purple-900', border: 'border-l-purple-900' },
+    { bg: 'bg-pink-800 dark:bg-pink-100', text: 'text-white dark:text-pink-900', border: 'border-l-pink-900' },
+    { bg: 'bg-green-800 dark:bg-green-100', text: 'text-white dark:text-green-900', border: 'border-l-green-900' },
+    { bg: 'bg-red-800 dark:bg-red-100', text: 'text-white dark:text-red-900', border: 'border-l-red-900' },
+    
+    // Cores especiais e tons únicos
+    { bg: 'bg-violet-500 dark:bg-violet-400', text: 'text-white dark:text-violet-900', border: 'border-l-violet-700' },
+    { bg: 'bg-violet-600 dark:bg-violet-300', text: 'text-white dark:text-violet-900', border: 'border-l-violet-800' },
+    { bg: 'bg-sky-500 dark:bg-sky-400', text: 'text-white dark:text-sky-900', border: 'border-l-sky-700' },
+    { bg: 'bg-sky-600 dark:bg-sky-300', text: 'text-white dark:text-sky-900', border: 'border-l-sky-800' },
+    { bg: 'bg-cyan-500 dark:bg-cyan-400', text: 'text-white dark:text-cyan-900', border: 'border-l-cyan-700' },
+    { bg: 'bg-cyan-600 dark:bg-cyan-300', text: 'text-white dark:text-cyan-900', border: 'border-l-cyan-800' },
+    { bg: 'bg-emerald-500 dark:bg-emerald-400', text: 'text-white dark:text-emerald-900', border: 'border-l-emerald-700' },
+    { bg: 'bg-emerald-600 dark:bg-emerald-300', text: 'text-white dark:text-emerald-900', border: 'border-l-emerald-800' },
+    { bg: 'bg-teal-500 dark:bg-teal-400', text: 'text-white dark:text-teal-900', border: 'border-l-teal-700' },
+    { bg: 'bg-teal-600 dark:bg-teal-300', text: 'text-white dark:text-teal-900', border: 'border-l-teal-800' },
+    
+    // Tons pastéis suaves para contraste
+    { bg: 'bg-blue-50 dark:bg-blue-900', text: 'text-blue-800 dark:text-blue-100', border: 'border-l-blue-300' },
+    { bg: 'bg-purple-50 dark:bg-purple-900', text: 'text-purple-800 dark:text-purple-100', border: 'border-l-purple-300' },
+    { bg: 'bg-pink-50 dark:bg-pink-900', text: 'text-pink-800 dark:text-pink-100', border: 'border-l-pink-300' },
+    { bg: 'bg-green-50 dark:bg-green-900', text: 'text-green-800 dark:text-green-100', border: 'border-l-green-300' },
+    { bg: 'bg-yellow-50 dark:bg-yellow-900', text: 'text-yellow-800 dark:text-yellow-100', border: 'border-l-yellow-300' },
+    { bg: 'bg-red-50 dark:bg-red-900', text: 'text-red-800 dark:text-red-100', border: 'border-l-red-300' },
+    
+    // Cores intermediárias únicas
+    { bg: 'bg-orange-600 dark:bg-orange-300', text: 'text-white dark:text-orange-900', border: 'border-l-orange-800' },
+    { bg: 'bg-amber-600 dark:bg-amber-300', text: 'text-white dark:text-amber-900', border: 'border-l-amber-800' },
+    { bg: 'bg-lime-600 dark:bg-lime-300', text: 'text-white dark:text-lime-900', border: 'border-l-lime-800' },
+    { bg: 'bg-rose-500 dark:bg-rose-400', text: 'text-white dark:text-rose-900', border: 'border-l-rose-700' },
+    { bg: 'bg-rose-600 dark:bg-rose-300', text: 'text-white dark:text-rose-900', border: 'border-l-rose-800' },
+    { bg: 'bg-fuchsia-500 dark:bg-fuchsia-400', text: 'text-white dark:text-fuchsia-900', border: 'border-l-fuchsia-700' },
+    { bg: 'bg-fuchsia-600 dark:bg-fuchsia-300', text: 'text-white dark:text-fuchsia-900', border: 'border-l-fuchsia-800' },
 ];
 
 // Função para gerar hash com máxima distribuição usando múltiplos algoritmos
@@ -179,13 +247,20 @@ export const useAgendamentoColors = () => {
             return 'bg-gray-300 dark:bg-gray-600/80 text-gray-900 dark:text-gray-100';
         }
 
-        // Usar identificador da série para que agendamentos recorrentes tenham a mesma cor
+        // Se o agendamento tem color_index definido, usar ele (cor fixa)
+        if (agendamento.color_index !== null && agendamento.color_index !== undefined) {
+            // Usar paleta hardcoded como fallback se não houver cores do banco
+            const colorIndex = agendamento.color_index % colorPalette.length;
+            const color = colorPalette[colorIndex];
+            return `${color.bg} ${color.text}`;
+        }
+
+        // Fallback para agendamentos antigos sem color_index
         const seriesId = getEventSeriesId(agendamento);
         const hash1 = generateHash(`primary_${seriesId}`);
         const hash2 = generateHash(`secondary_${seriesId}`);
         const hash3 = generateHash(`tertiary_${seriesId}`);
         
-        // Combinar os hashes de forma única
         const combinedHash = Math.abs(hash1 + (hash2 * 17) + (hash3 * 23));
         const colorIndex = getDistributedColorIndex(combinedHash, colorPalette.length);
         const color = colorPalette[colorIndex];
@@ -200,13 +275,19 @@ export const useAgendamentoColors = () => {
             return 'border-l-gray-500';
         }
 
-        // Usar identificador da série para que agendamentos recorrentes tenham a mesma cor
+        // Se o agendamento tem color_index definido, usar ele (cor fixa)
+        if (agendamento.color_index !== null && agendamento.color_index !== undefined) {
+            const colorIndex = agendamento.color_index % colorPalette.length;
+            const color = colorPalette[colorIndex];
+            return color.border;
+        }
+
+        // Fallback para agendamentos antigos sem color_index
         const seriesId = getEventSeriesId(agendamento);
         const hash1 = generateHash(`primary_${seriesId}`);
         const hash2 = generateHash(`secondary_${seriesId}`);
         const hash3 = generateHash(`tertiary_${seriesId}`);
         
-        // Combinar os hashes de forma única
         const combinedHash = Math.abs(hash1 + (hash2 * 17) + (hash3 * 23));
         const colorIndex = getDistributedColorIndex(combinedHash, colorPalette.length);
         const color = colorPalette[colorIndex];

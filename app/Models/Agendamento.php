@@ -30,6 +30,7 @@ class Agendamento extends Model
         'recursos_solicitados',
         'grupo_recorrencia',
         'is_representante_grupo',
+        'color_index',
     ];
 
     protected $casts = [
