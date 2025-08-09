@@ -61,8 +61,10 @@ interface ModalsProps {
     // Modais de aviso
     pastTimeModal: {
         open: boolean;
+        formData?: any;
     };
     setPastTimeModal: (modal: any) => void;
+    handlePastTimeConfirm: () => void;
     
     conflictTimeModal: {
         open: boolean;
@@ -110,6 +112,7 @@ export default function AgendamentosModals({
     handleDateSelect,
     pastTimeModal,
     setPastTimeModal,
+    handlePastTimeConfirm,
     conflictTimeModal,
     setConflictTimeModal,
     deleteModal,
@@ -186,7 +189,6 @@ export default function AgendamentosModals({
                                         type="date"
                                         value={formData.data_inicio}
                                         onChange={(e) => setFormData({ ...formData, data_inicio: e.target.value })}
-                                        min={getMinDate()}
                                     />
                                 </div>
 
@@ -197,7 +199,6 @@ export default function AgendamentosModals({
                                         type="time"
                                         value={formData.hora_inicio}
                                         onChange={(e) => setFormData({ ...formData, hora_inicio: e.target.value })}
-                                        min={formData.data_inicio ? getMinTime(formData.data_inicio) : undefined}
                                     />
                                 </div>
 
@@ -208,7 +209,7 @@ export default function AgendamentosModals({
                                         type="date"
                                         value={formData.data_fim}
                                         onChange={(e) => setFormData({ ...formData, data_fim: e.target.value })}
-                                        min={formData.data_inicio || getMinDate()}
+                                        min={formData.data_inicio}
                                     />
                                 </div>
 
@@ -222,7 +223,7 @@ export default function AgendamentosModals({
                                         min={
                                             formData.data_fim === formData.data_inicio && formData.hora_inicio
                                                 ? formData.hora_inicio
-                                                : formData.data_fim ? getMinTime(formData.data_fim) : undefined
+                                                : undefined
                                         }
                                     />
                                 </div>
@@ -519,28 +520,41 @@ export default function AgendamentosModals({
                 </DialogContent>
             </Dialog>
 
-            {/* Modal de Aviso de Horário Passado */}
-            <Dialog open={pastTimeModal.open} onOpenChange={(open) => setPastTimeModal({ open })}>
+            {/* Modal de Confirmação de Agendamento no Passado */}
+            <Dialog open={pastTimeModal.open} onOpenChange={(open) => {
+                if (!open) {
+                    setPastTimeModal({ open: false });
+                }
+            }}>
                 <DialogContent className="max-w-md">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
-                            <AlertTriangle className="h-5 w-5 text-red-600" />
-                            Horário Inválido
+                            <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                            Agendamento no Passado
                         </DialogTitle>
                     </DialogHeader>
 
                     <div className="py-4">
+                        <p className="text-center text-muted-foreground mb-4">
+                            Você está tentando agendar para um horário que já passou. 
+                        </p>
                         <p className="text-center text-muted-foreground">
-                            Não é possível agendar no passado. Por favor, selecione um horário futuro.
+                            Deseja realmente continuar com este agendamento?
                         </p>
                     </div>
 
-                    <DialogFooter>
+                    <DialogFooter className="gap-2">
                         <Button
+                            variant="outline"
                             onClick={() => setPastTimeModal({ open: false })}
-                            className="w-full"
                         >
-                            OK
+                            Cancelar
+                        </Button>
+                        <Button
+                            variant="default"
+                            onClick={handlePastTimeConfirm}
+                        >
+                            Sim, Agendar Mesmo Assim
                         </Button>
                     </DialogFooter>
                 </DialogContent>

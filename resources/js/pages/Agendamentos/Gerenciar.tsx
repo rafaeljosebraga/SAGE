@@ -389,46 +389,7 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                     : dateB.getTime() - dateA.getTime();
             });
         }
-        // Ordenação padrão: priorizar agendamentos futuros mais recentes, depois os que já passaram
-        else {
-            filtered.sort((a, b) => {
-                const now = new Date();
-                
-                // Criar datas de início dos agendamentos
-                const dateStrA = a.data_inicio.split('T')[0];
-                const timeStrA = a.hora_inicio.split(':').slice(0, 2).join(':');
-                const dateStrB = b.data_inicio.split('T')[0];
-                const timeStrB = b.hora_inicio.split(':').slice(0, 2).join(':');
-                
-                const dateA = new Date(`${dateStrA}T${timeStrA}:00`);
-                const dateB = new Date(`${dateStrB}T${timeStrB}:00`);
-                
-                // Verificar se as datas são válidas
-                if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
-                    return 0;
-                }
-                
-                // Verificar se os agendamentos já passaram
-                const aPassou = dateA < now;
-                const bPassou = dateB < now;
-                
-                // Se um passou e outro não, priorizar o que não passou
-                if (aPassou && !bPassou) return 1;
-                if (!aPassou && bPassou) return -1;
-                
-                // Se ambos não passaram, ordenar por data mais próxima primeiro
-                if (!aPassou && !bPassou) {
-                    return dateA.getTime() - dateB.getTime();
-                }
-                
-                // Se ambos já passaram, ordenar por mais recente primeiro
-                if (aPassou && bPassou) {
-                    return dateB.getTime() - dateA.getTime();
-                }
-                
-                return 0;
-            });
-        }
+        // Sem ordenação padrão - usar a ordenação que vem do backend (created_at desc)
 
         return filtered;
     })();

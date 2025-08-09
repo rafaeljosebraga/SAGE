@@ -361,7 +361,6 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                                 type="date"
                                                 value={data.data_inicio}
                                                 onChange={(e) => setData('data_inicio', e.target.value)}
-                                                min={new Date().toISOString().split('T')[0]}
                                             />
                                             {errors.data_inicio && (
                                                 <p className="text-sm text-red-600 mt-1">{errors.data_inicio}</p>
@@ -388,7 +387,6 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                                 type="date"
                                                 value={data.data_fim}
                                                 onChange={(e) => setData('data_fim', e.target.value)}
-                                                min={data.data_inicio || new Date().toISOString().split('T')[0]}
                                             />
                                             {errors.data_fim && (
                                                 <p className="text-sm text-red-600 mt-1">{errors.data_fim}</p>
@@ -530,13 +528,6 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                                 Cancelar
                                             </Link>
                                         </Button>
-                                    </div>
-
-                                    <div className="mt-4 p-3 bg-muted/50 rounded-lg">
-                                        <p className="text-xs text-muted-foreground">
-                                            <strong>Nota:</strong> Apenas agendamentos com status "Pendente" podem ser editados.
-                                            Após a aprovação, entre em contato com o responsável para alterações.
-                                        </p>
                                     </div>
                                 </CardContent>
                             </Card>

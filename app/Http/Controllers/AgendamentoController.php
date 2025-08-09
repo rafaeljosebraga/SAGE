@@ -101,11 +101,20 @@ class AgendamentoController extends Controller
      */
     public function store(Request $request)
     {
+        \Log::info('🔍 [AGENDAMENTO DEBUG] Store method iniciado', [
+            'timestamp' => now()->toISOString(),
+            'user_id' => auth()->id(),
+            'request_all' => $request->all(),
+            'request_method' => $request->method(),
+            'request_url' => $request->url(),
+            'headers' => $request->headers->all()
+        ]);
+
         $validated = $request->validate([
             'espaco_id' => 'required|exists:espacos,id',
             'titulo' => 'required|string|max:255',
             'justificativa' => 'required|string|max:1000',
-            'data_inicio' => 'required|date|after_or_equal:today',
+            'data_inicio' => 'required|date',
             'hora_inicio' => 'required|date_format:H:i',
             'data_fim' => 'required|date|after_or_equal:data_inicio',
             'hora_fim' => 'required|date_format:H:i',
@@ -206,7 +215,7 @@ class AgendamentoController extends Controller
         // Se há conflitos e não foi forçado, retornar erro com os conflitos
         if ($conflitos->isNotEmpty() && !($validated['force_create'] ?? false)) {
             return back()->withErrors([
-                'conflitos' => 'Existe(m) agendamento(s) conflitante(s) no horário solicitado.'
+                'conflitos' => $conflitos
             ])->withInput();
         }
 
@@ -326,7 +335,7 @@ class AgendamentoController extends Controller
             'espaco_id' => 'required|exists:espacos,id',
             'titulo' => 'required|string|max:255',
             'justificativa' => 'required|string|max:1000',
-            'data_inicio' => 'required|date|after_or_equal:today',
+            'data_inicio' => 'required|date',
             'hora_inicio' => 'required|date_format:H:i',
             'data_fim' => 'required|date|after_or_equal:data_inicio',
             'hora_fim' => 'required|date_format:H:i',
@@ -336,7 +345,6 @@ class AgendamentoController extends Controller
         ], [
             'hora_inicio.date_format' => 'O campo hora início deve corresponder ao formato H:i.',
             'hora_fim.date_format' => 'O campo hora fim deve corresponder ao formato H:i.',
-            'data_inicio.after_or_equal' => 'A data de início deve ser hoje ou uma data futura.',
             'data_fim.after_or_equal' => 'A data de fim deve ser igual ou posterior à data de início.',
         ]);
 
@@ -465,8 +473,7 @@ class AgendamentoController extends Controller
                 ->whereYear('created_at', now()->year);
         }
 
-        // Para garantir que todos os agendamentos sejam carregados, usar get() em vez de paginate()
-        // quando não há filtros específicos ou quando o frontend precisa de todos os dados
+        // Ordenação por agendamentos mais recentemente criados primeiro
         $agendamentos = $query->orderBy('created_at', 'desc')
             ->get();
 
@@ -744,9 +751,19 @@ class AgendamentoController extends Controller
 
         // Se não é recorrente, criar apenas um agendamento
         if (!($validated['recorrente'] ?? false) || empty($validated['tipo_recorrencia']) || empty($validated['data_fim_recorrencia'])) {
-            $agendamento = Agendamento::create($validated);
-            $agendamentos->push($agendamento);
-            return $agendamentos;
+            try {
+                \Log::info('Criando agendamento único', $validated);
+                $agendamento = Agendamento::create($validated);
+                $agendamentos->push($agendamento);
+                \Log::info('Agendamento criado com sucesso', ['id' => $agendamento->id]);
+                return $agendamentos;
+            } catch (\Exception $e) {
+                \Log::error('Erro ao criar agendamento único: ' . $e->getMessage(), [
+                    'validated' => $validated,
+                    'exception' => $e->getTraceAsString()
+                ]);
+                throw $e;
+            }
         }
 
         // Para agendamentos recorrentes, gerar um ID único para o grupo

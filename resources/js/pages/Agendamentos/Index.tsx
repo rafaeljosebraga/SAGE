@@ -176,10 +176,13 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     const [showCancelCreateConfirm, setShowCancelCreateConfirm] = useState(false);
     const [conflictModal, setConflictModal] = useState<{ open: boolean; conflitos: Agendamento[]; formData: any; }>({ open: false, conflitos: [], formData: null });
     const [dayViewModal, setDayViewModal] = useState<{ open: boolean; selectedDate: Date | null; events: Agendamento[]; }>({ open: false, selectedDate: null, events: [] });
-    const [pastTimeModal, setPastTimeModal] = useState<{ open: boolean; }>({ open: false });
+    const [pastTimeModal, setPastTimeModal] = useState<{ open: boolean; formData?: any; }>({ open: false });
     const [conflictTimeModal, setConflictTimeModal] = useState<{ open: boolean; message: string; }>({ open: false, message: "" });
     const [deleteModal, setDeleteModal] = useState<{ open: boolean; agendamento: Agendamento | null; }>({ open: false, agendamento: null });
     const [forceDeleteModal, setForceDeleteModal] = useState<{ open: boolean; agendamento: Agendamento | null; }>({ open: false, agendamento: null });
+    
+    // Estado para controlar se estamos no processo de confirmação de agendamento no passado
+    const [isConfirmingPastTime, setIsConfirmingPastTime] = useState(false);
 
     // Estado do formulário
     const [formData, setFormData] = useState({
@@ -518,27 +521,21 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
 
     // Função para verificar se o formulário foi alterado
     const isFormDirty = () => {
-        const initial = {
-            titulo: '',
-            espaco_id: '',
-            data_inicio: '',
-            hora_inicio: '',
-            data_fim: '',
-            hora_fim: '',
-            justificativa: '',
-            observacoes: '',
-            recorrente: false,
-            tipo_recorrencia: '',
-            data_fim_recorrencia: '',
-            recursos_solicitados: [] as string[]
-        };
-        return Object.keys(initial).some((key) => {
-            const typedKey = key as keyof typeof initial;
-            if (Array.isArray(initial[typedKey])) {
-                return (formData[typedKey] && (formData[typedKey] as string[]).length > 0);
-            }
-            return formData[typedKey] !== initial[typedKey];
-        });
+        // Se estamos confirmando agendamento no passado, não considerar como "sujo"
+        if (isConfirmingPastTime) {
+            return false;
+        }
+        
+        // Verificar apenas os campos que realmente indicam que o usuário começou a preencher
+        const hasTitle = formData.titulo && formData.titulo.trim() !== '';
+        const hasEspaco = formData.espaco_id && formData.espaco_id !== '';
+        const hasJustificativa = formData.justificativa && formData.justificativa.trim() !== '';
+        const hasObservacoes = formData.observacoes && formData.observacoes.trim() !== '';
+        const hasRecorrencia = formData.recorrente === true;
+        const hasRecursossolicitados = formData.recursos_solicitados && formData.recursos_solicitados.length > 0;
+        
+        // Considerar "sujo" apenas se pelo menos um dos campos principais foi preenchido
+        return hasTitle || hasEspaco || hasJustificativa || hasObservacoes || hasRecorrencia || hasRecursossolicitados;
     };
 
     // Obter agendamentos de um dia específico
@@ -668,6 +665,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         const todayStr = format(now, 'yyyy-MM-dd');
 
         let selectedTime = timeSlot || '08:00';
+        let isPastTime = false;
 
         if (selectedDate === todayStr) {
             if (timeSlot) {
@@ -680,8 +678,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                     selectedTime = format(nextMinute, 'HH:mm');
                 }
                 else if (slotHour < currentHour || (slotHour === currentHour && slotMinute < currentMinute)) {
-                    setPastTimeModal({ open: true });
-                    return;
+                    isPastTime = true;
                 }
             } else {
                 const nextMinute = new Date(now.getTime() + 60000);
@@ -689,17 +686,16 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
             }
         }
         else if (isTimeInPast(date, timeSlot)) {
-            setPastTimeModal({ open: true });
-            return;
+            isPastTime = true;
         }
 
         const endTime = selectedTime ?
             `${(parseInt(selectedTime.split(':')[0]) + 1).toString().padStart(2, '0')}:00` :
             '09:00';
 
-        setFormData(prev => ({
+        const newFormData = {
             titulo: '',
-            espaco_id: preserveEspaco ? prev.espaco_id : '',
+            espaco_id: preserveEspaco ? formData.espaco_id : '',
             data_inicio: selectedDate,
             hora_inicio: selectedTime,
             data_fim: selectedDate,
@@ -710,7 +706,22 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
             tipo_recorrencia: '',
             data_fim_recorrencia: '',
             recursos_solicitados: []
-        }));
+        };
+
+        if (isPastTime) {
+            setPastTimeModal({ 
+                open: true, 
+                formData: {
+                    ...newFormData,
+                    selectedDate,
+                    selectedTime,
+                    selectedEspaco: selectedEspacos[0]
+                }
+            });
+            return;
+        }
+
+        setFormData(newFormData);
 
         setCreateModal({
             open: true,
@@ -754,13 +765,13 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
             return;
         }
 
-        if (isDateTimeInPast(data_inicio, hora_inicio)) {
-            setPastTimeModal({ open: true });
-            return;
-        }
-
-        if (isDateTimeInPast(data_fim, hora_fim)) {
-            setPastTimeModal({ open: true });
+        // Verificar se é agendamento no passado apenas se não foi confirmado anteriormente
+        if (isDateTimeInPast(data_inicio, hora_inicio) || isDateTimeInPast(data_fim, hora_fim)) {
+            setIsConfirmingPastTime(true);
+            setPastTimeModal({ 
+                open: true, 
+                formData: formData 
+            });
             return;
         }
 
@@ -780,8 +791,14 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
             onSuccess: () => {
                 setCreateModal({ open: false });
                 resetForm();
+                toast({
+                    title: "Agendamento criado com sucesso!",
+                    description: "Seu agendamento foi enviado para análise.",
+                });
             },
             onError: (errors: any) => {
+                console.error('Erro completo ao criar agendamento:', errors);
+                
                 if (errors.conflitos) {
                     if (typeof errors.conflitos === 'string') {
                         setConflictTimeModal({ open: true, message: errors.conflitos });
@@ -793,8 +810,34 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                         });
                     }
                 } else {
-                    console.error('Erro ao criar agendamento:', errors);
-                    alert('Erro ao criar agendamento. Verifique os dados informados.');
+                    // Mostrar erros de validação específicos se existirem
+                    let errorMessage = 'Erro ao criar agendamento. Verifique os dados informados.';
+                    
+                    if (typeof errors === 'object' && errors !== null) {
+                        const errorMessages = [];
+                        
+                        // Verificar erros de validação comuns
+                        if (errors.titulo) errorMessages.push(`Título: ${Array.isArray(errors.titulo) ? errors.titulo[0] : errors.titulo}`);
+                        if (errors.espaco_id) errorMessages.push(`Espaço: ${Array.isArray(errors.espaco_id) ? errors.espaco_id[0] : errors.espaco_id}`);
+                        if (errors.data_inicio) errorMessages.push(`Data início: ${Array.isArray(errors.data_inicio) ? errors.data_inicio[0] : errors.data_inicio}`);
+                        if (errors.hora_inicio) errorMessages.push(`Hora início: ${Array.isArray(errors.hora_inicio) ? errors.hora_inicio[0] : errors.hora_inicio}`);
+                        if (errors.data_fim) errorMessages.push(`Data fim: ${Array.isArray(errors.data_fim) ? errors.data_fim[0] : errors.data_fim}`);
+                        if (errors.hora_fim) errorMessages.push(`Hora fim: ${Array.isArray(errors.hora_fim) ? errors.hora_fim[0] : errors.hora_fim}`);
+                        if (errors.justificativa) errorMessages.push(`Justificativa: ${Array.isArray(errors.justificativa) ? errors.justificativa[0] : errors.justificativa}`);
+                        
+                        if (errorMessages.length > 0) {
+                            errorMessage = errorMessages.join('\n');
+                        } else if (errors.message) {
+                            errorMessage = errors.message;
+                        }
+                    }
+                    
+                    toast({
+                        variant: 'destructive',
+                        title: 'Erro ao criar agendamento',
+                        description: errorMessage,
+                        duration: 10000,
+                    });
                 }
             }
         });
@@ -812,6 +855,62 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                 alert('Erro ao criar agendamento.');
             }
         });
+    };
+
+    const handlePastTimeConfirm = () => {
+        if (pastTimeModal.formData) {
+            const { selectedDate, selectedTime, selectedEspaco, ...formDataToSubmit } = pastTimeModal.formData;
+            
+            // Se veio do handleDateSelect, abrir o modal de criação
+            if (selectedDate && selectedTime && selectedEspaco) {
+                setFormData(formDataToSubmit);
+                setCreateModal({
+                    open: true,
+                    selectedDate,
+                    selectedTime,
+                    selectedEspaco
+                });
+                setPastTimeModal({ open: false });
+                setIsConfirmingPastTime(false);
+            } else {
+                // Se veio do handleSubmit, submeter diretamente
+                router.post('/agendamentos', formDataToSubmit, {
+                    onSuccess: () => {
+                        setCreateModal({ open: false });
+                        setPastTimeModal({ open: false });
+                        setIsConfirmingPastTime(false);
+                        resetForm();
+                        toast({
+                            title: "Agendamento criado com sucesso!",
+                            description: "Seu agendamento foi criado mesmo sendo no passado.",
+                        });
+                    },
+                    onError: (errors: any) => {
+                        if (errors.conflitos) {
+                            if (typeof errors.conflitos === 'string') {
+                                setConflictTimeModal({ open: true, message: errors.conflitos });
+                            } else if (Array.isArray(errors.conflitos)) {
+                                setConflictModal({
+                                    open: true,
+                                    conflitos: errors.conflitos,
+                                    formData: formDataToSubmit
+                                });
+                            }
+                        } else {
+                            console.error('Erro ao criar agendamento:', errors);
+                            alert('Erro ao criar agendamento. Verifique os dados informados.');
+                        }
+                        setPastTimeModal({ open: false });
+                        setIsConfirmingPastTime(false);
+                    }
+                });
+            }
+        }
+    };
+
+    const handlePastTimeCancel = () => {
+        setPastTimeModal({ open: false });
+        setIsConfirmingPastTime(false);
     };
 
     const resetForm = () => {
@@ -1475,6 +1574,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                     handleDateSelect={handleDateSelect}
                     pastTimeModal={pastTimeModal}
                     setPastTimeModal={setPastTimeModal}
+                    handlePastTimeConfirm={handlePastTimeConfirm}
                     conflictTimeModal={conflictTimeModal}
                     setConflictTimeModal={setConflictTimeModal}
                     deleteModal={deleteModal}
