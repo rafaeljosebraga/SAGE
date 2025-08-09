@@ -55,9 +55,8 @@ class ExemploNormalizacaoSeeder extends Seeder
             'tipo_recorrencia' => 'semanal',
             'data_fim_recorrencia' => now()->addMonths(3)->toDateString(),
             'is_representante_grupo' => true,
-            'color_index' => 1,
         ]);
-        
+
         // Criar agendamento recorrente
         $agendamentoRecorrente = Agendamento::create([
             'espaco_id' => $espaco->id,
@@ -70,6 +69,7 @@ class ExemploNormalizacaoSeeder extends Seeder
             'hora_fim' => '15:00',
             'status' => 'aprovado',
             'grupo_recorrencia' => $grupoRecorrencia,
+            'color_index' => 1,
         ]);
         
         $this->command->line("Agendamento recorrente criado (ID: {$agendamentoRecorrente->id})");

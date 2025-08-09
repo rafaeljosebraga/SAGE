@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -26,13 +27,12 @@ return new class extends Migration
             }
         });
         
-        // Adicionar índice separadamente para evitar conflitos
-        try {
+        // Adicionar índice apenas se não existir
+        $indexExists = DB::select("SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE c.relname = 'agendamentos_grupo_recorrencia_index' AND n.nspname = 'public'");
+        if (empty($indexExists) && Schema::hasColumn('agendamentos', 'grupo_recorrencia')) {
             Schema::table('agendamentos', function (Blueprint $table) {
                 $table->index(['grupo_recorrencia']);
             });
-        } catch (\Exception $e) {
-            // Índice já existe, ignorar erro
         }
     }
 
@@ -41,9 +41,30 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('agendamentos', function (Blueprint $table) {
-            $table->dropIndex(['grupo_recorrencia']);
-            $table->dropColumn(['grupo_recorrencia', 'is_representante_grupo', 'color_index']);
+        // Verificar se o índice existe antes de removê-lo
+        $indexExists = DB::select("SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE c.relname = 'agendamentos_grupo_recorrencia_index' AND n.nspname = 'public'");
+        
+        Schema::table('agendamentos', function (Blueprint $table) use ($indexExists) {
+            // Remover índice apenas se existir
+            if (!empty($indexExists)) {
+                $table->dropIndex(['grupo_recorrencia']);
+            }
+            
+            // Verificar se as colunas existem antes de removê-las
+            $colunasParaRemover = [];
+            if (Schema::hasColumn('agendamentos', 'grupo_recorrencia')) {
+                $colunasParaRemover[] = 'grupo_recorrencia';
+            }
+            if (Schema::hasColumn('agendamentos', 'is_representante_grupo')) {
+                $colunasParaRemover[] = 'is_representante_grupo';
+            }
+            if (Schema::hasColumn('agendamentos', 'color_index')) {
+                $colunasParaRemover[] = 'color_index';
+            }
+            
+            if (!empty($colunasParaRemover)) {
+                $table->dropColumn($colunasParaRemover);
+            }
         });
     }
 };

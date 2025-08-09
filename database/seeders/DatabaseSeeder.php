@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             AdminUserSeeder::class,
             EspacoSeeder::class,
             FotoSeeder::class,
+            RecursoSeeder::class,
         ]);
     }
 }

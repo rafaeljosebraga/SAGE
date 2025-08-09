@@ -75,7 +75,6 @@ class NormalizacaoAgendamentosTest extends TestCase
             'tipo_recorrencia' => 'semanal',
             'data_fim_recorrencia' => now()->addMonths(2)->toDateString(),
             'is_representante_grupo' => true,
-            'color_index' => 2,
         ]);
 
         // Criar agendamento
@@ -90,6 +89,7 @@ class NormalizacaoAgendamentosTest extends TestCase
             'hora_fim' => '15:00',
             'status' => 'pendente',
             'grupo_recorrencia' => $grupoRecorrencia,
+            'color_index' => 2,
         ]);
 
         // Verificar dados na tabela principal
@@ -215,10 +215,11 @@ class NormalizacaoAgendamentosTest extends TestCase
 
         // Testar relacionamentos
         $agendamento->refresh();
-        $this->assertCount(1, $agendamento->recursosSolicitados);
+        $recursosSolicitados = $agendamento->recursosSolicitados()->get();
+        $this->assertCount(1, $recursosSolicitados);
         $this->assertCount(1, $agendamento->recursos);
         
-        $recursoSolicitado = $agendamento->recursosSolicitados->first();
+        $recursoSolicitado = $recursosSolicitados->first();
         $this->assertEquals($this->recurso->id, $recursoSolicitado->recurso_id);
         $this->assertEquals(3, $recursoSolicitado->quantidade);
     }
@@ -234,7 +235,6 @@ class NormalizacaoAgendamentosTest extends TestCase
             'tipo_recorrencia' => 'mensal',
             'data_fim_recorrencia' => now()->addMonths(6)->toDateString(),
             'is_representante_grupo' => false,
-            'color_index' => 3,
         ]);
 
         // Criar agendamento
@@ -249,6 +249,7 @@ class NormalizacaoAgendamentosTest extends TestCase
             'hora_fim' => '09:00',
             'status' => 'aprovado',
             'grupo_recorrencia' => $grupoRecorrencia,
+            'color_index' => 3,
         ]);
 
         // Aprovar e adicionar recurso
@@ -290,7 +291,6 @@ class NormalizacaoAgendamentosTest extends TestCase
             'tipo_recorrencia' => 'diaria',
             'data_fim_recorrencia' => now()->addWeek()->toDateString(),
             'is_representante_grupo' => true,
-            'color_index' => 1,
         ]);
 
         $recorrente = Agendamento::create([
@@ -304,6 +304,7 @@ class NormalizacaoAgendamentosTest extends TestCase
             'hora_fim' => '15:00',
             'status' => 'aprovado',
             'grupo_recorrencia' => $grupoRecorrencia,
+            'color_index' => 1,
         ]);
 
         $recorrente->aprovar($this->user->id);
