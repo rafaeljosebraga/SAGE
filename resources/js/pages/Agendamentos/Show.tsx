@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { useAgendamentoColors, StatusBadge } from '@/components/ui/agend-colors';
 import { useToast } from '@/hooks/use-toast';
 import { UserAvatar } from '@/components/user-avatar';
@@ -28,8 +30,9 @@ interface Props extends PageProps {
 export default function AgendamentosShow({ agendamento, auth, recursosSolicitados }: Props) {
     // Estado para modal de confirmação de cancelamento
     const [deleteModal, setDeleteModal] = useState<{
-    open: boolean;
-    }>({ open: false });
+        open: boolean;
+        motivo: string;
+    }>({ open: false, motivo: '' });
     
     // Estado para modal de confirmação de descancelamento
     const [uncancelModal, setUncancelModal] = useState<{
@@ -131,13 +134,16 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
     };
 
     const handleDelete = () => {
-        setDeleteModal({ open: true });
+        setDeleteModal({ open: true, motivo: '' });
     };
 
     const confirmDelete = () => {
         router.delete(`/agendamentos/${agendamento.id}`, {
+            data: {
+                motivo_cancelamento: deleteModal.motivo
+            },
             onSuccess: () => {
-                setDeleteModal({ open: false });
+                setDeleteModal({ open: false, motivo: '' });
                 toast({
                     title: "Agendamento cancelado com sucesso!",
                     // description: "O agendamento foi cancelado.",
@@ -146,7 +152,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                 router.reload({ only: ['agendamento'] });
             },
             onError: () => {
-                setDeleteModal({ open: false });
+                setDeleteModal({ open: false, motivo: '' });
                 toast({
                     title: "Erro ao cancelar agendamento",
                     description: "Ocorreu um erro ao tentar cancelar o agendamento. Tente novamente.",
@@ -563,7 +569,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                                         <div>
                                             <p className="text-sm font-medium">Status</p>
                                             <p className="text-sm text-muted-foreground">
-                                                Aguardando análise do diretor geral
+                                                Aguardando análise!
                                             </p>
                                         </div>
                                     </div>
@@ -604,7 +610,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                                         </CardHeader>
                                         <CardContent className="space-y-4">
                                             {(() => {
-                                                const aprovador = agendamento.aprovadoPor || (agendamento as any).aprovado_por;
+                                                const aprovador = agendamento.aprovacao?.aprovado_por;
                                                 return aprovador ? (
                                                     <div>
                                                         <p className="text-sm font-medium mb-3">Cancelado por</p>
@@ -645,7 +651,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                                                 <div className="flex items-center gap-2">
                                                     <Calendar className="h-4 w-4 text-muted-foreground" />
                                                     <div>
-                                                        <p className="text-sm font-medium">Data</p>
+                                                        <p className="text-sm font-medium">Data do Cancelamento</p>
                                                         <p className="text-sm text-muted-foreground">
                                                             {formatDateTime(agendamento.aprovado_em)}
                                                         </p>
@@ -653,11 +659,11 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                                                 </div>
                                             )}
 
-                                            {agendamento.motivo_rejeicao && (
+                                            {agendamento.motivo_cancelamento && (
                                                 <div>
-                                                    <p className="text-sm font-medium mb-1">Motivo da Rejeição</p>
+                                                    <p className="text-sm font-medium mb-1">Motivo do Cancelamento</p>
                                                     <p className="text-sm text-muted-foreground">
-                                                        {agendamento.motivo_rejeicao}
+                                                        {agendamento.motivo_cancelamento}
                                                     </p>
                                                 </div>
                                             )}
@@ -673,7 +679,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                                         </CardHeader>
                                         <CardContent className="space-y-4">
                                             {(() => {
-                                                const aprovador = agendamento.aprovadoPor || (agendamento as any).aprovado_por;
+                                                const aprovador = agendamento.aprovacao?.aprovado_por;
                                                 return aprovador ? (
                                                     <div>
                                                         <p className="text-sm font-medium mb-3">
@@ -1145,7 +1151,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
             )}
             
             {/* Modal de Confirmação de Cancelamento */}
-            <Dialog open={deleteModal.open} onOpenChange={(open) => setDeleteModal({ open })}>
+            <Dialog open={deleteModal.open} onOpenChange={(open) => setDeleteModal({ open, motivo: '' })}>
                 <DialogContent className="max-w-md">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
@@ -1154,22 +1160,33 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                         </DialogTitle>
                     </DialogHeader>
 
-                    <div className="py">
+                    <div className="py-4 space-y-4">
                         <p className="text-muted-foreground">
                             Tem certeza que deseja cancelar este agendamento?
                         </p>
-                        <div className="mt p-3 bg-muted/30 rounded-lg">
+                        <div className="p-3 bg-muted/30 rounded-lg">
                             <p className="font-medium text-sm">{agendamento.titulo}</p>
                             <p className="text-xs text-muted-foreground">
                                 {agendamento.espaco?.nome} • {formatDate(agendamento.data_inicio)}
                             </p>
+                        </div>
+                        
+                        <div className="space-y-2">
+                            <Label htmlFor="motivo-cancelamento">Motivo do cancelamento (opcional)</Label>
+                            <Textarea
+                                id="motivo-cancelamento"
+                                placeholder="Descreva o motivo do cancelamento..."
+                                value={deleteModal.motivo}
+                                onChange={(e) => setDeleteModal({ ...deleteModal, motivo: e.target.value })}
+                                rows={3}
+                            />
                         </div>
                     </div>
 
                     <DialogFooter className="gap-2">
                         <Button
                             variant="outline"
-                            onClick={() => setDeleteModal({ open: false })}
+                            onClick={() => setDeleteModal({ open: false, motivo: '' })}
                         >
                             Não
                         </Button>

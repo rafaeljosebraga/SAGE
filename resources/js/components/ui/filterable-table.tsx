@@ -35,6 +35,7 @@ interface FilterableTableProps {
     columns: ColumnConfig[];
     className?: string;
     emptyMessage?: string;
+    getRowClassName?: (item: any, index: number) => string;
 }
 
 type SortDirection = 'asc' | 'desc' | null;
@@ -43,7 +44,8 @@ export function FilterableTable({
     data,
     columns,
     className = '',
-    emptyMessage = 'Nenhum item encontrado.'
+    emptyMessage = 'Nenhum item encontrado.',
+    getRowClassName
 }: FilterableTableProps) {
     const [filters, setFilters] = useState<Record<string, string>>({});
     const [sortColumn, setSortColumn] = useState<string | null>(null);
@@ -277,7 +279,10 @@ export function FilterableTable({
                     <TableBody>
                         {filteredData.length > 0 ? (
                             filteredData.map((item, index) => (
-                                <TableRow key={item.id || index} className="hover:bg-muted/50">
+                                <TableRow 
+                                    key={item.id || index} 
+                                    className={`hover:bg-muted/50 ${getRowClassName ? getRowClassName(item, index) : ''}`}
+                                >
                                     {columns.map((column) => (
                                         <TableCell key={column.key}>
                                             {column.render

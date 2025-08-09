@@ -16,7 +16,7 @@ class AgendamentoController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Agendamento::with(['espaco.localizacao', 'user', 'aprovadoPor']);
+        $query = Agendamento::with(['espaco.localizacao', 'user', 'aprovacao.aprovadoPor']);
 
         // Filtros
         if ($request->filled('espaco_id')) {
@@ -105,7 +105,7 @@ class AgendamentoController extends Controller
             'espaco_id' => 'required|exists:espacos,id',
             'titulo' => 'required|string|max:255',
             'justificativa' => 'required|string|max:1000',
-            'data_inicio' => 'required|date|after_or_equal:today',
+            'data_inicio' => 'required|date',
             'hora_inicio' => 'required|date_format:H:i',
             'data_fim' => 'required|date|after_or_equal:data_inicio',
             'hora_fim' => 'required|date_format:H:i',
@@ -206,12 +206,19 @@ class AgendamentoController extends Controller
         // Se há conflitos e não foi forçado, retornar erro com os conflitos
         if ($conflitos->isNotEmpty() && !($validated['force_create'] ?? false)) {
             return back()->withErrors([
-                'conflitos' => 'Existe(m) agendamento(s) conflitante(s) no horário solicitado.'
+                'conflitos' => $conflitos
             ])->withInput();
         }
 
         $validated['user_id'] = auth()->id();
         $validated['recursos_solicitados'] = $validated['recursos_solicitados'] ?? [];
+
+        // Gerar índice de cor único baseado em dados únicos do agendamento
+        $colorSeed = $validated['titulo'] . $validated['espaco_id'] . $validated['user_id'] . 
+                     $validated['hora_inicio'] . $validated['hora_fim'] . $validated['justificativa'];
+        
+        // Obter color_index único (sem duplicatas)
+        $validated['color_index'] = \App\Helpers\ColorHelper::generateUniqueColorIndex($colorSeed);
 
         // Se foi forçado com conflitos, marcar como prioridade alta
         if ($conflitos->isNotEmpty() && ($validated['force_create'] ?? false)) {
@@ -262,7 +269,8 @@ class AgendamentoController extends Controller
             'espaco.createdBy',
             'espaco.updatedBy',
             'user',
-            'aprovadoPor'
+            'aprovacao.aprovadoPor',
+            'recorrencia'
         ]);
 
         // Carregar recursos solicitados
@@ -326,7 +334,7 @@ class AgendamentoController extends Controller
             'espaco_id' => 'required|exists:espacos,id',
             'titulo' => 'required|string|max:255',
             'justificativa' => 'required|string|max:1000',
-            'data_inicio' => 'required|date|after_or_equal:today',
+            'data_inicio' => 'required|date',
             'hora_inicio' => 'required|date_format:H:i',
             'data_fim' => 'required|date|after_or_equal:data_inicio',
             'hora_fim' => 'required|date_format:H:i',
@@ -336,7 +344,6 @@ class AgendamentoController extends Controller
         ], [
             'hora_inicio.date_format' => 'O campo hora início deve corresponder ao formato H:i.',
             'hora_fim.date_format' => 'O campo hora fim deve corresponder ao formato H:i.',
-            'data_inicio.after_or_equal' => 'A data de início deve ser hoje ou uma data futura.',
             'data_fim.after_or_equal' => 'A data de fim deve ser igual ou posterior à data de início.',
         ]);
 
@@ -371,6 +378,11 @@ class AgendamentoController extends Controller
 
         $validated['recursos_solicitados'] = $validated['recursos_solicitados'] ?? [];
 
+        // Regenerar color_index único se houve mudança nos dados que afetam a cor
+        $colorSeed = $validated['titulo'] . $validated['espaco_id'] . auth()->id() . 
+                     $validated['hora_inicio'] . $validated['hora_fim'] . $validated['justificativa'];
+        $validated['color_index'] = \App\Helpers\ColorHelper::generateUniqueColorIndex($colorSeed, $agendamento->id);
+
         $agendamento->update($validated);
 
         // Para requisições Inertia, retornar back() para permitir o redirecionamento pelo frontend
@@ -394,9 +406,18 @@ class AgendamentoController extends Controller
 
         $agendamento->update([
             'status' => 'cancelado',
-            'aprovado_por' => auth()->id(),
-            'aprovado_em' => now(),
         ]);
+
+        // Criar ou atualizar registro de aprovação para cancelamento
+        $agendamento->aprovacao()->updateOrCreate(
+            ['agendamento_id' => $agendamento->id],
+            [
+                'aprovado_por' => auth()->id(),
+                'aprovado_em' => now(),
+                'motivo_rejeicao' => null, // Cancelamento não tem motivo de rejeição
+                'motivo_cancelamento' => request('motivo_cancelamento'), // Motivo do cancelamento
+            ]
+        );
 
         // Para requisições Inertia, retornar back() para permanecer na mesma página
         if (request()->header('X-Inertia')) {
@@ -412,7 +433,7 @@ class AgendamentoController extends Controller
      */
     public function gerenciar(Request $request)
     {
-        $query = Agendamento::with(['espaco.localizacao', 'user', 'aprovadoPor'])
+        $query = Agendamento::with(['espaco.localizacao', 'user', 'aprovacao.aprovadoPor'])
             ->representantesDeGrupo()
             ->comContadorGrupo();
 
@@ -450,13 +471,17 @@ class AgendamentoController extends Controller
         // Filtro específico para aprovados hoje
         if ($request->filled('aprovado_hoje') && $request->aprovado_hoje === 'true') {
             $query->where('status', 'aprovado')
-                ->whereDate('aprovado_em', today());
+                ->whereHas('aprovacao', function ($q) {
+                    $q->whereDate('aprovado_em', today());
+                });
         }
 
         // Filtro específico para rejeitados hoje
         if ($request->filled('rejeitado_hoje') && $request->rejeitado_hoje === 'true') {
             $query->where('status', 'rejeitado')
-                ->whereDate('aprovado_em', today());
+                ->whereHas('aprovacao', function ($q) {
+                    $q->whereDate('aprovado_em', today());
+                });
         }
 
         // Filtro específico para agendamentos do mês atual
@@ -465,8 +490,7 @@ class AgendamentoController extends Controller
                 ->whereYear('created_at', now()->year);
         }
 
-        // Para garantir que todos os agendamentos sejam carregados, usar get() em vez de paginate()
-        // quando não há filtros específicos ou quando o frontend precisa de todos os dados
+        // Ordenação por agendamentos mais recentemente criados primeiro
         $agendamentos = $query->orderBy('created_at', 'desc')
             ->get();
 
@@ -498,13 +522,15 @@ class AgendamentoController extends Controller
             'pendentes' => Agendamento::representantesDeGrupo()->where('status', 'pendente')->count(),
             'aprovados_hoje' => Agendamento::representantesDeGrupo()
                 ->where('status', 'aprovado')
-                ->whereNotNull('aprovado_em')
-                ->whereRaw('DATE(aprovado_em) = ?', [$hoje])
+                ->whereHas('aprovacao', function ($q) use ($hoje) {
+                    $q->whereRaw('DATE(aprovado_em) = ?', [$hoje]);
+                })
                 ->count(),
             'rejeitados_hoje' => Agendamento::representantesDeGrupo()
                 ->where('status', 'rejeitado')
-                ->whereNotNull('aprovado_em')
-                ->whereRaw('DATE(aprovado_em) = ?', [$hoje])
+                ->whereHas('aprovacao', function ($q) use ($hoje) {
+                    $q->whereRaw('DATE(aprovado_em) = ?', [$hoje]);
+                })
                 ->count(),
             'total_mes' => Agendamento::representantesDeGrupo()
                 ->whereMonth('created_at', now()->month)
@@ -545,9 +571,18 @@ class AgendamentoController extends Controller
             foreach ($agendamentosDoGrupo as $agendamentoGrupo) {
                 $agendamentoGrupo->update([
                     'status' => 'aprovado',
-                    'aprovado_por' => auth()->id(),
-                    'aprovado_em' => now(),
                 ]);
+
+                // Criar registro de aprovação
+                $agendamentoGrupo->aprovacao()->updateOrCreate(
+                    ['agendamento_id' => $agendamentoGrupo->id],
+                    [
+                        'aprovado_por' => auth()->id(),
+                        'aprovado_em' => now(),
+                        'motivo_rejeicao' => null,
+                        'motivo_cancelamento' => null,
+                    ]
+                );
             }
 
             $message = $totalAprovados > 1
@@ -557,9 +592,18 @@ class AgendamentoController extends Controller
             // Agendamento individual
             $agendamento->update([
                 'status' => 'aprovado',
-                'aprovado_por' => auth()->id(),
-                'aprovado_em' => now(),
             ]);
+
+            // Criar registro de aprovação
+            $agendamento->aprovacao()->updateOrCreate(
+                ['agendamento_id' => $agendamento->id],
+                [
+                    'aprovado_por' => auth()->id(),
+                    'aprovado_em' => now(),
+                    'motivo_rejeicao' => null,
+                    'motivo_cancelamento' => null,
+                ]
+            );
 
             $message = 'Agendamento aprovado com sucesso!';
         }
@@ -596,10 +640,18 @@ class AgendamentoController extends Controller
             foreach ($agendamentosDoGrupo as $agendamentoGrupo) {
                 $agendamentoGrupo->update([
                     'status' => 'rejeitado',
-                    'motivo_rejeicao' => $validated['motivo_rejeicao'],
-                    'aprovado_por' => auth()->id(),
-                    'aprovado_em' => now(),
                 ]);
+
+                // Criar registro de rejeição
+                $agendamentoGrupo->aprovacao()->updateOrCreate(
+                    ['agendamento_id' => $agendamentoGrupo->id],
+                    [
+                        'aprovado_por' => auth()->id(),
+                        'aprovado_em' => now(),
+                        'motivo_rejeicao' => $validated['motivo_rejeicao'],
+                        'motivo_cancelamento' => null,
+                    ]
+                );
             }
 
             $message = $totalRejeitados > 1
@@ -609,10 +661,18 @@ class AgendamentoController extends Controller
             // Agendamento individual
             $agendamento->update([
                 'status' => 'rejeitado',
-                'motivo_rejeicao' => $validated['motivo_rejeicao'],
-                'aprovado_por' => auth()->id(),
-                'aprovado_em' => now(),
             ]);
+
+            // Criar registro de rejeição
+            $agendamento->aprovacao()->updateOrCreate(
+                ['agendamento_id' => $agendamento->id],
+                [
+                    'aprovado_por' => auth()->id(),
+                    'aprovado_em' => now(),
+                    'motivo_rejeicao' => $validated['motivo_rejeicao'],
+                    'motivo_cancelamento' => null,
+                ]
+            );
 
             $message = 'Agendamento rejeitado.';
         }
@@ -625,7 +685,7 @@ class AgendamentoController extends Controller
      */
     public function calendario(Request $request)
     {
-        $query = Agendamento::with(['espaco.localizacao', 'user', 'aprovadoPor']);
+        $query = Agendamento::with(['espaco.localizacao', 'user', 'aprovacao.aprovadoPor']);
 
         // Todos os usuários podem ver todos os agendamentos no calendário
 
@@ -694,10 +754,10 @@ class AgendamentoController extends Controller
 
         $agendamento->update([
             'status' => 'pendente',
-            'aprovado_por' => null,
-            'aprovado_em' => null,
-            'motivo_rejeicao' => null,
         ]);
+
+        // Remover registro de aprovação/cancelamento
+        $agendamento->aprovacao()->delete();
 
         // Para requisições Inertia, retornar back() para permanecer na mesma página
         if (request()->header('X-Inertia')) {
@@ -744,13 +804,34 @@ class AgendamentoController extends Controller
 
         // Se não é recorrente, criar apenas um agendamento
         if (!($validated['recorrente'] ?? false) || empty($validated['tipo_recorrencia']) || empty($validated['data_fim_recorrencia'])) {
-            $agendamento = Agendamento::create($validated);
-            $agendamentos->push($agendamento);
-            return $agendamentos;
+            try {
+                $agendamento = Agendamento::create($validated);
+                $agendamentos->push($agendamento);
+                return $agendamentos;
+            } catch (\Exception $e) {
+                \Log::error('Erro ao criar agendamento único: ' . $e->getMessage(), [
+                    'validated' => $validated,
+                    'exception' => $e->getTraceAsString()
+                ]);
+                throw $e;
+            }
         }
 
         // Para agendamentos recorrentes, gerar um ID único para o grupo
         $grupoRecorrencia = 'rec_' . uniqid() . '_' . time();
+
+        // Criar registro de recorrência PRIMEIRO (devido à foreign key constraint)
+        try {
+            \App\Models\AgendamentoRecorrencia::create([
+                'grupo_recorrencia' => $grupoRecorrencia,
+                'tipo_recorrencia' => $validated['tipo_recorrencia'],
+                'data_fim_recorrencia' => $validated['data_fim_recorrencia'],
+                'is_representante_grupo' => true,
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Erro ao criar registro de recorrência: ' . $e->getMessage());
+            throw new \Exception('Erro ao criar agendamento recorrente: ' . $e->getMessage());
+        }
 
         // Para agendamentos recorrentes, calcular as datas e horários
         $dataInicio = Carbon::parse($validated['data_inicio']);
@@ -783,7 +864,6 @@ class AgendamentoController extends Controller
             $dadosAgendamento['data_fim'] = $dataHoraFimAtual->toDateString();
             $dadosAgendamento['hora_fim'] = $dataHoraFimAtual->format('H:i');
             $dadosAgendamento['grupo_recorrencia'] = $grupoRecorrencia;
-            $dadosAgendamento['is_representante_grupo'] = $primeiroAgendamento;
 
             try {
                 $agendamento = Agendamento::create($dadosAgendamento);
@@ -809,6 +889,8 @@ class AgendamentoController extends Controller
 
             $contador++;
         }
+
+
 
         return $agendamentos;
     }

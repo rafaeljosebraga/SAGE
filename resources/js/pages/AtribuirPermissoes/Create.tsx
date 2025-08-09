@@ -162,7 +162,6 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
                     description: 'As permissões foram salvas com sucesso.',
                     variant: 'success',
                     duration: 5000, // 5 segundos
-                    className: 'bg-green-500 text-white',
                 });
 
                 setSelectedUserId(null);
@@ -170,6 +169,14 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
                 setData('espaco_ids', []);
                 setSearchTerm('');
             },
+            onError: () => {
+                toast({
+                    title: 'Erro ao atualizar permissões',
+                    description: 'Ocorreu um erro ao executar a ação, verifique os dados e tente novamente.',
+                    variant: 'destructive',
+                    duration: 5000, // 5 segundos
+                });
+            }
         });
     };
 
@@ -254,7 +261,7 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
                         id={`espaco-${espaco.id}`}
                         checked={selectedEspacos.includes(espaco.id)}
                         onCheckedChange={() => toggleEspaco(espaco.id)}
-                        className={`mr-3 ${isDisposed ? 'border-2 border-red-500' : ''}`}
+                        className={`mr-3 ${isDisposed ? '!border-2 !border-red-500 !border-solid hover:!border-red-500 focus:!border-red-500' : ''}`}
                     />
                 );
             }
@@ -540,6 +547,10 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
                                             data={espacos}
                                             columns={columns}
                                             emptyMessage="Nenhum espaço encontrado."
+                                            getRowClassName={(espaco) => {
+                                                const isDisposed = disposedEspacos.includes(espaco.id);
+                                                return isDisposed ? 'bg-red-50 dark:bg-red-950/20 border-l-4 border-l-red-500' : '';
+                                            }}
                                         />
                                         {/* Espaços selecionados */}
                                         { selectedEspacos.length > 0 && (
@@ -578,9 +589,9 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
                                                             <Badge
                                                                 key={espaco.id}
                                                                 variant="destructive"
-                                                                className="px-3 py-1"
+                                                                className="px-3 py-1 bg-red-100 text-red-800 border border-red-300 dark:bg-red-950/20 dark:text-red-400 dark:border-red-800"
                                                             >
-                                                                {espaco.nome}
+                                                                ❌ {espaco.nome}
                                                             </Badge>
                                                         ))
                                                     ) : (

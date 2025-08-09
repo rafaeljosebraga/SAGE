@@ -4,8 +4,10 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Agendamento;
+use App\Models\AgendamentoRecorrencia;
 use App\Models\Espaco;
 use App\Models\User;
+use App\Models\Recurso;
 use Carbon\Carbon;
 
 class AgendamentoSeeder extends Seeder
@@ -28,7 +30,7 @@ class AgendamentoSeeder extends Seeder
         $coordenador = $users->where('perfil_acesso', 'coordenador')->first();
         $servidor = $users->where('perfil_acesso', 'servidor')->first();
 
-        // Agendamentos de exemplo
+        // Agendamentos de exemplo usando a nova estrutura normalizada
         $agendamentos = [
             [
                 'espaco_id' => $espacos->first()->id,
@@ -40,10 +42,15 @@ class AgendamentoSeeder extends Seeder
                 'data_fim' => Carbon::today()->addDays(1),
                 'hora_fim' => '11:00',
                 'status' => 'aprovado',
-                'aprovado_por' => $diretor?->id,
-                'aprovado_em' => now(),
                 'observacoes' => 'Necessário projetor para apresentação.',
-                'recursos_solicitados' => [1, 2], // IDs de recursos, se existirem
+                'color_index' => 1,
+                // Dados de aprovação
+                'aprovacao_data' => [
+                    'aprovado_por' => $diretor?->id,
+                    'aprovado_em' => now(),
+                ],
+                // Recursos solicitados
+                'recursos' => [1, 2], // IDs de recursos, se existirem
             ],
             [
                 'espaco_id' => $espacos->skip(1)->first()?->id ?? $espacos->first()->id,
@@ -56,7 +63,8 @@ class AgendamentoSeeder extends Seeder
                 'hora_fim' => '17:00',
                 'status' => 'pendente',
                 'observacoes' => 'Treinamento para 15 pessoas.',
-                'recursos_solicitados' => [1], // ID de recurso, se existir
+                'color_index' => 2,
+                'recursos' => [1], // ID de recurso, se existir
             ],
             [
                 'espaco_id' => $espacos->first()->id,
@@ -68,9 +76,12 @@ class AgendamentoSeeder extends Seeder
                 'data_fim' => Carbon::today()->addDays(5),
                 'hora_fim' => '12:00',
                 'status' => 'rejeitado',
-                'aprovado_por' => $diretor?->id,
-                'aprovado_em' => now(),
-                'motivo_rejeicao' => 'Conflito com evento já agendado. Favor reagendar.',
+                'color_index' => 3,
+                'aprovacao_data' => [
+                    'aprovado_por' => $diretor?->id,
+                    'aprovado_em' => now(),
+                    'motivo_rejeicao' => 'Conflito com evento já agendado. Favor reagendar.',
+                ],
             ],
             [
                 'espaco_id' => $espacos->skip(2)->first()?->id ?? $espacos->first()->id,
@@ -82,12 +93,18 @@ class AgendamentoSeeder extends Seeder
                 'data_fim' => Carbon::today()->addWeek(),
                 'hora_fim' => '12:00',
                 'status' => 'aprovado',
-                'aprovado_por' => $diretor?->id,
-                'aprovado_em' => now(),
                 'observacoes' => 'Coffee break incluído.',
-                'recorrente' => true,
-                'tipo_recorrencia' => 'semanal',
-                'data_fim_recorrencia' => Carbon::today()->addMonth(),
+                'color_index' => 4,
+                'aprovacao_data' => [
+                    'aprovado_por' => $diretor?->id,
+                    'aprovado_em' => now(),
+                ],
+                // Dados de recorrência
+                'recorrencia_data' => [
+                    'tipo_recorrencia' => 'semanal',
+                    'data_fim_recorrencia' => Carbon::today()->addMonth(),
+                    'is_representante_grupo' => true,
+                ],
             ],
             [
                 'espaco_id' => $espacos->first()->id,
@@ -100,6 +117,7 @@ class AgendamentoSeeder extends Seeder
                 'hora_fim' => '16:30',
                 'status' => 'pendente',
                 'observacoes' => 'Reunião confidencial.',
+                'color_index' => 5,
             ],
             [
                 'espaco_id' => $espacos->skip(1)->first()?->id ?? $espacos->first()->id,
@@ -111,10 +129,13 @@ class AgendamentoSeeder extends Seeder
                 'data_fim' => Carbon::today()->addDays(10),
                 'hora_fim' => '17:00',
                 'status' => 'aprovado',
-                'aprovado_por' => $diretor?->id,
-                'aprovado_em' => now(),
                 'observacoes' => 'Evento para todos os servidores. Almoço será servido.',
-                'recursos_solicitados' => [1, 2, 3], // IDs de recursos, se existirem
+                'color_index' => 6,
+                'aprovacao_data' => [
+                    'aprovado_por' => $diretor?->id,
+                    'aprovado_em' => now(),
+                ],
+                'recursos' => [1, 2, 3], // IDs de recursos, se existirem
             ],
         ];
 
@@ -129,7 +150,45 @@ class AgendamentoSeeder extends Seeder
                 continue;
             }
 
-            Agendamento::create($agendamentoData);
+            // Separar dados de aprovação, recorrência e recursos
+            $aprovacaoData = $agendamentoData['aprovacao_data'] ?? null;
+            $recorrenciaData = $agendamentoData['recorrencia_data'] ?? null;
+            $recursos = $agendamentoData['recursos'] ?? null;
+            
+            unset($agendamentoData['aprovacao_data'], $agendamentoData['recorrencia_data'], $agendamentoData['recursos']);
+
+            // Se há recorrência, criar grupo primeiro
+            $grupoRecorrencia = null;
+            if ($recorrenciaData) {
+                $grupoRecorrencia = 'REC_' . uniqid();
+                
+                AgendamentoRecorrencia::create([
+                    'grupo_recorrencia' => $grupoRecorrencia,
+                    'tipo_recorrencia' => $recorrenciaData['tipo_recorrencia'],
+                    'data_fim_recorrencia' => $recorrenciaData['data_fim_recorrencia'],
+                    'is_representante_grupo' => $recorrenciaData['is_representante_grupo'] ?? false,
+                ]);
+                
+                $agendamentoData['grupo_recorrencia'] = $grupoRecorrencia;
+            }
+
+            // Criar agendamento
+            $agendamento = Agendamento::create($agendamentoData);
+
+            // Criar aprovação se existir
+            if ($aprovacaoData && $aprovacaoData['aprovado_por']) {
+                $agendamento->aprovar($aprovacaoData['aprovado_por'], $aprovacaoData['motivo_rejeicao'] ?? null);
+            }
+
+            // Adicionar recursos se existirem
+            if ($recursos) {
+                foreach ($recursos as $recursoId) {
+                    // Verificar se o recurso existe
+                    if (Recurso::find($recursoId)) {
+                        $agendamento->adicionarRecurso($recursoId, 1, 'Recurso necessário para o evento');
+                    }
+                }
+            }
         }
 
         $this->command->info('Agendamentos de exemplo criados com sucesso!');
