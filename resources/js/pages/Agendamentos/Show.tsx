@@ -58,7 +58,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
         const urlParams = new URLSearchParams(window.location.search);
         const from = urlParams.get('from');
         
-        // Se veio da página de gerenciar agendamentos, retornar para lá com os filtros
+        // Se veio da página de avaliar agendamentos, retornar para lá com os filtros
         if (from === 'gerenciar') {
             const backParams = new URLSearchParams();
             
@@ -77,7 +77,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
             });
             
             const queryString = backParams.toString();
-            return queryString ? `/gerenciar-agendamentos?${queryString}` : '/gerenciar-agendamentos';
+            return queryString ? `/avaliar-agendamentos?${queryString}` : '/avaliar-agendamentos';
         }
         
         // Caso contrário, usar a lógica original para agendamentos

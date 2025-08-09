@@ -77,7 +77,7 @@ interface Props extends PageProps {
     };
 }
 
-export default function GerenciarAgendamentos({ agendamentos, espacos, estatisticas, filters, auth }: Props) {
+export default function AvaliarAgendamentos({ agendamentos, espacos, estatisticas, filters, auth }: Props) {
     // Usar o hook de cores
     const { getStatusColor, getStatusText, getEventBorderColor } = useAgendamentoColors();
     const { toast } = useToast();
@@ -442,7 +442,7 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
     const paginationLinks = generatePaginationLinks();
 
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Gerenciar Agendamentos', href: '/gerenciar-agendamentos' }
+        { title: 'Avaliar Agendamentos', href: '/avaliar-agendamentos' }
     ];
 
     const handleApproveConfirm = (agendamento: Agendamento) => {
@@ -561,12 +561,12 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Gerenciar Agendamentos" />
+            <Head title="Avaliar Agendamentos" />
 
             <div className="space-y-6">
                 <div className="flex items-center justify-between mt-6 mx-2">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Gerenciar Agendamentos</h1>
+                        <h1 className="text-3xl font-bold tracking-tight">Avaliar Agendamentos</h1>
                     </div>
 
                     <Button

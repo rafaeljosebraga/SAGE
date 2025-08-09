@@ -88,9 +88,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post("agendamentos/{agendamento}/descancelar", [AgendamentoController::class, "descancelar"])->name("agendamentos.descancelar");
     Route::delete("agendamentos/{agendamento}/force-delete", [AgendamentoController::class, "forceDelete"])->name("agendamentos.force-delete");
 
-    // Rotas de Gerenciamento de Agendamentos (APENAS para Diretor Geral)
+    // Redirecionamento da URL antiga para a nova (compatibilidade)
+    Route::get("gerenciar-agendamentos", function () {
+        return redirect("/avaliar-agendamentos", 301);
+    })->middleware(['diretor-geral']);
+
+    // Rotas de Avaliação de Agendamentos (APENAS para Diretor Geral)
     Route::middleware(['diretor-geral'])->group(function () {
-        Route::get("gerenciar-agendamentos", [AgendamentoController::class, "gerenciar"])->name("agendamentos.gerenciar");
+        Route::get("avaliar-agendamentos", [AgendamentoController::class, "gerenciar"])->name("agendamentos.avaliar");
         Route::post("agendamentos/{agendamento}/aprovar", [AgendamentoController::class, "aprovar"])->name("agendamentos.aprovar");
         Route::post("agendamentos/{agendamento}/rejeitar", [AgendamentoController::class, "rejeitar"])->name("agendamentos.rejeitar");
     });

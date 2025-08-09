@@ -43,8 +43,8 @@ export function AppSidebar() {
         ...(isDiretorGeral
             ? [
                   {
-                      title: 'Gerenciar Agendamentos',
-                      href: '/gerenciar-agendamentos',
+                      title: 'Avaliar Agendamentos',
+                      href: '/avaliar-agendamentos',
                       icon: CalendarCheck,
                   },
                   {

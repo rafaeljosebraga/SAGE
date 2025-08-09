@@ -538,7 +538,7 @@ class AgendamentoController extends Controller
                 ->count(),
         ];
 
-        return Inertia::render('Agendamentos/Gerenciar', [
+        return Inertia::render('Agendamentos/Avaliar', [
             'agendamentos' => $paginatedAgendamentos,
             'espacos' => $espacos,
             'estatisticas' => $estatisticas,
