@@ -455,12 +455,18 @@ export default function EspacosIndex({ auth, espacos, flash }: EspacosIndexProps
             <Head title="Espaços" />
 
             <div className="space-y-6">
-                <div className="flex items-center justify-between px-6 py-4">
+                <div className="flex items-center justify-between px-3 py-4">
                     <div className="flex-1">
                         <h1 className="text-3xl font-bold text-black dark:text-white">Espaços</h1>
                     </div>
                     <div className="flex-shrink-0">
-                        <Button asChild className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black ">
+                        <Button asChild className="
+                                bg-white dark:bg-white 
+                                text-black dark:text-black 
+                                hover:bg-gray-100 dark:hover:bg-gray-200 
+                                cursor-pointer 
+                                transition-colors" 
+                            >
                             <Link href="/espacos/criar">
                                 <Plus className="mr-2 h-4 w-4" />
                                 Novo Espaço

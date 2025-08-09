@@ -120,14 +120,12 @@ export default function LocalizacoesCreate({ auth }: LocalizacoesCreateProps) {
                                 variant="outline"
                                 type="button"
                                 className="
-                                    ml-4
-                                    bg-white dark:bg-white
-                                    text-black dark:text-black
-                                    hover:!bg-[#EF7D4C] hover:!text-white
-                                    dark:hover:!bg-[#EF7D4C] dark:hover:!text-white
-                                    transition-colors
-                        "
-                            >
+                                ml-1
+                                bg-white dark:bg-white 
+                                text-black dark:text-black 
+                                hover:bg-gray-100 dark:hover:bg-gray-200 
+                                cursor-pointer 
+                                transition-colors"                            >
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Voltar
                             </Button>
@@ -157,13 +155,12 @@ export default function LocalizacoesCreate({ auth }: LocalizacoesCreateProps) {
                             variant="outline"
                             type="button"
                         className="
-                                    ml-4
-                                    bg-white dark:bg-white
-                                    text-black dark:text-black
-                                    hover:!bg-[#EF7D4C] hover:!text-white
-                                    dark:hover:!bg-[#EF7D4C] dark:hover:!text-white
-                                    transition-colors
-                        "
+                                ml-1
+                                bg-white dark:bg-white 
+                                text-black dark:text-black 
+                                hover:bg-gray-100 dark:hover:bg-gray-200 
+                                cursor-pointer 
+                                transition-colors" 
                             onClick={() => {
                                 window.location.href = '/localizacoes';
                             }}
@@ -217,14 +214,20 @@ export default function LocalizacoesCreate({ auth }: LocalizacoesCreateProps) {
                         <Button
                             type="submit"
                             disabled={processing}
-                             className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black"
+                            className="
+                                ml-1
+                                bg-white dark:bg-white 
+                                text-black dark:text-black 
+                                hover:bg-gray-100 dark:hover:bg-gray-200 
+                                cursor-pointer 
+                                transition-colors" 
                         >
                             <Save className="mr-2 h-4 w-4" />
                             {processing ? 'Salvando...' : 'Salvar Localização'}
                         </Button>
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
-                                <Button>
+                                <Button className='cursor-pointer'>
                                     Cancelar
                                 </Button>
                             </AlertDialogTrigger>

@@ -337,13 +337,12 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                                 variant="outline"
                                 type="button"
                         className="
-                                    ml-4
-                                    bg-white dark:bg-white
-                                    text-black dark:text-black
-                                    hover:!bg-[#EF7D4C] hover:!text-white
-                                    dark:hover:!bg-[#EF7D4C] dark:hover:!text-white
-                                    transition-colors
-                        "
+                                ml-1
+                                bg-white dark:bg-white 
+                                text-black dark:text-black 
+                                hover:bg-gray-100 dark:hover:bg-gray-200 
+                                cursor-pointer 
+                                transition-colors" 
                             >
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Voltar
@@ -374,13 +373,12 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                             variant="outline"
                             type="button"
                             className="
-                                    ml-4
-                                    bg-white dark:bg-white
-                                    text-black dark:text-black
-                                    hover:!bg-[#EF7D4C] hover:!text-white
-                                    dark:hover:!bg-[#EF7D4C] dark:hover:!text-white
-                                    transition-colors
-                        "
+                                ml-1
+                                bg-white dark:bg-white 
+                                text-black dark:text-black 
+                                hover:bg-gray-100 dark:hover:bg-gray-200 
+                                cursor-pointer 
+                                transition-colors" 
                             onClick={() => {
                                 window.location.href = '/espacos';
                             }}
@@ -407,7 +405,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                                         value={data.nome}
                                         onChange={(e) => handleNomeChange(e.target.value)}
                                         placeholder="Nome do espaço"
-                                        className={errors.nome ? 'border-red-500' : ''}
+                                        className={errors.nome ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}
                                     />
                                     {errors.nome && (
                                         <p className="text-sm text-red-500">{errors.nome}</p>
@@ -423,7 +421,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                                         onChange={(e) => handleCapacidadeChange(e.target.value)}
                                         placeholder="Ex: 50"
                                         min="1"
-                                        className={errors.capacidade ? 'border-red-500' : ''}
+                                        className={errors.capacidade ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}
                                     />
                                     {errors.capacidade && (
                                         <p className="text-sm text-red-500">{errors.capacidade}</p>
@@ -439,7 +437,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                                     onChange={(e) => handleDescricaoChange(e.target.value)}
                                     placeholder="Descreva o espaço..."
                                     rows={3}
-                                    className={errors.descricao ? 'border-red-500' : ''}
+                                    className={errors.descricao ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}
                                 />
                                 {errors.descricao && (
                                     <p className="text-sm text-red-500">{errors.descricao}</p>
@@ -462,7 +460,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                                     >
                                         <SelectTrigger
                                             id="localizacao_id"
-                                            className={errors.localizacao_id ? 'border-red-500' : ''}
+                                            className={errors.localizacao_id ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}
                                         >
                                             <SelectValue placeholder="Selecione uma localização" />
                                         </SelectTrigger>
@@ -487,7 +485,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                                     >
                                         <SelectTrigger
                                             id="status"
-                                            className={errors.status ? 'border-red-500' : ''}
+                                            className={errors.status ? 'border-red-500 bg-white border-red dark:bg-black' : 'bg-white border-black dark:bg-black'}
                                         >
                                             <SelectValue />
                                         </SelectTrigger>
@@ -584,7 +582,13 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                             type="button"
                             disabled={isSubmitting || processing}
                             onClick={handleSubmitClick}
-                            className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="
+                                ml-1
+                                bg-white dark:bg-white
+                                text-black dark:text-black
+                                hover:bg-gray-100 dark:hover:bg-gray-300
+                                cursor-pointer 
+                                transition-colors" 
                         >
                             <Save className="mr-2 h-4 w-4" />
                             {(isSubmitting || processing) ? 'Salvando...' : 'Salvar Espaço'}
@@ -595,6 +599,14 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                                     type="button"
                                     variant="outline"
                                     disabled={isSubmitting || processing}
+                                    className="
+                                        bg-black dark:bg-black
+                                        text-white dark:text-white
+                                        hover:bg-gray-800 dark:hover:bg-gray-900
+                                        hover:text-white
+                                        cursor-pointer
+                                        trasition-colors
+                                    "
                                 >
                                     Cancelar
                                 </Button>
