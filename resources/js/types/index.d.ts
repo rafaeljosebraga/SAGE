@@ -157,6 +157,7 @@ export interface Agendamento {
     aprovado_por?: number;
     aprovado_em?: string;
     motivo_rejeicao?: string;
+    motivo_cancelamento?: string;
     recorrente: boolean;
     tipo_recorrencia?: 'diaria' | 'semanal' | 'mensal';
     data_fim_recorrencia?: string;
@@ -178,7 +179,17 @@ export interface Agendamento {
     updated_at: string;
     espaco?: Espaco;
     user?: User;
-    aprovadoPor?: User;
+    aprovacao?: {
+        id: number;
+        agendamento_id: number;
+        aprovado_por: User;
+        aprovado_em: string;
+        motivo_rejeicao?: string;
+        motivo_cancelamento?: string;
+        observacoes_aprovacao?: string;
+        created_at: string;
+        updated_at: string;
+    };
     periodo_formatado?: string;
     ativo?: boolean;
 }

@@ -16,17 +16,62 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
+import { useEffect } from 'react';
 
 interface LocalizacoesIndexProps {
     auth: {
         user: User;
     };
     localizacoes: Localizacao[];
+    flash?: {
+        success?: string;
+        error?: string;
+    };
 }
 
-export default function LocalizacoesIndex({ auth, localizacoes }: LocalizacoesIndexProps) {
-    const handleDelete = (id: number) => {
-        router.delete(`/localizacoes/${id}`);
+export default function LocalizacoesIndex({ auth, localizacoes, flash }: LocalizacoesIndexProps) {
+    const { toast } = useToast();
+
+    // Mostrar toasts baseados nas flash messages
+    useEffect(() => {
+        if (flash?.success) {
+            toast({
+                title: "Sucesso!",
+                description: flash.success,
+                variant: "success",
+                duration: 5000, // 5 segundos
+            });
+        }
+        if (flash?.error) {
+            toast({
+                title: "Erro!",
+                description: flash.error,
+                variant: "destructive",
+                duration: 5000, // 5 segundos
+            });
+        }
+    }, [flash, toast]);
+
+    const handleDelete = (localizacao: Localizacao) => {
+        router.delete(`/localizacoes/${localizacao.id}`, {
+            onSuccess: () => {
+                toast({
+                    title: "Localização excluída com sucesso!",
+                    description: `A localização ${localizacao.nome} foi removida do sistema.`,
+                    variant: "success",
+                    duration: 5000, // 5 segundos
+                });
+            },
+            onError: () => {
+                toast({
+                    title: "Erro ao excluir localização",
+                    description: "Ocorreu um erro ao executar a ação, verifique se não há espaços vinculados.",
+                    variant: "destructive",
+                    duration: 5000, // 5 segundos
+                });
+            }
+        });
     };
 
     const columns: ColumnConfig[] = [
@@ -101,7 +146,7 @@ export default function LocalizacoesIndex({ auth, localizacoes }: LocalizacoesIn
                                     Cancelar
                                 </AlertDialogCancel>
                                 <AlertDialogAction
-                                    onClick={() => handleDelete(localizacao.id)}
+                                    onClick={() => handleDelete(localizacao)}
                                     className="bg-red-600 hover:bg-red-700"
                                 >
                                     Excluir

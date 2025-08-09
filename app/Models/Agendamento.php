@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class Agendamento extends Model
@@ -21,26 +24,26 @@ class Agendamento extends Model
         'hora_fim',
         'status',
         'observacoes',
-        'aprovado_por',
-        'aprovado_em',
-        'motivo_rejeicao',
-        'recorrente',
-        'tipo_recorrencia',
-        'data_fim_recorrencia',
-        'recursos_solicitados',
         'grupo_recorrencia',
-        'is_representante_grupo',
         'color_index',
     ];
 
     protected $casts = [
         'data_inicio' => 'date',
         'data_fim' => 'date',
-        'aprovado_em' => 'datetime',
-        'data_fim_recorrencia' => 'date',
-        'recorrente' => 'boolean',
-        'is_representante_grupo' => 'boolean',
-        'recursos_solicitados' => 'array',
+    ];
+
+    // Incluir accessors na serialização JSON
+    protected $appends = [
+        'aprovado_por',
+        'aprovado_em',
+        'motivo_rejeicao',
+        'motivo_cancelamento',
+        'recorrente',
+        'tipo_recorrencia',
+        'data_fim_recorrencia',
+        'is_representante_grupo',
+        'recursos_solicitados',
     ];
 
     // Accessor para garantir que as horas sejam retornadas no formato correto
@@ -84,20 +87,92 @@ class Agendamento extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    // Relacionamento com User (aprovador)
+    // Relacionamento com dados de recorrência
+    public function recorrencia(): BelongsTo
+    {
+        return $this->belongsTo(AgendamentoRecorrencia::class, 'grupo_recorrencia', 'grupo_recorrencia');
+    }
+
+    // Relacionamento com dados de aprovação
+    public function aprovacao(): HasOne
+    {
+        return $this->hasOne(AgendamentoAprovacao::class);
+    }
+
+    // Relacionamento com recursos solicitados
+    public function recursosSolicitados(): HasMany
+    {
+        return $this->hasMany(AgendamentoRecurso::class);
+    }
+
+    // Relacionamento com recursos através da tabela pivot
+    public function recursos()
+    {
+        return $this->belongsToMany(Recurso::class, 'agendamentos_recursos')
+                    ->withPivot(['quantidade', 'observacoes'])
+                    ->withTimestamps();
+    }
+
+    // Accessor para compatibilidade - aprovado_por
+    public function getAprovadoPorAttribute()
+    {
+        return $this->aprovacao?->aprovado_por;
+    }
+
+    // Accessor para compatibilidade - aprovado_em
+    public function getAprovadoEmAttribute()
+    {
+        return $this->aprovacao?->aprovado_em;
+    }
+
+    // Accessor para compatibilidade - motivo_rejeicao
+    public function getMotivoRejeicaoAttribute()
+    {
+        return $this->aprovacao?->motivo_rejeicao;
+    }
+
+    // Accessor para compatibilidade - motivo_cancelamento
+    public function getMotivoCancelamentoAttribute()
+    {
+        return $this->aprovacao?->motivo_cancelamento;
+    }
+
+    // Accessor para recursos solicitados (array de IDs)
+    public function getRecursosSolicitadosAttribute()
+    {
+        return $this->recursosSolicitados()->pluck('recurso_id')->toArray();
+    }
+
+    // Accessor para compatibilidade - recorrente
+    public function getRecorrenteAttribute()
+    {
+        return !is_null($this->grupo_recorrencia);
+    }
+
+    // Accessor para compatibilidade - tipo_recorrencia
+    public function getTipoRecorrenciaAttribute()
+    {
+        return $this->recorrencia?->tipo_recorrencia;
+    }
+
+    // Accessor para compatibilidade - data_fim_recorrencia
+    public function getDataFimRecorrenciaAttribute()
+    {
+        return $this->recorrencia?->data_fim_recorrencia;
+    }
+
+    // Accessor para compatibilidade - is_representante_grupo
+    public function getIsRepresentanteGrupoAttribute()
+    {
+        return $this->recorrencia?->is_representante_grupo ?? false;
+    }
+
+
+
+    // Relacionamento com User (aprovador) - através da aprovação
     public function aprovadoPor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'aprovado_por');
-    }
-
-    // Relacionamento com Recursos (através dos IDs no array recursos_solicitados)
-    public function recursosSolicitados()
-    {
-        if (!$this->recursos_solicitados || !is_array($this->recursos_solicitados)) {
-            return collect();
-        }
-        
-        return \App\Models\Recurso::whereIn('id', $this->recursos_solicitados)->get();
     }
 
     // Scopes para consultas comuns
@@ -230,8 +305,15 @@ class Agendamento extends Model
     public function scopeRepresentantesDeGrupo($query)
     {
         return $query->where(function ($q) {
-            $q->where('is_representante_grupo', true)
-              ->orWhereNull('grupo_recorrencia');
+            // Agendamentos não recorrentes (sempre representantes de si mesmos)
+            $q->whereNull('grupo_recorrencia')
+            // OU agendamentos recorrentes que são os primeiros do grupo (representantes)
+            ->orWhereIn('id', function ($subQuery) {
+                $subQuery->select(DB::raw('MIN(id)'))
+                    ->from('agendamentos')
+                    ->whereNotNull('grupo_recorrencia')
+                    ->groupBy('grupo_recorrencia');
+            });
         });
     }
 
@@ -266,5 +348,43 @@ class Agendamento extends Model
             'aprovados' => $agendamentos->where('status', 'aprovado')->count(),
             'rejeitados' => $agendamentos->where('status', 'rejeitado')->count(),
         ];
+    }
+
+    // Métodos para trabalhar com aprovação
+    public function aprovar($aprovadoPor, $observacoes = null)
+    {
+        $this->update(['status' => 'aprovado']);
+        
+        return $this->aprovacao()->create([
+            'aprovado_por' => $aprovadoPor,
+            'aprovado_em' => now(),
+            'motivo_rejeicao' => null,
+        ]);
+    }
+
+    public function rejeitar($rejeitadoPor, $motivo)
+    {
+        $this->update(['status' => 'rejeitado']);
+        
+        return $this->aprovacao()->create([
+            'aprovado_por' => $rejeitadoPor,
+            'aprovado_em' => now(),
+            'motivo_rejeicao' => $motivo,
+        ]);
+    }
+
+    // Métodos para trabalhar com recursos
+    public function adicionarRecurso($recursoId, $quantidade = 1, $observacoes = null)
+    {
+        return $this->recursosSolicitados()->create([
+            'recurso_id' => $recursoId,
+            'quantidade' => $quantidade,
+            'observacoes' => $observacoes,
+        ]);
+    }
+
+    public function removerRecurso($recursoId)
+    {
+        return $this->recursosSolicitados()->where('recurso_id', $recursoId)->delete();
     }
 }

@@ -30,6 +30,7 @@ import { ArrowLeft, Save } from 'lucide-react';
 import { type User, type Localizacao, type Recurso, type Espaco, type Foto, type BreadcrumbItem } from '@/types';
 import { FormEventHandler, ChangeEvent, useState, useEffect, useRef } from 'react';
 import { UserAvatar } from '@/components/user-avatar';
+import { useToast } from '@/hooks/use-toast';
 
 // Tipo para o formulário de edição
 type EspacoEditFormData = {
@@ -50,12 +51,37 @@ interface EspacosEditProps {
     espaco: Espaco;
     localizacoes: Localizacao[];
     recursos: Recurso[];
+    flash?: {
+        success?: string;
+        error?: string;
+    };
 }
 
-export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: EspacosEditProps) {
+export default function EspacosEdit({ auth, espaco, localizacoes, recursos, flash }: EspacosEditProps) {
+    const { toast } = useToast();
     const [fotosAtuais, setFotosAtuais] = useState<Foto[]>(espaco.fotos || []);
     const [deveScrollParaErro, setDeveScrollParaErro] = useState(false);
     const [formAlterado, setFormAlterado] = useState(false);
+
+    // Mostrar toasts baseados nas flash messages
+    useEffect(() => {
+        if (flash?.success) {
+            toast({
+                title: "Sucesso!",
+                description: flash.success,
+                variant: "success",
+                duration: 5000, // 5 segundos
+            });
+        }
+        if (flash?.error) {
+            toast({
+                title: "Erro!",
+                description: flash.error,
+                variant: "destructive",
+                duration: 5000, // 5 segundos
+            });
+        }
+    }, [flash, toast]);
 
     const formatPerfil = (perfil: string | undefined) => {
         if (!perfil) return "Não definido";
@@ -146,7 +172,24 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos }: Es
         // Ativar o flag para fazer scroll em caso de erro
         setDeveScrollParaErro(true);
         
-        put(`/espacos/${espaco.id}`);
+        put(`/espacos/${espaco.id}`, {
+            onSuccess: () => {
+                toast({
+                    title: "Espaço atualizado com sucesso!",
+                    description: `O espaço ${data.nome} foi atualizado no sistema.`,
+                    variant: "success",
+                    duration: 5000, // 5 segundos
+                });
+            },
+            onError: () => {
+                toast({
+                    title: "Erro ao atualizar espaço",
+                    description: "Ocorreu um erro ao executar a ação, verifique os campos",
+                    variant: "destructive",
+                    duration: 5000, // 5 segundos
+                });
+            }
+        });
     };
 
     // Handlers que limpam erros automaticamente

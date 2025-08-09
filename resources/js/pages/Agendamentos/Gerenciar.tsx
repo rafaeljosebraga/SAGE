@@ -768,6 +768,7 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                                         <SelectItem value="pendente">Pendente</SelectItem>
                                         <SelectItem value="aprovado">Aprovado</SelectItem>
                                         <SelectItem value="rejeitado">Rejeitado</SelectItem>
+                                        <SelectItem value="cancelado">Cancelado</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -1014,9 +1015,9 @@ export default function GerenciarAgendamentos({ agendamentos, espacos, estatisti
                                                         </Alert>
                                                     )}
 
-                                                    {agendamento.aprovadoPor && agendamento.aprovado_em && (
+                                                    {agendamento.aprovacao?.aprovado_por && agendamento.aprovado_em && (
                                                         <div className="text-xs text-muted-foreground">
-                                                            {agendamento.status === 'aprovado' ? 'Aprovado' : 'Rejeitado'} por {agendamento.aprovadoPor.name} em {format(new Date(agendamento.aprovado_em), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                                                            {agendamento.status === 'aprovado' ? 'Aprovado' : 'Rejeitado'} por {agendamento.aprovacao.aprovado_por.name} em {format(new Date(agendamento.aprovado_em), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                                                         </div>
                                                     )}
                                                 </div>

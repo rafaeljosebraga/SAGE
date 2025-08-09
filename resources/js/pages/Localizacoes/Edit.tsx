@@ -19,15 +19,21 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Save } from 'lucide-react';
 import { type User, type Localizacao, type BreadcrumbItem } from '@/types';
 import { FormEventHandler, ChangeEvent, useState, useEffect, useRef } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 interface LocalizacoesEditProps {
     auth: {
         user: User;
     };
     localizacao: Localizacao;
+    flash?: {
+        success?: string;
+        error?: string;
+    };
 }
 
-export default function LocalizacoesEdit({ auth, localizacao }: LocalizacoesEditProps) {
+export default function LocalizacoesEdit({ auth, localizacao, flash }: LocalizacoesEditProps) {
+    const { toast } = useToast();
     const { data, setData, reset, put, processing, errors } = useForm({
         nome: localizacao.nome || '',
         descricao: localizacao.descricao || '',
@@ -35,9 +41,46 @@ export default function LocalizacoesEdit({ auth, localizacao }: LocalizacoesEdit
 
     const [formAlterado, setFormAlterado] = useState(false);
 
+    // Mostrar toasts baseados nas flash messages
+    useEffect(() => {
+        if (flash?.success) {
+            toast({
+                title: "Sucesso!",
+                description: flash.success,
+                variant: "success",
+                duration: 5000, // 5 segundos
+            });
+        }
+        if (flash?.error) {
+            toast({
+                title: "Erro!",
+                description: flash.error,
+                variant: "destructive",
+                duration: 5000, // 5 segundos
+            });
+        }
+    }, [flash, toast]);
+
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        put(route('localizacoes.update', localizacao.id));
+        put(route('localizacoes.update', localizacao.id), {
+            onSuccess: () => {
+                toast({
+                    title: "Localização atualizada com sucesso!",
+                    description: `A localização ${data.nome} foi atualizada no sistema.`,
+                    variant: "success",
+                    duration: 5000, // 5 segundos
+                });
+            },
+            onError: () => {
+                toast({
+                    title: "Erro ao atualizar localização",
+                    description: "Ocorreu um erro ao executar a ação, verifique os campos",
+                    variant: "destructive",
+                    duration: 5000, // 5 segundos
+                });
+            }
+        });
     };
 
     const breadcrumbs: BreadcrumbItem[] = [

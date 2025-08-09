@@ -19,12 +19,17 @@ import {
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useState, useEffect } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 interface EspacosIndexProps {
     auth: {
         user: User;
     };
     espacos: Espaco[];
+    flash?: {
+        success?: string;
+        error?: string;
+    };
 }
 
 interface Foto {
@@ -35,15 +40,53 @@ interface Foto {
     ordem: number;
 }
 
-export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
+export default function EspacosIndex({ auth, espacos, flash }: EspacosIndexProps) {
+    const { toast } = useToast();
     const [selectedEspaco, setSelectedEspaco] = useState<Espaco | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedFoto, setSelectedFoto] = useState<Foto | null>(null);
     const [isFotoModalOpen, setIsFotoModalOpen] = useState(false);
     const [scrollToResponsaveis, setScrollToResponsaveis] = useState(false);
 
-    const handleDelete = (id: number) => {
-        router.delete(`/espacos/${id}`);
+    // Mostrar toasts baseados nas flash messages
+    useEffect(() => {
+        if (flash?.success) {
+            toast({
+                title: "Sucesso!",
+                description: flash.success,
+                variant: "success",
+                duration: 5000, // 5 segundos
+            });
+        }
+        if (flash?.error) {
+            toast({
+                title: "Erro!",
+                description: flash.error,
+                variant: "destructive",
+                duration: 5000, // 5 segundos
+            });
+        }
+    }, [flash, toast]);
+
+    const handleDelete = (espaco: Espaco) => {
+        router.delete(`/espacos/${espaco.id}`, {
+            onSuccess: () => {
+                toast({
+                    title: "Espaço excluído com sucesso!",
+                    description: `O espaço ${espaco.nome} foi removido do sistema.`,
+                    variant: "success",
+                    duration: 5000, // 5 segundos
+                });
+            },
+            onError: () => {
+                toast({
+                    title: "Erro ao excluir espaço",
+                    description: "Ocorreu um erro ao executar a ação, verifique se não há agendamentos vinculados.",
+                    variant: "destructive",
+                    duration: 5000, // 5 segundos
+                });
+            }
+        });
     };
 
     const handleViewDetails = (espaco: Espaco) => {
@@ -390,7 +433,7 @@ export default function EspacosIndex({ auth, espacos }: EspacosIndexProps) {
                                     Cancelar
                                 </AlertDialogCancel>
                                 <AlertDialogAction
-                                    onClick={() => handleDelete(espaco.id)}
+                                    onClick={() => handleDelete(espaco)}
                                     className="bg-red-600 hover:bg-red-700"
                                 >
                                     Excluir
