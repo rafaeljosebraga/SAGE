@@ -134,6 +134,22 @@ class AgendamentoController extends Controller
             return back()->withErrors(['hora_fim' => 'A hora de fim deve ser posterior à hora de início.']);
         }
 
+        // Verificar se já existe um agendamento com o mesmo título, espaço e período exato
+        $agendamentoDuplicado = Agendamento::where('espaco_id', $validated['espaco_id'])
+            ->where('titulo', $validated['titulo'])
+            ->where('data_inicio', $validated['data_inicio'])
+            ->where('hora_inicio', $validated['hora_inicio'])
+            ->where('data_fim', $validated['data_fim'])
+            ->where('hora_fim', $validated['hora_fim'])
+            ->whereIn('status', ['pendente', 'aprovado'])
+            ->first();
+
+        if ($agendamentoDuplicado) {
+            return back()->withErrors([
+                'titulo' => 'Já existe um agendamento com o mesmo nome, local, data e horário. Por favor, altere pelo menos um desses dados para criar um novo agendamento.'
+            ])->withInput();
+        }
+
         // Verificar conflitos de horário usando o método do modelo
         $temConflito = (new Agendamento())->temConflito(
             $validated['espaco_id'],
@@ -142,6 +158,8 @@ class AgendamentoController extends Controller
             $validated['data_fim'],
             $validated['hora_fim']
         );
+
+
 
         $conflitos = collect();
         if ($temConflito) {
@@ -205,9 +223,25 @@ class AgendamentoController extends Controller
 
         // Se há conflitos e não foi forçado, retornar erro com os conflitos
         if ($conflitos->isNotEmpty() && !($validated['force_create'] ?? false)) {
-            return back()->withErrors([
-                'conflitos' => $conflitos
-            ])->withInput();
+            // Simplificar os dados dos conflitos para o frontend
+            $conflitosSimplificados = $conflitos->map(function ($conflito) {
+                return [
+                    'id' => $conflito->id,
+                    'titulo' => $conflito->titulo,
+                    'data_inicio' => $conflito->data_inicio,
+                    'hora_inicio' => $conflito->hora_inicio,
+                    'hora_fim' => $conflito->hora_fim,
+                    'status' => $conflito->status,
+                    'user' => [
+                        'name' => $conflito->user->name ?? 'Usuário não encontrado'
+                    ]
+                ];
+            })->toArray();
+            
+            // Retornar como string JSON que o frontend pode parsear
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'conflitos' => json_encode($conflitosSimplificados)
+            ]);
         }
 
         $validated['user_id'] = auth()->id();
@@ -403,6 +437,23 @@ class AgendamentoController extends Controller
             $validated['hora_fim'] <= $validated['hora_inicio']
         ) {
             return back()->withErrors(['hora_fim' => 'A hora de fim deve ser posterior à hora de início.']);
+        }
+
+        // Verificar se já existe um agendamento com o mesmo título, espaço e período exato (excluindo o atual)
+        $agendamentoDuplicado = Agendamento::where('espaco_id', $validated['espaco_id'])
+            ->where('titulo', $validated['titulo'])
+            ->where('data_inicio', $validated['data_inicio'])
+            ->where('hora_inicio', $validated['hora_inicio'])
+            ->where('data_fim', $validated['data_fim'])
+            ->where('hora_fim', $validated['hora_fim'])
+            ->where('id', '!=', $agendamento->id)
+            ->whereIn('status', ['pendente', 'aprovado'])
+            ->first();
+
+        if ($agendamentoDuplicado) {
+            return back()->withErrors([
+                'titulo' => 'Já existe um agendamento com o mesmo nome, local, data e horário. Por favor, altere pelo menos um desses dados para atualizar o agendamento.'
+            ])->withInput();
         }
 
         // Verificar se realmente houve mudanças nos campos que podem gerar conflito

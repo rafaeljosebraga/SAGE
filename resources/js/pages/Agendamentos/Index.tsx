@@ -204,6 +204,91 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         { title: 'Agendamentos', href: '/agendamentos' }
     ];
 
+    // Função para limpar foco de elementos
+    const clearFocus = () => {
+        // Remove foco de qualquer elemento ativo
+        if (document.activeElement && document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+        }
+    };
+
+    // Função para fechar todos os modais
+    const closeAllModals = () => {
+        clearFocus(); // Limpar foco antes de fechar modais
+        setCreateModal({ open: false });
+        setShowCancelCreateConfirm(false);
+        setConflictModal({ open: false, conflitos: [], formData: null });
+        setDayViewModal({ open: false, selectedDate: null, events: [] });
+        setPastTimeModal({ open: false });
+        setConflictTimeModal({ open: false, message: "" });
+        setDeleteModal({ open: false, agendamento: null });
+        setForceDeleteModal({ open: false, agendamento: null });
+    };
+
+    // Gerenciar foco dos modais para evitar conflitos de aria-hidden
+    useEffect(() => {
+        // Quando um modal é aberto, garantir que outros estejam fechados
+        const openModals = [
+            createModal.open,
+            showCancelCreateConfirm,
+            conflictModal.open,
+            dayViewModal.open,
+            pastTimeModal.open,
+            conflictTimeModal.open,
+            deleteModal.open,
+            forceDeleteModal.open
+        ].filter(Boolean).length;
+
+        // Se mais de um modal estiver aberto, pode haver conflitos de foco
+        if (openModals > 1) {
+            console.warn('Múltiplos modais abertos simultaneamente, isso pode causar problemas de acessibilidade');
+        }
+    }, [
+        createModal.open,
+        showCancelCreateConfirm,
+        conflictModal.open,
+        dayViewModal.open,
+        pastTimeModal.open,
+        conflictTimeModal.open,
+        deleteModal.open,
+        forceDeleteModal.open
+    ]);
+
+    // Listener global para ESC para fechar modais em caso de problemas
+    useEffect(() => {
+        const handleEscapeKey = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                // Se múltiplos modais estão abertos, fechar todos
+                const openModals = [
+                    createModal.open,
+                    showCancelCreateConfirm,
+                    conflictModal.open,
+                    dayViewModal.open,
+                    pastTimeModal.open,
+                    conflictTimeModal.open,
+                    deleteModal.open,
+                    forceDeleteModal.open
+                ].filter(Boolean).length;
+
+                if (openModals > 1) {
+                    closeAllModals();
+                }
+            }
+        };
+
+        document.addEventListener('keydown', handleEscapeKey);
+        return () => document.removeEventListener('keydown', handleEscapeKey);
+    }, [
+        createModal.open,
+        showCancelCreateConfirm,
+        conflictModal.open,
+        dayViewModal.open,
+        pastTimeModal.open,
+        conflictTimeModal.open,
+        deleteModal.open,
+        forceDeleteModal.open
+    ]);
+
     // Atualizar viewMode quando filters.view mudar
     useEffect(() => {
         if (filters.view === 'list') {
@@ -797,17 +882,35 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                 });
             },
             onError: (errors: any) => {
-                console.error('Erro completo ao criar agendamento:', errors);
+                console.log('Resposta de erro ao criar agendamento:', errors);
                 
                 if (errors.conflitos) {
+                    let conflitosArray = null;
+                    
                     if (typeof errors.conflitos === 'string') {
-                        setConflictTimeModal({ open: true, message: errors.conflitos });
+                        try {
+                            conflitosArray = JSON.parse(errors.conflitos);
+                        } catch (e) {
+                            setConflictTimeModal({ open: true, message: errors.conflitos });
+                            return;
+                        }
                     } else if (Array.isArray(errors.conflitos)) {
-                        setConflictModal({
-                            open: true,
-                            conflitos: errors.conflitos,
-                            formData: formData
-                        });
+                        conflitosArray = errors.conflitos;
+                    }
+                    
+                    if (conflitosArray && Array.isArray(conflitosArray)) {
+                        // Limpar foco e fechar o modal de criação ANTES de abrir o de conflito
+                        clearFocus();
+                        setCreateModal({ open: false });
+                        
+                        // Usar setTimeout para garantir que o modal anterior feche completamente
+                        setTimeout(() => {
+                            setConflictModal({
+                                open: true,
+                                conflitos: conflitosArray,
+                                formData: formData
+                            });
+                        }, 150);
                     }
                 } else {
                     // Mostrar erros de validação específicos se existirem
@@ -851,7 +954,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                 resetForm();
             },
             onError: (errors) => {
-                console.error('Erro ao criar agendamento com conflito:', errors);
+                console.log('Resposta de erro ao criar agendamento com conflito:', errors);
                 alert('Erro ao criar agendamento.');
             }
         });
@@ -887,17 +990,40 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                     },
                     onError: (errors: any) => {
                         if (errors.conflitos) {
+                            let conflitosArray = null;
+                            
                             if (typeof errors.conflitos === 'string') {
-                                setConflictTimeModal({ open: true, message: errors.conflitos });
+                                try {
+                                    conflitosArray = JSON.parse(errors.conflitos);
+                                } catch (e) {
+                                    setConflictTimeModal({ open: true, message: errors.conflitos });
+                                    setPastTimeModal({ open: false });
+                                    setIsConfirmingPastTime(false);
+                                    return;
+                                }
                             } else if (Array.isArray(errors.conflitos)) {
-                                setConflictModal({
-                                    open: true,
-                                    conflitos: errors.conflitos,
-                                    formData: formDataToSubmit
-                                });
+                                conflitosArray = errors.conflitos;
+                            }
+                            
+                            if (conflitosArray && Array.isArray(conflitosArray)) {
+                                // Limpar foco e fechar modais existentes ANTES de abrir o de conflito
+                                clearFocus();
+                                setCreateModal({ open: false });
+                                setPastTimeModal({ open: false });
+                                setIsConfirmingPastTime(false);
+                                
+                                // Usar setTimeout para garantir que os modais anteriores fechem completamente
+                                setTimeout(() => {
+                                    setConflictModal({
+                                        open: true,
+                                        conflitos: conflitosArray,
+                                        formData: formDataToSubmit
+                                    });
+                                }, 150);
+                                return;
                             }
                         } else {
-                            console.error('Erro ao criar agendamento:', errors);
+                            console.log('Resposta de erro ao criar agendamento:', errors);
                             alert('Erro ao criar agendamento. Verifique os dados informados.');
                         }
                         setPastTimeModal({ open: false });
@@ -914,6 +1040,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
     };
 
     const resetForm = () => {
+        clearFocus(); // Limpar foco antes de resetar
         setFormData({
             titulo: '',
             espaco_id: '',

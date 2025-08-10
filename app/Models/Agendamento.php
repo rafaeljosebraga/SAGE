@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -11,6 +12,8 @@ use Carbon\Carbon;
 
 class Agendamento extends Model
 {
+    use HasFactory;
+    
     protected $table = 'agendamentos';
 
     protected $fillable = [
@@ -498,12 +501,37 @@ class Agendamento extends Model
             return null;
         }
 
-        // Incluir o próprio agendamento na lista de conflitos
-        $todosIds = $agendamentosConflitantes->pluck('id')->push($this->id)->toArray();
-        
+        // Verificar se algum dos agendamentos conflitantes já tem um grupo de conflito
+        $grupoExistente = null;
+        foreach ($agendamentosConflitantes as $agendamento) {
+            $conflito = $agendamento->conflitoAtivo;
+            if ($conflito) {
+                $grupoExistente = $conflito->grupo_conflito;
+                break;
+            }
+        }
+
         $observacoes = "Conflito de horário detectado para o espaço {$this->espaco->nome} no período de {$this->data_inicio} {$this->hora_inicio} até {$this->data_fim} {$this->hora_fim}";
-        
-        return AgendamentoConflito::criarGrupoConflito($todosIds, $observacoes);
+
+        if ($grupoExistente) {
+            // Adicionar apenas este agendamento ao grupo existente
+            AgendamentoConflito::create([
+                'grupo_conflito' => $grupoExistente,
+                'agendamento_id' => $this->id,
+                'observacoes_conflito' => $observacoes,
+            ]);
+            return $grupoExistente;
+        } else {
+            // Criar novo grupo com todos os agendamentos conflitantes
+            $todosIds = $agendamentosConflitantes->pluck('id')->push($this->id)->toArray();
+            
+            // Só criar grupo se houver pelo menos 2 agendamentos
+            if (count($todosIds) < 2) {
+                return null; // Não há conflito real
+            }
+            
+            return AgendamentoConflito::criarGrupoConflito($todosIds, $observacoes);
+        }
     }
 
     public function temConflitoPendente()

@@ -84,8 +84,24 @@ class GerenciarAgendamentosController extends Controller
             }
         }
 
-        // Converter grupos de conflito para array indexado
+        // Converter grupos de conflito para array indexado e filtrar grupos com apenas 1 agendamento
         $gruposConflito = array_values($gruposConflito);
+        
+        // Filtrar grupos que têm apenas 1 agendamento (não são realmente conflitos)
+        $gruposConflitoReais = [];
+        foreach ($gruposConflito as $grupo) {
+            if (count($grupo['agendamentos']) > 1) {
+                $gruposConflitoReais[] = $grupo;
+            } else {
+                // Mover agendamentos únicos para a lista sem conflito
+                $agendamentosSemConflito[] = $grupo['agendamentos'][0];
+                
+                // Remover o registro de conflito órfão
+                AgendamentoConflito::where('grupo_conflito', $grupo['grupo_conflito'])->delete();
+            }
+        }
+        
+        $gruposConflito = $gruposConflitoReais;
 
         // Ordenar grupos por data de criação do conflito (mais recentes primeiro)
         usort($gruposConflito, function ($a, $b) {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Calendar, Clock, MapPin, User, Plus, Eye, AlertTriangle, Trash2, X } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, Plus, Eye, AlertTriangle, Trash2, X, CheckCircle } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { StatusBadge, useAgendamentoColors } from '@/components/ui/agend-colors';
+import { useToast } from '@/hooks/use-toast';
 import type { Agendamento, Espaco } from '@/types';
 
 interface ModalsProps {
@@ -124,30 +125,52 @@ export default function AgendamentosModals({
     espacos
 }: ModalsProps) {
     const { getEventBackgroundColor } = useAgendamentoColors();
+    const { toast } = useToast();
     
     return (
         <>
             {/* Modal de Criação */}
             <Dialog open={createModal.open} onOpenChange={(open) => {
                 if (!open) {
-                    if (isFormDirty()) {
+                    // Não mostrar confirmação se outros modais estão abertos (como modal de conflito)
+                    const hasOtherModalsOpen = conflictModal.open || pastTimeModal.open || conflictTimeModal.open;
+                    
+                    if (isFormDirty() && !hasOtherModalsOpen) {
                         setShowCancelCreateConfirm(true);
                     } else {
                         setCreateModal({ open: false });
                         resetForm();
                     }
                 }
-            }} modal={true}>
-                <DialogContent className="max-w-2xl max-h-[90vh] rounded-2xl flex flex-col" onInteractOutside={(e) => {
-                    // Se o formulário foi alterado, mostrar confirmação
-                    if (isFormDirty()) {
-                        e.preventDefault();
-                        setShowCancelCreateConfirm(true);
-                    }
-                    // Se não foi alterado, permite fechar normalmente (não previne o evento)
-                }}>
+            }}>
+                <DialogContent 
+                    className="max-w-2xl max-h-[90vh] rounded-2xl flex flex-col" 
+                    onInteractOutside={(e) => {
+                        // Não mostrar confirmação se outros modais estão abertos
+                        const hasOtherModalsOpen = conflictModal.open || pastTimeModal.open || conflictTimeModal.open;
+                        
+                        // Se o formulário foi alterado e não há outros modais, mostrar confirmação
+                        if (isFormDirty() && !hasOtherModalsOpen) {
+                            e.preventDefault();
+                            setShowCancelCreateConfirm(true);
+                        }
+                        // Se não foi alterado ou há outros modais, permite fechar normalmente
+                    }}
+                    onEscapeKeyDown={(e) => {
+                        // Mesmo comportamento para ESC
+                        const hasOtherModalsOpen = conflictModal.open || pastTimeModal.open || conflictTimeModal.open;
+                        
+                        if (isFormDirty() && !hasOtherModalsOpen) {
+                            e.preventDefault();
+                            setShowCancelCreateConfirm(true);
+                        }
+                    }}
+                >
                     <DialogHeader className="flex-shrink-0 pb-4">
                         <DialogTitle>Novo Agendamento</DialogTitle>
+                        <DialogDescription>
+                            Preencha os dados para solicitar um novo agendamento de espaço.
+                        </DialogDescription>
                     </DialogHeader>
 
                     <div className="flex-1 overflow-y-auto px-1 min-h-0">
@@ -296,7 +319,10 @@ export default function AgendamentosModals({
 
                     <DialogFooter className="flex-shrink-0 border-t pt-4 mt-4">
                         <Button type="button" variant="outline" onClick={() => {
-                            if (isFormDirty()) {
+                            // Não mostrar confirmação se outros modais estão abertos
+                            const hasOtherModalsOpen = conflictModal.open || pastTimeModal.open || conflictTimeModal.open;
+                            
+                            if (isFormDirty() && !hasOtherModalsOpen) {
                                 setShowCancelCreateConfirm(true);
                             } else {
                                 setCreateModal({ open: false });
@@ -320,6 +346,9 @@ export default function AgendamentosModals({
                             <AlertTriangle className="h-5 w-5 text-yellow-600" />
                             Cancelar criação de agendamento
                         </DialogTitle>
+                        <DialogDescription>
+                            Confirme se deseja cancelar a criação do agendamento.
+                        </DialogDescription>
                     </DialogHeader>
                     <div className="py-4">
                         <p className="text-center text-muted-foreground">
@@ -361,36 +390,87 @@ export default function AgendamentosModals({
                     </DialogHeader>
 
                     <div className="space-y-4">
-                        <Alert>
-                            <AlertTriangle className="h-4 w-4" />
-                            <AlertDescription>
-                                Ao solicitar prioridade, seu agendamento será enviado para aprovação do diretor,
-                                que decidirá se deve sobrepor os agendamentos existentes.
-                            </AlertDescription>
-                        </Alert>
-
                         <div>
                             <h4 className="font-medium mb-2">Agendamentos Conflitantes:</h4>
-                            <div className="space-y-2">
-                                {conflictModal.conflitos.map((conflito) => (
-                                    <div key={conflito.id} className="p-3 border rounded-lg bg-red-50 dark:bg-red-900/20">
-                                        <div className="font-medium">{conflito.titulo}</div>
-                                        <div className="text-sm text-muted-foreground">
-                                            {conflito.user?.name} - {(() => { 
-                                                try { 
-                                                    const dateOnly = conflito.data_inicio.split("T")[0]; 
-                                                    const [year, month, day] = dateOnly.split("-"); 
-                                                    return `${day}/${month}/${year}`; 
-                                                } catch { 
-                                                    return conflito.data_inicio; 
-                                                } 
-                                            })()} {conflito.hora_inicio} às {conflito.hora_fim}
+                            <div className="space-y-2 max-h-64 overflow-y-auto">
+                                {conflictModal.conflitos.map((conflito) => {
+                                    const formatPerfilAcesso = (perfil?: string) => {
+                                        switch (perfil) {
+                                            case 'diretor_geral':
+                                                return 'Diretor Geral';
+                                            case 'coordenador':
+                                                return 'Coordenador';
+                                            case 'professor':
+                                                return 'Professor';
+                                            case 'funcionario':
+                                                return 'Servidor';
+                                            case 'aluno':
+                                                return 'Aluno';
+                                            default:
+                                                return null;
+                                        }
+                                    };
+
+                                    const getPerfilShort = (perfil?: string) => {
+                                        switch (perfil) {
+                                            case 'diretor_geral':
+                                                return 'Diretor';
+                                            case 'coordenador':
+                                                return 'Coordenador';
+                                            case 'professor':
+                                                return 'Professor';
+                                            case 'funcionario':
+                                                return 'Servidor';
+                                            case 'aluno':
+                                                return 'Aluno';
+                                            default:
+                                                return '';
+                                        }
+                                    };
+
+                                    const papel = formatPerfilAcesso(conflito.user?.perfil_acesso);
+                                    const perfilShort = getPerfilShort(conflito.user?.perfil_acesso);
+
+                                    return (
+                                        <div key={conflito.id} className="p-3 border rounded-lg bg-red-50 dark:bg-red-900/20">
+                                            <div className="mb-3">
+                                                <div className="font-medium text-sm">{conflito.titulo}</div>
+                                            </div>
+                                            
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-medium">
+                                                        {conflito.user?.name}{perfilShort ? ` (${perfilShort})` : ''}
+                                                    </span>
+                                                    <span className="text-xs text-muted-foreground">
+                                                        {conflito.user?.email}
+                                                    </span>
+                                                    <div className="text-xs text-muted-foreground">
+                                                        {(() => { 
+                                                            try { 
+                                                                const dateOnly = conflito.data_inicio.split("T")[0]; 
+                                                                const [year, month, day] = dateOnly.split("-"); 
+                                                                return `${day}/${month}/${year}`; 
+                                                            } catch { 
+                                                                return conflito.data_inicio; 
+                                                            } 
+                                                        })()} • {conflito.hora_inicio} às {conflito.hora_fim}
+                                                    </div>
+                                                </div>
+                                                <div className="ml-auto">
+                                                    <div className="inline-flex items-center gap-2">
+                                                        {papel && (
+                                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#F1DEC5] text-gray-600 border-transparent">
+                                                                {papel}
+                                                            </span>
+                                                        )}
+                                                        <StatusBadge status={conflito.status} />
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <Badge className="mt-1" variant="outline">
-                                            {conflito.status}
-                                        </Badge>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
                     </div>
@@ -404,7 +484,20 @@ export default function AgendamentosModals({
                         </Button>
                         <Button
                             variant="destructive"
-                            onClick={handleConflictSubmit}
+                            onClick={() => {
+                                handleConflictSubmit();
+                                toast({
+                                    variant: "success",
+                                    title: "Solicitação enviada!",
+                                    description: (
+                                        <div className="flex items-center gap-2">
+                                            <CheckCircle className="h-4 w-4" />
+                                            Prioridade solicitada com sucesso
+                                        </div>
+                                    ),
+                                    duration: 5000,
+                                });
+                            }}
                         >
                             Solicitar Prioridade
                         </Button>
@@ -532,6 +625,9 @@ export default function AgendamentosModals({
                             <AlertTriangle className="h-5 w-5 text-yellow-600" />
                             Agendamento no Passado
                         </DialogTitle>
+                        <DialogDescription>
+                            Confirme se deseja criar um agendamento para um horário que já passou.
+                        </DialogDescription>
                     </DialogHeader>
 
                     <div className="py-4">
@@ -568,6 +664,9 @@ export default function AgendamentosModals({
                             <AlertTriangle className="h-5 w-5 text-yellow-600" />
                             Conflito de Horário
                         </DialogTitle>
+                        <DialogDescription>
+                            Foi detectado um conflito de horário com agendamentos existentes.
+                        </DialogDescription>
                     </DialogHeader>
 
                     <div className="py-4">
@@ -647,6 +746,9 @@ export default function AgendamentosModals({
                             <Trash2 className="h-5 w-5 text-red-600" />
                             Excluir Agendamento Permanentemente
                         </DialogTitle>
+                        <DialogDescription>
+                            Esta ação é irreversível e removerá o agendamento permanentemente.
+                        </DialogDescription>
                     </DialogHeader>
 
                     <div className="py-4">
