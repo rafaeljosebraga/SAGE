@@ -25,9 +25,10 @@ interface Props extends PageProps {
         nome: string;
         descricao?: string;
     }>;
+    return_url?: string;
 }
 
-export default function AgendamentosShow({ agendamento, auth, recursosSolicitados }: Props) {
+export default function AgendamentosShow({ agendamento, auth, recursosSolicitados, return_url }: Props) {
     // Estado para modal de confirmação de cancelamento
     const [deleteModal, setDeleteModal] = useState<{
         open: boolean;
@@ -57,6 +58,18 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
     const getBackUrl = () => {
         const urlParams = new URLSearchParams(window.location.search);
         const from = urlParams.get('from');
+        const returnParam = urlParams.get('return');
+        const returnUrl = urlParams.get('return_url');
+        
+        // Se tem uma URL de retorno específica (com filtros)
+        if (returnUrl) {
+            return decodeURIComponent(returnUrl);
+        }
+        
+        // Se veio da página de gerenciar agendamentos
+        if (returnParam === 'gerenciar-agendamentos') {
+            return '/gerenciar-agendamentos';
+        }
         
         // Se veio da página de avaliar agendamentos, retornar para lá com os filtros
         if (from === 'gerenciar') {
@@ -325,7 +338,10 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
     };
 
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Agendamentos', href: '/agendamentos' },
+        { 
+            title: return_url?.includes('gerenciar-agendamentos') ? 'Gerenciar Agendamentos' : 'Agendamentos', 
+            href: return_url || '/agendamentos' 
+        },
         { title: 'Detalhes do Agendamento', href: `/agendamentos/${agendamento.id}` }
     ];
 

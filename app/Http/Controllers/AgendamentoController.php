@@ -230,6 +230,17 @@ class AgendamentoController extends Controller
         $agendamentos = $this->criarAgendamentos($validated);
         $agendamento = $agendamentos->first(); // Para compatibilidade com o código existente
 
+        // Se há conflitos, criar registros de conflito para cada agendamento criado
+        if ($conflitos->isNotEmpty()) {
+            foreach ($agendamentos as $novoAgendamento) {
+                // Detectar conflitos específicos para este agendamento
+                $conflitosEspecificos = $novoAgendamento->detectarConflitos();
+                if ($conflitosEspecificos->isNotEmpty()) {
+                    $novoAgendamento->criarConflito($conflitosEspecificos);
+                }
+            }
+        }
+
         // Personalizar mensagem baseada na quantidade de agendamentos criados
         if ($agendamentos->count() > 1) {
             $message = "Solicitações de agendamento criadas com sucesso! {$agendamentos->count()} agendamentos recorrentes foram criados. Aguarde aprovação.";
@@ -237,10 +248,10 @@ class AgendamentoController extends Controller
             $message = 'Solicitação de agendamento criada com sucesso! Aguarde aprovação.';
         }
 
-        if ($conflitos->isNotEmpty() && ($validated['force_create'] ?? false)) {
+        if ($conflitos->isNotEmpty()) {
             $message = $agendamentos->count() > 1
-                ? "Solicitações de agendamento com prioridade criadas! {$agendamentos->count()} agendamentos recorrentes foram criados. O diretor analisará os conflitos."
-                : 'Solicitação de agendamento com prioridade criada! O diretor analisará os conflitos.';
+                ? "Solicitações de agendamento criadas! {$agendamentos->count()} agendamentos recorrentes foram criados. Há conflitos de horário que serão analisados pelo diretor."
+                : 'Solicitação de agendamento criada! Há conflito de horário que será analisado pelo diretor.';
         }
 
         // Verificar se deve voltar para o calendário
@@ -433,7 +444,7 @@ class AgendamentoController extends Controller
      */
     public function gerenciar(Request $request)
     {
-        $query = Agendamento::with(['espaco.localizacao', 'user', 'aprovacao.aprovadoPor'])
+        $query = Agendamento::with(['espaco.localizacao', 'user', 'aprovacao.aprovadoPor', 'conflitoAtivo'])
             ->representantesDeGrupo()
             ->comContadorGrupo();
 
@@ -536,6 +547,9 @@ class AgendamentoController extends Controller
                 ->whereMonth('created_at', now()->month)
                 ->whereYear('created_at', now()->year)
                 ->count(),
+            'conflitos_pendentes' => \App\Models\AgendamentoConflito::pendentes()
+                ->distinct('grupo_conflito')
+                ->count('grupo_conflito'),
         ];
 
         return Inertia::render('Agendamentos/Avaliar', [

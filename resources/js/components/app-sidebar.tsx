@@ -5,7 +5,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { useCanManageUsers, useIsDiretorGeral, useAuth } from '@/hooks/use-auth';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Users, Building, MapPin, Package, BookUser, Calendar, Settings, CalendarCheck } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, Users, Building, MapPin, Package, BookUser, Calendar, Settings, CalendarCheck, AlertTriangle } from 'lucide-react';
 import AppLogo from './app-logo';
 
 export function AppSidebar() {
@@ -46,6 +46,11 @@ export function AppSidebar() {
                       title: 'Avaliar Agendamentos',
                       href: '/avaliar-agendamentos',
                       icon: CalendarCheck,
+                  },
+                  {
+                      title: 'Gerenciar Agendamentos',
+                      href: '/gerenciar-agendamentos',
+                      icon: AlertTriangle,
                   },
                   {
                       title: 'Espaços',

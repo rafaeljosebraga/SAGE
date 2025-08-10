@@ -166,6 +166,7 @@ export interface Agendamento {
     is_representante_grupo?: boolean;
     color_index?: number;
     total_grupo?: number;
+    tem_conflito?: boolean;
     info_grupo?: {
         total: number;
         data_inicio: string;
@@ -190,8 +191,25 @@ export interface Agendamento {
         created_at: string;
         updated_at: string;
     };
+    conflito_ativo?: {
+        id: number;
+        grupo_conflito: string;
+        status_conflito: 'pendente' | 'resolvido';
+        observacoes_conflito?: string;
+        created_at: string;
+        updated_at: string;
+    };
     periodo_formatado?: string;
     ativo?: boolean;
+}
+
+export interface GrupoConflito {
+    grupo_conflito: string;
+    agendamentos: Agendamento[];
+    espaco: Espaco;
+    status_conflito: 'pendente' | 'resolvido';
+    observacoes_conflito?: string;
+    created_at: string;
 }
 
 export interface CalendarEvent {

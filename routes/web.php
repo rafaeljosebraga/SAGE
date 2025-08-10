@@ -89,15 +89,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete("agendamentos/{agendamento}/force-delete", [AgendamentoController::class, "forceDelete"])->name("agendamentos.force-delete");
 
     // Redirecionamento da URL antiga para a nova (compatibilidade)
-    Route::get("gerenciar-agendamentos", function () {
-        return redirect("/avaliar-agendamentos", 301);
-    })->middleware(['diretor-geral']);
+    // Route::get("gerenciar-agendamentos", function () {
+    //     return redirect("/avaliar-agendamentos", 301);
+    // })->middleware(['diretor-geral']);
 
     // Rotas de Avaliação de Agendamentos (APENAS para Diretor Geral)
     Route::middleware(['diretor-geral'])->group(function () {
         Route::get("avaliar-agendamentos", [AgendamentoController::class, "gerenciar"])->name("agendamentos.avaliar");
         Route::post("agendamentos/{agendamento}/aprovar", [AgendamentoController::class, "aprovar"])->name("agendamentos.aprovar");
         Route::post("agendamentos/{agendamento}/rejeitar", [AgendamentoController::class, "rejeitar"])->name("agendamentos.rejeitar");
+        
+        // Rotas de Gerenciamento de Conflitos
+        Route::get("gerenciar-agendamentos", [\App\Http\Controllers\GerenciarAgendamentosController::class, "index"])->name("agendamentos.gerenciar");
+        Route::post("conflitos/resolver", [\App\Http\Controllers\GerenciarAgendamentosController::class, "resolverConflito"])->name("conflitos.resolver");
+        Route::post("conflitos/rejeitar-todos", [\App\Http\Controllers\GerenciarAgendamentosController::class, "rejeitarTodosConflito"])->name("conflitos.rejeitar-todos");
+        Route::get("conflitos/{grupoConflito}/detalhes", [\App\Http\Controllers\GerenciarAgendamentosController::class, "detalhesConflito"])->name("conflitos.detalhes");
     });
 });
 
