@@ -751,19 +751,19 @@ export default function GerenciarAgendamentos({
     };
 
     const getPerfilColor = (perfil: string | undefined) => {
-        if (!perfil) return "bg-gray-100 text-gray-800 border-gray-200";
+        if (!perfil) return "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-700";
         
         switch (perfil.toLowerCase()) {
             case "administrador":
-                return "bg-[#EF7D4C] text-white border-transparent";
+                return "bg-[#EF7D4C] dark:bg-[#D16A3A] text-white border-transparent";
             case "coordenador":
-                return "bg-[#957157] text-white border-transparent";
+                return "bg-[#957157] dark:bg-[#7A5D47] text-white border-transparent";
             case "diretor_geral":
-                return "bg-[#F1DEC5] text-gray-600 border-transparent";
+                return "bg-[#F1DEC5] dark:bg-[#8B7355] text-gray-600 dark:text-gray-200 border-transparent";
             case "servidores":
-                return "bg-[#285355] text-white border-transparent";
+                return "bg-[#285355] dark:bg-[#1F4142] text-white border-transparent";
             default:
-                return "bg-gray-100 text-gray-800 border-gray-200";
+                return "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-700";
         }
     };
 
@@ -1542,8 +1542,8 @@ export default function GerenciarAgendamentos({
                                         key={agendamento.id}
                                         className={`p-4 border rounded-lg cursor-pointer transition-colors ${
                                             resolverDialog.agendamentoSelecionado === agendamento.id
-                                                ? 'border-green-500 bg-green-50 dark:bg-green-950/20'
-                                                : 'border-border hover:bg-muted/50'
+                                                ? 'border-green-500 bg-green-50 dark:bg-green-950/20 dark:border-green-400'
+                                                : 'border-border hover:bg-muted/50 dark:hover:bg-muted/30'
                                         }`}
                                         onClick={() => setResolverDialog(prev => ({
                                             ...prev,
@@ -1553,8 +1553,8 @@ export default function GerenciarAgendamentos({
                                         <div className="flex items-start gap-3">
                                             <div className={`w-4 h-4 rounded-full border-2 mt-1 ${
                                                 resolverDialog.agendamentoSelecionado === agendamento.id
-                                                    ? 'bg-green-500 border-green-500'
-                                                    : 'border-gray-300'
+                                                    ? 'bg-green-500 border-green-500 dark:bg-green-400 dark:border-green-400'
+                                                    : 'border-gray-300 dark:border-gray-600'
                                             }`} />
                                             <div className="flex-1">
                                                 <h4 className="font-medium mb-2">{agendamento.titulo}</h4>

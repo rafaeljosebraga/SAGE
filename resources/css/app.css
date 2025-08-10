@@ -254,5 +254,20 @@
         cursor: pointer;
     }
 
+    /* Transições suaves para mudança de tema */
+    .theme-transitioning,
+    .theme-transitioning * {
+        transition: background-color 0.7s ease, 
+                   border-color 0.7s ease, 
+                   color 0.7s ease,
+                   box-shadow 0.7s ease !important;
+    }
 
+    /* Otimização para elementos que não precisam de transição */
+    .theme-transitioning img,
+    .theme-transitioning video,
+    .theme-transitioning iframe,
+    .theme-transitioning canvas {
+        transition: none !important;
+    }
 }
