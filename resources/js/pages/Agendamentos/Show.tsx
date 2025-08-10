@@ -339,7 +339,8 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
 
     const breadcrumbs: BreadcrumbItem[] = [
         { 
-            title: return_url?.includes('gerenciar-agendamentos') ? 'Gerenciar Agendamentos' : 'Agendamentos', 
+            title: return_url?.includes('gerenciar-agendamentos') ? 'Gerenciar Agendamentos' : 
+                   return_url?.includes('avaliar-agendamentos') ? 'Avaliar Agendamentos' : 'Agendamentos', 
             href: return_url || '/agendamentos' 
         },
         { title: 'Detalhes do Agendamento', href: `/agendamentos/${agendamento.id}` }

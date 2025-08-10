@@ -292,6 +292,7 @@ class AgendamentoController extends Controller
         return Inertia::render('Agendamentos/Show', [
             'agendamento' => $agendamento,
             'recursosSolicitados' => $recursosSolicitados,
+            'return_url' => request('return_url'),
         ]);
     }
 
@@ -444,6 +445,8 @@ class AgendamentoController extends Controller
      */
     public function gerenciar(Request $request)
     {
+
+        
         $query = Agendamento::with(['espaco.localizacao', 'user', 'aprovacao.aprovadoPor', 'conflitoAtivo'])
             ->representantesDeGrupo()
             ->comContadorGrupo();
@@ -453,11 +456,15 @@ class AgendamentoController extends Controller
             $query->where('espaco_id', $request->espaco_id);
         }
 
-        if ($request->filled('status')) {
+        // Aplicar filtro de status apenas se não houver filtros específicos de aprovado_hoje ou rejeitado_hoje
+        if ($request->filled('status') && !$request->filled('aprovado_hoje') && !$request->filled('rejeitado_hoje')) {
             // Se status for 'all', não aplicar filtro de status (mostrar todos)
             if ($request->status !== 'all') {
                 $query->where('status', $request->status);
             }
+        } else if (!$request->filled('status') && !$request->filled('aprovado_hoje') && !$request->filled('rejeitado_hoje') && !$request->filled('mes_atual')) {
+            // Se não há filtro de status específico e não há filtros especiais, mostrar apenas pendentes por padrão
+            $query->where('status', 'pendente');
         }
 
         if ($request->filled('data_inicio')) {
@@ -482,16 +489,32 @@ class AgendamentoController extends Controller
         // Filtro específico para aprovados hoje
         if ($request->filled('aprovado_hoje') && $request->aprovado_hoje === 'true') {
             $query->where('status', 'aprovado')
-                ->whereHas('aprovacao', function ($q) {
-                    $q->whereDate('aprovado_em', today());
+                ->where(function($subQuery) {
+                    // Tentar primeiro com a tabela de aprovacao
+                    $subQuery->whereHas('aprovacao', function ($q) {
+                        $q->whereDate('aprovado_em', today());
+                    })
+                    // Fallback: usar updated_at se não houver registro na tabela aprovacao
+                    ->orWhere(function($fallbackQuery) {
+                        $fallbackQuery->whereDoesntHave('aprovacao')
+                            ->whereDate('updated_at', today());
+                    });
                 });
         }
 
         // Filtro específico para rejeitados hoje
         if ($request->filled('rejeitado_hoje') && $request->rejeitado_hoje === 'true') {
             $query->where('status', 'rejeitado')
-                ->whereHas('aprovacao', function ($q) {
-                    $q->whereDate('aprovado_em', today());
+                ->where(function($subQuery) {
+                    // Tentar primeiro com a tabela de aprovacao
+                    $subQuery->whereHas('aprovacao', function ($q) {
+                        $q->whereDate('aprovado_em', today());
+                    })
+                    // Fallback: usar updated_at se não houver registro na tabela aprovacao
+                    ->orWhere(function($fallbackQuery) {
+                        $fallbackQuery->whereDoesntHave('aprovacao')
+                            ->whereDate('updated_at', today());
+                    });
                 });
         }
 
@@ -556,7 +579,7 @@ class AgendamentoController extends Controller
             'agendamentos' => $paginatedAgendamentos,
             'espacos' => $espacos,
             'estatisticas' => $estatisticas,
-            'filters' => $request->only(['espaco_id', 'status', 'data_inicio', 'data_fim', 'solicitante', 'nome_agendamento']),
+            'filters' => $request->only(['espaco_id', 'status', 'data_inicio', 'data_fim', 'solicitante', 'nome_agendamento', 'aprovado_hoje', 'rejeitado_hoje', 'mes_atual']),
         ]);
     }
 
