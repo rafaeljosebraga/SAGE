@@ -310,8 +310,39 @@ class AgendamentoController extends Controller
 
         // Garantir que as datas e horas estejam no formato correto
         $agendamentoFormatado = $agendamento->toArray();
-        $agendamentoFormatado['data_inicio'] = $agendamento->data_inicio ? $agendamento->data_inicio->format('Y-m-d') : '';
-        $agendamentoFormatado['data_fim'] = $agendamento->data_fim ? $agendamento->data_fim->format('Y-m-d') : '';
+        
+        // Formatar data_inicio
+        if ($agendamento->data_inicio) {
+            if ($agendamento->data_inicio instanceof \Carbon\Carbon) {
+                $agendamentoFormatado['data_inicio'] = $agendamento->data_inicio->format('Y-m-d');
+            } else {
+                // Se é uma string, tentar converter para o formato correto
+                try {
+                    $agendamentoFormatado['data_inicio'] = \Carbon\Carbon::parse($agendamento->data_inicio)->format('Y-m-d');
+                } catch (\Exception $e) {
+                    $agendamentoFormatado['data_inicio'] = $agendamento->data_inicio;
+                }
+            }
+        } else {
+            $agendamentoFormatado['data_inicio'] = '';
+        }
+        
+        // Formatar data_fim
+        if ($agendamento->data_fim) {
+            if ($agendamento->data_fim instanceof \Carbon\Carbon) {
+                $agendamentoFormatado['data_fim'] = $agendamento->data_fim->format('Y-m-d');
+            } else {
+                // Se é uma string, tentar converter para o formato correto
+                try {
+                    $agendamentoFormatado['data_fim'] = \Carbon\Carbon::parse($agendamento->data_fim)->format('Y-m-d');
+                } catch (\Exception $e) {
+                    $agendamentoFormatado['data_fim'] = $agendamento->data_fim;
+                }
+            }
+        } else {
+            $agendamentoFormatado['data_fim'] = '';
+        }
+        
         $agendamentoFormatado['hora_inicio'] = $agendamento->hora_inicio ? substr($agendamento->hora_inicio, 0, 5) : '';
         $agendamentoFormatado['hora_fim'] = $agendamento->hora_fim ? substr($agendamento->hora_fim, 0, 5) : '';
 
@@ -374,18 +405,43 @@ class AgendamentoController extends Controller
             return back()->withErrors(['hora_fim' => 'A hora de fim deve ser posterior à hora de início.']);
         }
 
-        // Verificar conflitos de horário (excluindo o agendamento atual)
-        $temConflito = (new Agendamento())->temConflito(
-            $validated['espaco_id'],
-            $validated['data_inicio'],
-            $validated['hora_inicio'],
-            $validated['data_fim'],
-            $validated['hora_fim'],
-            $agendamento->id
+        // Verificar se realmente houve mudanças nos campos que podem gerar conflito
+        $mudancasRelevantes = (
+            $agendamento->espaco_id != $validated['espaco_id'] ||
+            $agendamento->data_inicio != $validated['data_inicio'] ||
+            $agendamento->hora_inicio != $validated['hora_inicio'] ||
+            $agendamento->data_fim != $validated['data_fim'] ||
+            $agendamento->hora_fim != $validated['hora_fim']
         );
 
-        if ($temConflito) {
-            return back()->withErrors(['horario' => 'Já existe um agendamento para este espaço no horário solicitado.']);
+        // Só verificar conflitos se houve mudanças relevantes
+        if ($mudancasRelevantes) {
+            $temConflito = (new Agendamento())->temConflito(
+                (int)$validated['espaco_id'],
+                $validated['data_inicio'],
+                $validated['hora_inicio'],
+                $validated['data_fim'],
+                $validated['hora_fim'],
+                (int)$agendamento->id  // Garantir que é um inteiro
+            );
+
+            if ($temConflito) {
+                // Debug para ver quais agendamentos estão conflitando
+                $conflitantes = Agendamento::where('espaco_id', $validated['espaco_id'])
+                    ->whereIn('status', ['pendente', 'aprovado'])
+                    ->where('id', '!=', $agendamento->id)
+                    ->whereRaw("CONCAT(data_inicio, ' ', hora_inicio) < CONCAT(?, ' ', ?)", [$validated['data_fim'], $validated['hora_fim']])
+                    ->whereRaw("CONCAT(data_fim, ' ', hora_fim) > CONCAT(?, ' ', ?)", [$validated['data_inicio'], $validated['hora_inicio']])
+                    ->with(['user', 'espaco'])
+                    ->get();
+
+                $mensagemDetalhada = "Conflito detectado com " . $conflitantes->count() . " agendamento(s):\n";
+                foreach ($conflitantes as $conf) {
+                    $mensagemDetalhada .= "• {$conf->titulo} ({$conf->data_inicio} {$conf->hora_inicio} - {$conf->data_fim} {$conf->hora_fim}) - {$conf->user->name}\n";
+                }
+                
+                return back()->withErrors(['horario' => $mensagemDetalhada]);
+            }
         }
 
         $validated['recursos_solicitados'] = $validated['recursos_solicitados'] ?? [];

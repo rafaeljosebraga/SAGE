@@ -260,63 +260,57 @@ class Agendamento extends Model
     // Método para verificar conflitos de horário
     public function temConflito($espacoId, $dataInicio, $horaInicio, $dataFim, $horaFim, $excludeId = null)
     {
-        $query = self::where('espaco_id', $espacoId)
-            ->whereIn('status', ['pendente', 'aprovado'])
-            ->where(function ($q) use ($dataInicio, $horaInicio, $dataFim, $horaFim) {
-                // Verifica sobreposição de períodos (data + hora)
-                $q->where(function ($dateQuery) use ($dataInicio, $horaInicio, $dataFim, $horaFim) {
-                    // Caso 1: O início do novo agendamento está dentro de um período existente
-                    $dateQuery->where(function ($subQuery) use ($dataInicio, $horaInicio) {
-                        $subQuery->where('data_inicio', '<', $dataInicio)
-                                ->orWhere(function ($timeQuery) use ($dataInicio, $horaInicio) {
-                                    $timeQuery->where('data_inicio', '=', $dataInicio)
-                                             ->where('hora_inicio', '<=', $horaInicio);
-                                });
-                    })->where(function ($subQuery) use ($dataInicio, $horaInicio) {
-                        $subQuery->where('data_fim', '>', $dataInicio)
-                                ->orWhere(function ($timeQuery) use ($dataInicio, $horaInicio) {
-                                    $timeQuery->where('data_fim', '=', $dataInicio)
-                                             ->where('hora_fim', '>', $horaInicio);
-                                });
-                    });
-                })->orWhere(function ($dateQuery) use ($dataInicio, $horaInicio, $dataFim, $horaFim) {
-                    // Caso 2: O fim do novo agendamento está dentro de um período existente
-                    $dateQuery->where(function ($subQuery) use ($dataFim, $horaFim) {
-                        $subQuery->where('data_inicio', '<', $dataFim)
-                                ->orWhere(function ($timeQuery) use ($dataFim, $horaFim) {
-                                    $timeQuery->where('data_inicio', '=', $dataFim)
-                                             ->where('hora_inicio', '<', $horaFim);
-                                });
-                    })->where(function ($subQuery) use ($dataFim, $horaFim) {
-                        $subQuery->where('data_fim', '>', $dataFim)
-                                ->orWhere(function ($timeQuery) use ($dataFim, $horaFim) {
-                                    $timeQuery->where('data_fim', '=', $dataFim)
-                                             ->where('hora_fim', '>=', $horaFim);
-                                });
-                    });
-                })->orWhere(function ($dateQuery) use ($dataInicio, $horaInicio, $dataFim, $horaFim) {
-                    // Caso 3: O novo agendamento engloba completamente um período existente
-                    $dateQuery->where(function ($subQuery) use ($dataInicio, $horaInicio) {
-                        $subQuery->where('data_inicio', '>', $dataInicio)
-                                ->orWhere(function ($timeQuery) use ($dataInicio, $horaInicio) {
-                                    $timeQuery->where('data_inicio', '=', $dataInicio)
-                                             ->where('hora_inicio', '>=', $horaInicio);
-                                });
-                    })->where(function ($subQuery) use ($dataFim, $horaFim) {
-                        $subQuery->where('data_fim', '<', $dataFim)
-                                ->orWhere(function ($timeQuery) use ($dataFim, $horaFim) {
-                                    $timeQuery->where('data_fim', '=', $dataFim)
-                                             ->where('hora_fim', '<=', $horaFim);
-                                });
-                    });
-                });
-            });
-
-        if ($excludeId) {
-            $query->where('id', '!=', $excludeId);
+        try {
+            // Converter para Carbon para comparação mais robusta
+            $inicioNovo = Carbon::createFromFormat('Y-m-d H:i', $dataInicio . ' ' . $horaInicio);
+            $fimNovo = Carbon::createFromFormat('Y-m-d H:i', $dataFim . ' ' . $horaFim);
+            
+            $query = self::where('espaco_id', $espacoId)
+                ->whereIn('status', ['pendente', 'aprovado']);
+                
+            // Excluir o agendamento atual se especificado
+            if ($excludeId) {
+                $query->where('id', '!=', $excludeId);
+            }
+            
+            // Buscar todos os agendamentos que podem conflitar
+            $agendamentos = $query->get(['id', 'data_inicio', 'hora_inicio', 'data_fim', 'hora_fim']);
+            
+            foreach ($agendamentos as $agendamento) {
+                try {
+                    // Formatar datas do agendamento existente
+                    $dataInicioExistente = $agendamento->data_inicio;
+                    $dataFimExistente = $agendamento->data_fim;
+                    
+                    // Se são objetos Carbon, converter para string
+                    if ($dataInicioExistente instanceof Carbon) {
+                        $dataInicioExistente = $dataInicioExistente->format('Y-m-d');
+                    }
+                    if ($dataFimExistente instanceof Carbon) {
+                        $dataFimExistente = $dataFimExistente->format('Y-m-d');
+                    }
+                    
+                    $inicioExistente = Carbon::createFromFormat('Y-m-d H:i', $dataInicioExistente . ' ' . $agendamento->hora_inicio);
+                    $fimExistente = Carbon::createFromFormat('Y-m-d H:i', $dataFimExistente . ' ' . $agendamento->hora_fim);
+                    
+                    // Verificar se há sobreposição
+                    // Dois períodos se sobrepõem se:
+                    // - O início do novo é antes do fim do existente E
+                    // - O fim do novo é depois do início do existente
+                    if ($inicioNovo->lt($fimExistente) && $fimNovo->gt($inicioExistente)) {
+                        return true;
+                    }
+                } catch (\Exception $e) {
+                    // Se houver erro na conversão de data, pular este agendamento
+                    continue;
+                }
+            }
+            
+            return false;
+        } catch (\Exception $e) {
+            // Se houver erro na conversão das datas novas, retornar true para segurança
+            return true;
         }
-
-        return $query->exists();
     }
 
     // Método para formatar período
