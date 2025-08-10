@@ -1196,7 +1196,7 @@ export default function GerenciarAgendamentos({
                                                         <div 
                                                             key={agendamento.id} 
                                                             className={`
-                                                                relative border-l-4 rounded-lg transition-all duration-200 hover:scale-[1.01] hover:shadow-md
+                                                                relative border-l-4 rounded-lg transition-all duration-200 hover:scale-[1.01] hover:shadow-md dark:hover:shadow-white/5
                                                                 ${getEventBorderColor(agendamento)} bg-white dark:bg-gray-900/50
                                                                 border border-gray-200 dark:border-gray-700 shadow-sm
                                                             `}
@@ -1356,7 +1356,7 @@ export default function GerenciarAgendamentos({
 
                         <div className="space-y-3">
                             {currentItemsSemConflito.map((agendamento) => (
-                                <Card key={agendamento.id} className={`border-l-4 ${getEventBorderColor(agendamento)} cursor-pointer shadow-sm hover:scale-[1.01] hover:shadow-md transition-all duration-200 group mx-4`}>
+                                <Card key={agendamento.id} className={`border-l-4 ${getEventBorderColor(agendamento)} cursor-pointer shadow-sm hover:scale-[1.01] hover:shadow-md dark:hover:shadow-white/5 transition-all duration-200 group mx-4`}>
                                     <CardContent className="py-4">
                                         <div className="flex items-start justify-between">
                                             <div className="space-y-3 flex-1">
