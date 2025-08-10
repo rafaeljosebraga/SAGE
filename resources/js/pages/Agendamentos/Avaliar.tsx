@@ -1037,7 +1037,7 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                             const infoGrupo = agendamento.info_grupo;
                             
                             return (
-                                <Card key={agendamento.id} className={`border-l-4 ${getEventBorderColor(agendamento)}`}>
+                                <Card key={agendamento.id} className={`border-l-4 ${getEventBorderColor(agendamento)} cursor-pointer shadow-sm hover:scale-[1.01] hover:shadow-md transition-all duration-200 group mx-4`}>
                                     <CardContent className="p-6">
                                         <div className="flex items-start justify-between">
                                             <div className="space-y-3 flex-1">

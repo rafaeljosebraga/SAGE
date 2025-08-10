@@ -1354,10 +1354,10 @@ export default function GerenciarAgendamentos({
                             </Badge>
                         </div>
 
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                             {currentItemsSemConflito.map((agendamento) => (
-                                <Card key={agendamento.id} className={`border-l-4 ${getEventBorderColor(agendamento)}`}>
-                                    <CardContent className="p-6">
+                                <Card key={agendamento.id} className={`border-l-4 ${getEventBorderColor(agendamento)} cursor-pointer shadow-sm hover:scale-[1.01] hover:shadow-md transition-all duration-200 group mx-4`}>
+                                    <CardContent className="py-4">
                                         <div className="flex items-start justify-between">
                                             <div className="space-y-3 flex-1">
                                                 <div className="flex items-center gap-3 flex-wrap">
@@ -1420,9 +1420,9 @@ export default function GerenciarAgendamentos({
                                             <div className="flex items-center gap-2 ml-4">
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
-                                                        <Button variant="outline" size="sm" asChild className="hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 dark:hover:bg-blue-900/30 dark:hover:border-blue-700 dark:hover:text-blue-300">
+                                                        <Button variant="outline" size="sm" asChild className="hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 dark:hover:bg-blue-900/30 dark:hover:border-blue-700 dark:hover:text-blue-300 transition-all duration-200">
                                                             <Link href={`/agendamentos/${agendamento.id}?return_url=${encodeURIComponent(generateReturnUrl())}`}>
-                                                                <Eye className="h-4 w-4" />
+                                                                <Eye className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg" />
                                                             </Link>
                                                         </Button>
                                                     </TooltipTrigger>
