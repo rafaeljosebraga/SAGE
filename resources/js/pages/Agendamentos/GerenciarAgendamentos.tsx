@@ -1157,7 +1157,7 @@ export default function GerenciarAgendamentos({
                                                                     grupoConflito: grupo,
                                                                     agendamentoSelecionado: null
                                                                 })}
-                                                                className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100 hover:border-green-300 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400"
+                                                                className="bg-green-600 border-green-600 text-white hover:bg-green-700 hover:border-green-700 dark:bg-green-600 dark:border-green-600 dark:text-white"
                                                             >
                                                                 <Check className="h-4 w-4 mr-2" />
                                                                 Resolver
