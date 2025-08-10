@@ -32,7 +32,8 @@ import {
     AlertCircle,
     FileText,
     Zap,
-    Building
+    Building,
+    CircleCheckBig
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -823,21 +824,6 @@ export default function GerenciarAgendamentos({
                     </Card>
 
                     <Card 
-                        className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:bg-orange-100/60 dark:hover:bg-orange-900/20 hover:border-orange-200 dark:hover:border-orange-800 group"
-                    >
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Agendamentos em Conflito</CardTitle>
-                            <Zap className="h-4 w-4 text-orange-600 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg group-hover:text-orange-500" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-orange-600">{totalAgendamentosConflitantesFixo}</div>
-                            <p className="text-xs text-muted-foreground">
-                                Total de agendamentos conflitantes
-                            </p>
-                        </CardContent>
-                    </Card>
-
-                    <Card 
                         className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:bg-green-100/60 dark:hover:bg-green-900/20 hover:border-green-200 dark:hover:border-green-800 group"
                     >
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -848,6 +834,21 @@ export default function GerenciarAgendamentos({
                             <div className="text-2xl font-bold text-green-600">{totalConflitosResolvidosFixo}</div>
                             <p className="text-xs text-muted-foreground">
                                 Conflitos resolvidos hoje
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    <Card 
+                        className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:bg-orange-100/60 dark:hover:bg-orange-900/20 hover:border-orange-200 dark:hover:border-orange-800 group"
+                    >
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Agendamentos em Conflito</CardTitle>
+                            <Zap className="h-4 w-4 text-orange-600 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg group-hover:text-orange-500" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold text-orange-600">{totalAgendamentosConflitantesFixo}</div>
+                            <p className="text-xs text-muted-foreground">
+                                Total de agendamentos conflitantes
                             </p>
                         </CardContent>
                     </Card>
@@ -1093,15 +1094,7 @@ export default function GerenciarAgendamentos({
                 {/* Grupos de Conflito */}
                 {filteredGruposConflito.length > 0 && (
                     <div className="space-y-6">
-                        <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-2">
-                                <AlertTriangle className="h-6 w-6 text-orange-600 animate-pulse" />
-                                <h2 className="text-2xl font-bold text-orange-600">Conflitos Pendentes</h2>
-                            </div>
-                            <Badge variant="secondary" className="bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-800">
-                                {filteredGruposConflito.reduce((total, grupo) => total + grupo.agendamentos.length, 0)} agendamentos
-                            </Badge>
-                        </div>
+
 
                         <div className="grid gap-6">
                             {filteredGruposConflito.map((grupo) => {
@@ -1343,8 +1336,8 @@ export default function GerenciarAgendamentos({
                 {/* Agendamentos sem conflito - só mostra quando filtro for especificamente 'sem_conflito' */}
                 {tipoConflitoFilter === 'sem_conflito' && currentItemsSemConflito.length > 0 && (
                     <div className="space-y-4">
-                        <div className="flex items-center gap-2">
-                            <CheckCircle className="h-5 w-5 text-green-600" />
+                        <div className="flex items-center gap-2 mx-4">
+                            <CircleCheckBig className="h-5 w-5 text-blue-600" />
                             <h2 className="text-xl font-semibold">Agendamentos sem Conflito</h2>
                             <Badge variant="secondary" className="ml-2">
                                 {totalItemsSemConflito} agendamento{totalItemsSemConflito !== 1 ? 's' : ''} 
