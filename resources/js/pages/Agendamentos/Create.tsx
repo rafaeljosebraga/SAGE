@@ -80,6 +80,7 @@ export default function AgendamentosCreate({ espacos, recursos, espacoSelecionad
                     description: 'Sua solicitação foi enviada para aprovação.',
                     variant: 'success',
                     duration: 5000,
+                    className: "bg-green-100 border border-green-400 text-green-800",
                 });
                 setIsSubmitting(false);
             },

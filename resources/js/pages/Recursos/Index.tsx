@@ -178,7 +178,10 @@ export default function RecursosIndex({ auth, recursos }: RecursosIndexProps) {
                                 variant="outline"
                                 size="sm"
                                 asChild
-                                className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black"
+                                className="cursor-pointer bg-sidebar border border-transparent
+                                hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700
+                                dark:bg-gray-800 dark:hover:bg-blue-900/30 dark:hover:border-blue-700 dark:hover:text-blue-300
+                                text-black dark:text-white"
                             >
                                 <Link href={`/recursos/${recurso.id}/editar`}>
                                     <Pencil className="h-4 w-4" />
@@ -196,7 +199,9 @@ export default function RecursosIndex({ auth, recursos }: RecursosIndexProps) {
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-[#F26326] hover:text-black dark:text-[#F26326] dark:hover:text-black"
+                                        className="cursor-pointer bg-sidebar border border-transparent text-black dark:text-white
+                                        hover:bg-[#F26326]/10 hover:border-[#F26326]/60 hover:text-[#F26326]
+                                        dark:hover:bg-[#F26326]/30 dark:hover:border-[#F26326]/70 dark:hover:text-[#F26326]"
                                     >
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
@@ -217,12 +222,12 @@ export default function RecursosIndex({ auth, recursos }: RecursosIndexProps) {
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                                <AlertDialogCancel>
+                                <AlertDialogCancel className='cursor-pointer'>
                                     Cancelar
                                 </AlertDialogCancel>
                                 <AlertDialogAction
                                     onClick={() => handleDelete(recurso)}
-                                    className="bg-red-600 hover:bg-red-700"
+                                    className="bg-red-600 hover:bg-red-700 cursor-pointer"
                                 >
                                     Excluir
                                 </AlertDialogAction>
@@ -243,12 +248,12 @@ export default function RecursosIndex({ auth, recursos }: RecursosIndexProps) {
             <Head title="Recursos" />
 
             <div className="space-y-6">
-                <div className="flex items-center justify-between px-6 py-4">
+                <div className="flex items-center justify-between px-2 py-4">
                     <div className="flex-1">
                    <h1 className="text-3xl font-bold text-black dark:text-white">Recursos</h1>
                     </div>
                     <div className="flex-shrink-0 mr-6">
-                       <Button asChild className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black ">
+                       <Button asChild className="bg-white dark:bg-white text-black dark:text-black hover:bg-gray-100 dark:hover:bg-gray-200 cursor-pointer transition-colors">
                             <Link href="/recursos/criar">
                                 <Plus className="mr-2 h-4 w-4" />
                                 Novo Recurso

@@ -43,6 +43,7 @@ export default function Password() {
                     title: "Senha atualizada com sucesso!",
                     description: "Sua senha foi alterada e está segura.",
                     duration: 5000,
+                    variant: "success",
                 });
             },
             onError: (errors) => {
