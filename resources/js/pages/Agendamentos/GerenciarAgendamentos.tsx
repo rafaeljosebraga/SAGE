@@ -1261,8 +1261,8 @@ export default function GerenciarAgendamentos({
                                 return (
                                     <Card key={grupo.grupo_conflito} className={`shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden ${
                                         tipoConflitoFilter === 'resolvidos_hoje' 
-                                            ? 'bg-green-50/30 dark:bg-green-950/20 border-green-200 dark:border-green-800' 
-                                            : 'bg-card text-card-foreground'
+                                            ? 'bg-card text-card-foreground border border-green-200 dark:border-green-800' 
+                                            : 'bg-card text-card-foreground border border-orange-200 dark:border-orange-800'
                                     }`}>
                                         <CardHeader className={`flex flex-col gap-1.5 px-6 ${
                                             tipoConflitoFilter === 'resolvidos_hoje'
