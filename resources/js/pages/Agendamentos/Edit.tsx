@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Combobox } from '@/components/ui/combobox';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -468,21 +469,19 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                 <CardContent className="space-y-4">
                                     <div>
                                         <Label htmlFor="espaco_id">Espaço *</Label>
-                                        <Select
+                                        <Combobox
+                                            id="espaco_id"
+                                            name="espaco_id"
                                             value={data.espaco_id}
                                             onValueChange={handleEspacoChange}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Selecione um espaço" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {espacos.map((espaco) => (
-                                                    <SelectItem key={espaco.id} value={espaco.id.toString()}>
-                                                        {espaco.nome} ({espaco.capacidade} pessoas)
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
+                                            placeholder="Selecione um espaço"
+                                            searchPlaceholder="Buscar espaço..."
+                                            options={espacos.map((espaco) => ({
+                                                value: espaco.id.toString(),
+                                                label: `${espaco.nome} (${espaco.capacidade} pessoas)`
+                                            }))}
+                                            triggerClassName="flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 bg-white border-black dark:bg-black"
+                                        />
                                         {errors.espaco_id && (
                                             <p className="text-sm text-red-600 mt-1">{errors.espaco_id}</p>
                                         )}

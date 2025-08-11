@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useToastDismissOnClick } from '@/hooks/use-toast-dismiss-on-click';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Combobox } from '@/components/ui/combobox';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -454,24 +455,16 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="localizacao_id">Localização *</Label>
-                                    <Select
+                                    <Combobox
+                                        id="localizacao_id"
                                         value={data.localizacao_id}
                                         onValueChange={handleLocalizacaoChange}
-                                    >
-                                        <SelectTrigger
-                                            id="localizacao_id"
-                                            className={errors.localizacao_id ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}
-                                        >
-                                            <SelectValue placeholder="Selecione uma localização" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {localizacoes.map((localizacao) => (
-                                                <SelectItem key={localizacao.id} value={localizacao.id.toString()}>
-                                                    {localizacao.nome}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                        options={localizacoes.map(l => ({ value: l.id.toString(), label: l.nome }))}
+                                        placeholder="Selecione uma localização"
+                                        searchPlaceholder="Buscar localização..."
+                                        className=""
+                                        triggerClassName={(errors.localizacao_id ? 'border-red-500 ' : '') + 'bg-white border-black dark:bg-black'}
+                                    />
                                     {errors.localizacao_id && (
                                         <p className="text-sm text-red-500">{errors.localizacao_id}</p>
                                     )}

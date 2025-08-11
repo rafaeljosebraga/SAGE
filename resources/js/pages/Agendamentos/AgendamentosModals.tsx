@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Combobox } from '@/components/ui/combobox';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { StatusBadge, useAgendamentoColors } from '@/components/ui/agend-colors';
@@ -239,7 +240,7 @@ export default function AgendamentosModals({
                 }
             }}>
                 <DialogContent 
-                    className="max-w-2xl max-h-[90vh] rounded-2xl flex flex-col" 
+                    className="max-w-[90vw] sm:max-w-2xl max-h-[95vh] overflow-hidden rounded-lg flex flex-col" 
                     onInteractOutside={(e) => {
                         // Não mostrar confirmação se outros modais estão abertos
                         const hasOtherModalsOpen = conflictModal.open || pastTimeModal.open || conflictTimeModal.open;
@@ -262,7 +263,10 @@ export default function AgendamentosModals({
                     }}
                 >
                     <DialogHeader className="flex-shrink-0 pb-4">
-                        <DialogTitle>Novo Agendamento</DialogTitle>
+                        <DialogTitle className="flex items-center gap-2">
+                            <Plus className="h-5 w-5 text-green-600" />
+                            Novo Agendamento
+                        </DialogTitle>
                         <DialogDescription>
                             Preencha os dados para solicitar um novo agendamento de espaço.
                         </DialogDescription>
@@ -284,22 +288,19 @@ export default function AgendamentosModals({
 
                                 <div>
                                     <Label htmlFor="espaco_id">Espaço *</Label>
-                                    <Select
+                                    <Combobox
+                                        id="espaco_id"
                                         name="espaco_id"
                                         value={formData.espaco_id}
                                         onValueChange={(value) => setFormData({ ...formData, espaco_id: value })}
-                                    >
-                                        <SelectTrigger id="espaco_id">
-                                            <SelectValue placeholder="Selecione um espaço" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {espacos.map((espaco) => (
-                                                <SelectItem key={espaco.id} value={espaco.id.toString()}>
-                                                    {espaco.nome} (Cap: {espaco.capacidade})
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                        placeholder="Selecione um espaço"
+                                        searchPlaceholder="Buscar espaço..."
+                                        options={espacos.map((espaco) => ({
+                                            value: espaco.id.toString(),
+                                            label: `${espaco.nome} (Cap: ${espaco.capacidade})`
+                                        }))}
+                                        triggerClassName="border-input placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground flex h-9 w-full min-w-0 rounded-md border bg-background px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
+                                    />
                                 </div>
 
                                 <div>
