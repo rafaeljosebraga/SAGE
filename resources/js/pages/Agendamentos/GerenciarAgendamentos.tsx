@@ -1261,8 +1261,8 @@ export default function GerenciarAgendamentos({
                                 return (
                                     <Card key={grupo.grupo_conflito} className={`shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden ${
                                         tipoConflitoFilter === 'resolvidos_hoje' 
-                                            ? 'bg-green-50/30 dark:bg-green-950/20 border-green-200 dark:border-green-800' 
-                                            : 'bg-white dark:bg-gray-900/80 dark:border-gray-700'
+                                            ? 'bg-card text-card-foreground border border-green-200 dark:border-green-800' 
+                                            : 'bg-card text-card-foreground border border-orange-200 dark:border-orange-800'
                                     }`}>
                                         <CardHeader className={`flex flex-col gap-1.5 px-6 ${
                                             tipoConflitoFilter === 'resolvidos_hoje'
@@ -1396,8 +1396,9 @@ export default function GerenciarAgendamentos({
                                                             key={agendamento.id} 
                                                             className={`
                                                                 relative border-l-4 rounded-lg transition-all duration-200 hover:scale-[1.01] hover:shadow-md dark:hover:shadow-white/5
-                                                                ${getEventBorderColor(agendamento)} bg-white dark:bg-gray-900/50
+                                                                ${getEventBorderColor(agendamento)} bg-card
                                                                 border border-gray-200 dark:border-gray-700 shadow-sm
+                                                                hover:bg-orange-100/60 dark:hover:bg-orange-900/20 hover:border-orange-200 dark:hover:border-orange-800
                                                             `}
                                                         >
                                                             <div className="p-6">
