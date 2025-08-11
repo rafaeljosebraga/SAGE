@@ -239,7 +239,7 @@ export default function AgendamentosModals({
                 }
             }}>
                 <DialogContent 
-                    className="max-w-2xl max-h-[90vh] rounded-2xl flex flex-col" 
+                    className="max-w-[90vw] sm:max-w-2xl max-h-[95vh] overflow-hidden rounded-lg flex flex-col" 
                     onInteractOutside={(e) => {
                         // Não mostrar confirmação se outros modais estão abertos
                         const hasOtherModalsOpen = conflictModal.open || pastTimeModal.open || conflictTimeModal.open;
@@ -262,7 +262,10 @@ export default function AgendamentosModals({
                     }}
                 >
                     <DialogHeader className="flex-shrink-0 pb-4">
-                        <DialogTitle>Novo Agendamento</DialogTitle>
+                        <DialogTitle className="flex items-center gap-2">
+                            <Plus className="h-5 w-5 text-green-600" />
+                            Novo Agendamento
+                        </DialogTitle>
                         <DialogDescription>
                             Preencha os dados para solicitar um novo agendamento de espaço.
                         </DialogDescription>
