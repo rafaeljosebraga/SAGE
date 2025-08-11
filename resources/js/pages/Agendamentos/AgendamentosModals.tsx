@@ -800,12 +800,14 @@ export default function AgendamentosModals({
                         <Button
                             variant="outline"
                             onClick={() => setPastTimeModal({ open: false })}
+                            className="cursor-pointer"
                         >
                             Cancelar
                         </Button>
                         <Button
                             variant="default"
                             onClick={handlePastTimeConfirm}
+                            className="cursor-pointer"
                         >
                             Sim, Agendar Mesmo Assim
                         </Button>
