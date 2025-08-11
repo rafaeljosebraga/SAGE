@@ -114,13 +114,12 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                                 variant="outline"
                                 type="button"
                                 className="
-                                            ml-4
-                                            bg-white dark:bg-white
-                                            text-black dark:text-black
-                                            hover:!bg-[#EF7D4C] hover:!text-white
-                                            dark:hover:!bg-[#EF7D4C] dark:hover:!text-white
-                                            transition-colors
-                                "
+                                ml-1
+                                bg-white dark:bg-white 
+                                text-black dark:text-black 
+                                hover:bg-gray-100 dark:hover:bg-gray-200 
+                                cursor-pointer 
+                                transition-colors"    
                             >
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Voltar
@@ -150,14 +149,13 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                         <Button
                             variant="outline"
                             type="button"
-                        className="
-                                    ml-4
-                                    bg-white dark:bg-white
-                                    text-black dark:text-black
-                                    hover:!bg-[#EF7D4C] hover:!text-white
-                                    dark:hover:!bg-[#EF7D4C] dark:hover:!text-white
-                                    transition-colors
-                        "
+                            className="
+                                    ml-1
+                                    bg-white dark:bg-white 
+                                    text-black dark:text-black 
+                                    hover:bg-gray-100 dark:hover:bg-gray-200 
+                                    cursor-pointer 
+                                    transition-colors"    
                             onClick={() => {
                                 window.location.href = '/recursos';
                             }}
@@ -187,7 +185,7 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                                             if (errors.nome) clearErrors('nome');
                                         }}
                                         placeholder="Nome do recurso"
-                                        className={errors.nome ? 'border-red-500' : ''}
+                                        className={errors.nome ? 'border-red-500 bg-white dark:bg-black' : 'bg-white border-black dark:bg-black'}
                                     />
                                     {errors.nome && (
                                         <p className="text-sm text-red-500">{errors.nome}</p>
@@ -203,7 +201,7 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                                             if (errors.status) clearErrors('status');
                                         }}
                                     >
-                                        <SelectTrigger className={errors.status ? 'border-red-500' : ''}>
+                                        <SelectTrigger className={errors.nome ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}>
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -229,7 +227,7 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                                     }}
                                     placeholder="Descrição do recurso"
                                     rows={3}
-                                    className={errors.descricao ? 'border-red-500' : ''}
+                                    className={errors.nome ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}
                                 />
                                 {errors.descricao && (
                                     <p className="text-sm text-red-500">{errors.descricao}</p>
@@ -266,7 +264,7 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                                             if (errors.marca) clearErrors('marca');
                                         }}
                                         placeholder="Marca do equipamento"
-                                        className={errors.marca ? 'border-red-500' : ''}
+                                        className={errors.nome ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}
                                     />
                                     {errors.marca && (
                                         <p className="text-sm text-red-500">{errors.marca}</p>
@@ -284,7 +282,7 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                                             if (errors.modelo) clearErrors('modelo');
                                         }}
                                         placeholder="Modelo do equipamento"
-                                        className={errors.modelo ? 'border-red-500' : ''}
+                                        className={errors.nome ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}
                                     />
                                     {errors.modelo && (
                                         <p className="text-sm text-red-500">{errors.modelo}</p>
@@ -303,7 +301,7 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                                     }}
                                     placeholder="Observações gerais sobre o recurso"
                                     rows={3}
-                                    className={errors.observacoes ? 'border-red-500' : ''}
+                                    className={errors.nome ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}
                                 />
                                 {errors.observacoes && (
                                     <p className="text-sm text-red-500">{errors.observacoes}</p>
@@ -316,15 +314,20 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                         <Button
                             type="submit"
                             disabled={processing}
-                            className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black"
-                     
+                            className="
+                                ml-1
+                                bg-white dark:bg-white 
+                                text-black dark:text-black 
+                                hover:bg-gray-100 dark:hover:bg-gray-200 
+                                cursor-pointer 
+                                transition-colors" 
                         >
                             <Save className="mr-2 h-4 w-4" />
                             {processing ? 'Salvando...' : 'Salvar Recurso'}
                         </Button>
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
-                                <Button>
+                                <Button className="cursor-pointer">
                                     Cancelar
                                 </Button>
                             </AlertDialogTrigger>
@@ -336,12 +339,12 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                    <AlertDialogCancel>Não</AlertDialogCancel>
+                                    <AlertDialogCancel className='cursor-pointer'>Não</AlertDialogCancel>
                                     <AlertDialogAction
                                         onClick={() => {
                                             reset();
                                         }}
-                                        className="bg-red-600 hover:bg-red-700"
+                                        className="cursor-pointer bg-red-600 hover:bg-red-700"
                                     >
                                         Sim, cancelar
                                     </AlertDialogAction>

@@ -355,6 +355,7 @@ export default function GerenciarAgendamentos({
                     title: 'Erro ao resolver conflito',
                     description: errorMessage,
                     variant: 'destructive',
+                    duration: 5000,
                 });
             }
         });
@@ -1037,7 +1038,7 @@ export default function GerenciarAgendamentos({
                                         placeholder="Buscar por nome..."
                                         value={nomeAgendamentoFilter}
                                         onChange={(e) => setNomeAgendamentoFilter(e.target.value)}
-                                        className="pl-8 pr-10"
+                                        className="pl-8 pr-10 border border-black bg-white dark:bg-black"
                                     />
                                     <Tooltip>
                                         <TooltipTrigger asChild>
@@ -1063,7 +1064,7 @@ export default function GerenciarAgendamentos({
                                     value={statusFilter}
                                     onValueChange={(value) => setStatusFilter(value)}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className=" border border-black bg-white dark:bg-black">
                                         <SelectValue placeholder="Status" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -1082,7 +1083,7 @@ export default function GerenciarAgendamentos({
                                     value={tipoConflitoFilter}
                                     onValueChange={(value) => setTipoConflitoFilter(value)}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className=" border border-black bg-white dark:bg-black">
                                         <SelectValue placeholder="Tipo" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -1099,7 +1100,7 @@ export default function GerenciarAgendamentos({
                                     value={espacoFilter}
                                     onValueChange={(value) => setEspacoFilter(value)}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className=" border border-black bg-white dark:bg-black">
                                         <SelectValue placeholder="Todos os espaços" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -1121,7 +1122,7 @@ export default function GerenciarAgendamentos({
                                         placeholder="Buscar por solicitante..."
                                         value={solicitanteFilter}
                                         onChange={(e) => setSolicitanteFilter(e.target.value)}
-                                        className="pl-8 pr-10"
+                                        className="pl-8 pr-10  border border-black bg-white dark:bg-black"
                                     />
                                     <Tooltip>
                                         <TooltipTrigger asChild>
@@ -1148,7 +1149,7 @@ export default function GerenciarAgendamentos({
                                         type="date"
                                         value={dataInicioFilter}
                                         onChange={(e) => setDataInicioFilter(e.target.value)}
-                                        className="pr-10"
+                                        className="pr-10  border border-black bg-white dark:bg-black"
                                     />
                                     <Tooltip>
                                         <TooltipTrigger asChild>
@@ -1176,7 +1177,7 @@ export default function GerenciarAgendamentos({
                                         type="date"
                                         value={dataFimFilter}
                                         onChange={(e) => setDataFimFilter(e.target.value)}
-                                        className="pr-10"
+                                        className="pr-10 border border-black bg-white dark:bg-black"
                                     />
                                     <Tooltip>
                                         <TooltipTrigger asChild>
@@ -1326,7 +1327,7 @@ export default function GerenciarAgendamentos({
                                                                         grupoConflito: grupo,
                                                                         agendamentoSelecionado: null
                                                                     })}
-                                                                    className="bg-green-600 border-green-600 text-white hover:bg-green-700 hover:border-green-700 dark:bg-green-600 dark:border-green-600 dark:text-white"
+                                                                    className="cursor-pointer bg-green-600 border-green-600 text-white hover:text-white hover:bg-green-700 hover:border-green-700 dark:bg-green-600 dark:border-green-600 dark:text-white"
                                                                 >
                                                                     <Check className="h-4 w-4 mr-2" />
                                                                     Resolver
@@ -1345,7 +1346,7 @@ export default function GerenciarAgendamentos({
                                                                         open: true,
                                                                         grupoConflito: grupo
                                                                     })}
-                                                                    className="bg-orange-600 hover:bg-orange-700 border-orange-600 hover:border-orange-700"
+                                                                    className="cursor-pointer bg-orange-600 hover:bg-orange-700 border-orange-600 hover:border-orange-700"
                                                                 >
                                                                     <X className="h-4 w-4 mr-2" />
                                                                     Rejeitar Todos
@@ -1835,14 +1836,14 @@ export default function GerenciarAgendamentos({
                                             setResolverDialog({ open: false, grupoConflito: null, agendamentoSelecionado: null });
                                             setMotivoRejeicao('');
                                         }}
-                                        className="flex-1 rounded-lg"
+                                        className="cursor-pointer flex-1 rounded-lg"
                                     >
                                         Cancelar
                                     </Button>
                                     <Button
                                         onClick={handleResolverConflito}
                                         disabled={!resolverDialog.agendamentoSelecionado || !motivoRejeicao.trim() || motivoRejeicao.trim().length < 5}
-                                        className="flex-1 bg-green-600 hover:bg-green-700 rounded-lg"
+                                        className="cursor-pointer flex-1 bg-green-600 hover:bg-green-700 rounded-lg"
                                     >
                                         <Check className="h-4 w-4 mr-2" />
                                         Resolver Conflito
@@ -1901,6 +1902,7 @@ export default function GerenciarAgendamentos({
                                 setRejeitarTodosDialog({ open: false, grupoConflito: null });
                                 setMotivoRejeicao('');
                             }}
+                            className="cursor-pointer"
                         >
                             Cancelar
                         </Button>
@@ -1908,6 +1910,7 @@ export default function GerenciarAgendamentos({
                             variant="destructive"
                             onClick={handleRejeitarTodos}
                             disabled={!motivoRejeicao.trim()}
+                            className="cursor-pointer"
                         >
                             <X className="h-4 w-4 mr-2" />
                             Rejeitar Todos

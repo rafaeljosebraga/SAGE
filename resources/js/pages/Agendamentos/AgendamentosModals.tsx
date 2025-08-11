@@ -633,7 +633,7 @@ export default function AgendamentosModals({
                                 <Button
                                     variant="outline"
                                     onClick={() => setConflictModal({ open: false, conflitos: [], formData: null })}
-                                    className="flex-1 rounded-lg"
+                                    className="cursor-pointer flex-1 rounded-lg"
                                 >
                                     Cancelar
                                 </Button>
@@ -652,7 +652,7 @@ export default function AgendamentosModals({
                                             duration: 5000,
                                         });
                                     }}
-                                    className="flex-1 bg-yellow-600 hover:bg-yellow-700 rounded-lg"
+                                    className="cursor-pointer flex-1 bg-yellow-600 hover:bg-yellow-700 rounded-lg"
                                 >
                                     Pedir Prioridade
                                 </Button>

@@ -160,6 +160,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                 toast({
                     title: "Agendamento cancelado com sucesso!",
                     // description: "O agendamento foi cancelado.",
+                    className: "bg-green-600 text-white border-green-600 dark:bg-green-700 dark:text-white dark:border-green-700",
                 });
                 // Recarregar a página para atualizar os dados
                 router.reload({ only: ['agendamento'] });
@@ -186,6 +187,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                 toast({
                     title: "Agendamento descancelado com sucesso!",
                     description: "O status foi alterado para pendente.",
+                    className: "bg-green-600 text-white border-green-600 dark:bg-green-700 dark:text-white dark:border-green-700",
                 });
                 // Recarregar a página para atualizar os dados
                 router.reload({ only: ['agendamento'] });
@@ -212,6 +214,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                 toast({
                     title: "Agendamento excluído com sucesso!",
                     // description: "O agendamento foi removido do sistema.",
+                    variant: "success",
                     duration: 5000,
                 });
                 // Redirecionar para a lista de agendamentos
@@ -457,7 +460,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                                         variant="outline"
                                         size="sm"
                                         onClick={handleUncancel}
-                                        className="bg-green-50 hover:bg-green-100 border-green-200 hover:border-green-300 text-green-700 hover:text-green-800 dark:bg-green-900/30 dark:hover:bg-green-900/50 dark:border-green-700 dark:hover:border-green-600 dark:text-green-300 dark:hover:text-green-200"
+                                        className="cursor-pointer bg-green-50 hover:bg-green-100 border-green-200 hover:border-green-300 text-green-700 hover:text-green-800 dark:bg-green-900/30 dark:hover:bg-green-900/50 dark:border-green-700 dark:hover:border-green-600 dark:text-green-300 dark:hover:text-green-200"
                                     >
                                         <RotateCcw className="h-4 w-4 mr-2" />
                                         Voltar Agendamento
@@ -1204,12 +1207,14 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                         <Button
                             variant="outline"
                             onClick={() => setDeleteModal({ open: false, motivo: '' })}
+                            className="cursor-pointer"
                         >
                             Não
                         </Button>
                         <Button
                             variant="destructive"
                             onClick={confirmDelete}
+                            className="cursor-pointer"
                         >
                             Sim, Cancelar Agendamento
                         </Button>
@@ -1243,13 +1248,14 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                         <Button
                             variant="outline"
                             onClick={() => setUncancelModal({ open: false })}
+                            className="cursor-pointer"
                         >
                             Não
                         </Button>
                         <Button
                             variant="default"
                             onClick={confirmUncancel}
-                            className="bg-green-600 hover:bg-green-700"
+                            className="cursor-pointer bg-green-600 hover:bg-green-700"
                         >
                             Sim, Voltar Agendamento
                         </Button>
@@ -1283,12 +1289,14 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                         <Button
                             variant="outline"
                             onClick={() => setForceDeleteModal({ open: false })}
+                            className="cursor-pointer"
                         >
                             Cancelar
                         </Button>
                         <Button
                             variant="destructive"
                             onClick={confirmForceDelete}
+                            className="cursor-pointer"
                         >
                             Sim, Excluir Permanentemente
                         </Button>

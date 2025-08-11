@@ -126,6 +126,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                         title: "Foto alterada com sucesso!",
                         description: "Sua foto de perfil foi atualizada em todo o sistema.",
                         duration: 5000,
+                        variant: "success",
                     });
                     
                     // Refresh automático do sistema após atualização da foto
