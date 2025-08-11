@@ -16,6 +16,7 @@ interface ComboboxProps {
   placeholder?: string
   searchPlaceholder?: string
   className?: string
+  triggerClassName?: string
   disabled?: boolean
   id?: string
   name?: string
@@ -28,6 +29,7 @@ export function Combobox({
   placeholder = "Selecione uma opção",
   searchPlaceholder = "Buscar...",
   className,
+  triggerClassName,
   disabled = false,
   id,
   name
@@ -166,8 +168,9 @@ export function Combobox({
         aria-expanded={open}
         aria-haspopup="listbox"
         className={cn(
-          "w-full justify-between font-normal",
-          !selectedOption && "text-muted-foreground"
+          "flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 bg-white border-black dark:bg-black",
+          !selectedOption && "text-muted-foreground",
+          triggerClassName
         )}
         onClick={handleToggle}
         disabled={disabled}
