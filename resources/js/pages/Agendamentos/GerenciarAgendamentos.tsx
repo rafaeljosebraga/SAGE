@@ -1264,12 +1264,14 @@ export default function GerenciarAgendamentos({
                                             ? 'bg-green-50/30 dark:bg-green-950/20 border-green-200 dark:border-green-800' 
                                             : 'bg-white dark:bg-gray-900/80 dark:border-gray-700'
                                     }`}>
-                                        <CardHeader className={`${
+                                        <CardHeader className={`flex flex-col gap-1.5 px-6 ${
                                             tipoConflitoFilter === 'resolvidos_hoje'
                                                 ? 'bg-gradient-to-r from-green-50 to-green-100 dark:from-green-950/40 dark:to-green-900/50'
-                                                : 'bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-950/40 dark:to-orange-900/50'
+                                                : 'bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-950/40 dark:to-orange-900/50 min-h-[75px]'
                                         }`}>
-                                            <div className="flex items-center justify-between">
+                                            <div className={`flex items-center justify-between ${
+                                                tipoConflitoFilter !== 'resolvidos_hoje' ? 'h-full' : ''
+                                            }`}>
                                                 <div className="flex items-center gap-4">
                                                     <div className="flex-shrink-0">
                                                         <div className={`p-3 rounded-full ${
@@ -1307,12 +1309,6 @@ export default function GerenciarAgendamentos({
                                                                 <span className="flex items-center gap-1 text-muted-foreground">
                                                                     <MapPin className="h-3 w-3" />
                                                                     {grupo.espaco.localizacao.nome}
-                                                                </span>
-                                                            )}
-                                                            {tipoConflitoFilter === 'resolvidos_hoje' && (grupo as any).resolvido_em && (
-                                                                <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
-                                                                    <Clock className="h-3 w-3" />
-                                                                    {format(new Date((grupo as any).resolvido_em), 'HH:mm', { locale: ptBR })}
                                                                 </span>
                                                             )}
                                                         </CardDescription>
@@ -1362,11 +1358,32 @@ export default function GerenciarAgendamentos({
                                                     </div>
                                                 )}
                                                 {tipoConflitoFilter === 'resolvidos_hoje' && (grupo as any).resolvido_por && (
-                                                    <div className="text-sm text-green-600 dark:text-green-400">
-                                                        <span className="flex items-center gap-1">
-                                                            <User className="h-3 w-3" />
-                                                            Resolvido por: {(grupo as any).resolvido_por.name}
-                                                        </span>
+                                                    <div className="flex flex-col gap-2 px-3 py-2 rounded-lg bg-white/50 dark:bg-gray-800/30">
+                                                        <div className="flex items-center gap-2">
+                                                            <UserAvatar user={(grupo as any).resolvido_por} size="sm" />
+                                                            <div className="flex flex-col">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                                                                        {(grupo as any).resolvido_por.name}
+                                                                    </span>
+                                                                    {(grupo as any).resolvido_por.perfil_acesso && (
+                                                                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${getPerfilColor((grupo as any).resolvido_por.perfil_acesso)}`}>
+                                                                            {formatPerfil((grupo as any).resolvido_por.perfil_acesso)}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                {(grupo as any).resolvido_por.email && (
+                                                                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                                        {(grupo as any).resolvido_por.email}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        {(grupo as any).resolvido_em && (
+                                                            <div className="text-xs text-gray-600 dark:text-gray-400 ml-1">
+                                                                Aprovado {format(new Date((grupo as any).resolvido_em), 'dd/MM/yyyy', { locale: ptBR })} às {format(new Date((grupo as any).resolvido_em), 'HH:mm', { locale: ptBR })}
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>
@@ -1403,75 +1420,67 @@ export default function GerenciarAgendamentos({
                                                                         </div>
                                                                         
                                                                         {/* Grid de informações */}
-                                                                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-sm">
-                                                                            {/* Coluna 1: Solicitante */}
-                                                                            <div className="space-y-3">
-                                                                                <div className="flex items-start gap-3">
-                                                                                    <div className="flex-shrink-0 p-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                                                                                        <User className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                                                                                    </div>
-                                                                                    <div className="min-w-0 flex-1">
-                                                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
-                                                                                            Solicitante
-                                                                                        </p>
-                                                                                        <div className="flex items-center gap-2">
-                                                                                            {agendamento.user && <UserAvatar user={agendamento.user} size="sm" />}
-                                                                                            <div>
-                                                                                                <p className="font-medium text-gray-900 dark:text-gray-100">
-                                                                                                    {agendamento.user?.name || 'Usuário não encontrado'}
-                                                                                                </p>
-                                                                                                {agendamento.user?.email && (
-                                                                                                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                                                                        {agendamento.user.email}
-                                                                                                    </p>
+                                                                        <div className="space-y-4 text-sm">
+                                                                            {/* Primeira linha: Solicitante e Data/Horário */}
+                                                                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                                                                {/* Coluna 1: Solicitante */}
+                                                                                <div className="space-y-3">
+                                                                                    <div className="flex items-start gap-3">
+                                                                                        <User className="h-4 w-4 flex-shrink-0 mt-1 text-gray-600 dark:text-gray-400" />
+                                                                                        <div className="min-w-0 flex-1">
+                                                                                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+                                                                                                Solicitante
+                                                                                            </p>
+                                                                                            <div className="flex items-center gap-2">
+                                                                                                {agendamento.user && <UserAvatar user={agendamento.user} size="sm" />}
+                                                                                                <div className="flex flex-col">
+                                                                                                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                                                                        {agendamento.user?.name || 'Usuário não encontrado'}
+                                                                                                    </span>
+                                                                                                    {agendamento.user?.email && (
+                                                                                                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                                                                            {agendamento.user.email}
+                                                                                                        </span>
+                                                                                                    )}
+                                                                                                </div>
+                                                                                                {agendamento.user?.perfil_acesso && (
+                                                                                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPerfilColor(agendamento.user.perfil_acesso)}`}>
+                                                                                                        {formatPerfil(agendamento.user.perfil_acesso)}
+                                                                                                    </span>
                                                                                                 )}
                                                                                             </div>
                                                                                         </div>
-                                                                                        {agendamento.user?.perfil_acesso && (
-                                                                                            <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium mt-2 ${getPerfilColor(agendamento.user.perfil_acesso)}`}>
-                                                                                                {formatPerfil(agendamento.user.perfil_acesso)}
-                                                                                            </span>
-                                                                                        )}
                                                                                     </div>
                                                                                 </div>
-                                                                            </div>
-                                                                            
-                                                                            {/* Coluna 2: Data e Horário */}
-                                                                            <div className="space-y-3">
-                                                                                <div className="flex items-start gap-3">
-                                                                                    <div className="flex-shrink-0 p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                                                                                        <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                                                                                    </div>
-                                                                                    <div className="min-w-0 flex-1">
-                                                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
-                                                                                            Período Conflitante
-                                                                                        </p>
-                                                                                        <p className="font-medium text-gray-900 dark:text-gray-100 break-words">
-                                                                                            {formatPeriod(agendamento)}
-                                                                                        </p>
-                                                                                        <div className="flex items-center gap-1 mt-1 text-xs text-orange-600 dark:text-orange-400">
-                                                                                            <AlertCircle className="h-3 w-3" />
-                                                                                            <span>Horário em conflito</span>
+                                                                                
+                                                                                {/* Coluna 2: Data e Horário */}
+                                                                                <div className="space-y-3">
+                                                                                    <div className="flex items-start gap-3">
+                                                                                        <Clock className="h-4 w-4 flex-shrink-0 mt-1 text-gray-600 dark:text-gray-400" />
+                                                                                        <div className="min-w-0 flex-1">
+                                                                                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+                                                                                                Período Conflitante
+                                                                                            </p>
+                                                                                            <p className="font-medium text-gray-900 dark:text-gray-100 break-words">
+                                                                                                {formatPeriod(agendamento)}
+                                                                                            </p>
+                                                                                            <div className="flex items-center gap-1 mt-1 text-xs text-orange-600 dark:text-orange-400">
+                                                                                                <AlertCircle className="h-3 w-3" />
+                                                                                                <span>Horário em conflito</span>
+                                                                                            </div>
                                                                                         </div>
                                                                                     </div>
                                                                                 </div>
                                                                             </div>
                                                                             
-                                                                            {/* Coluna 3: Justificativa */}
-                                                                            <div className="space-y-3">
-                                                                                <div className="flex items-start gap-3">
-                                                                                    <div className="flex-shrink-0 p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                                                                                        <FileText className="h-4 w-4 text-green-600 dark:text-green-400" />
-                                                                                    </div>
-                                                                                    <div className="min-w-0 flex-1">
-                                                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
-                                                                                            Justificativa
-                                                                                        </p>
-                                                                                        <p className="text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">
-                                                                                            {agendamento.justificativa}
-                                                                                        </p>
-                                                                                    </div>
-                                                                                </div>
+                                                                            {/* Segunda linha: Justificativa (largura completa) */}
+                                                                            <div>
+                                                                                <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
+                                                                                    Justificativa:
+                                                                                </p>
+                                                                                <p className="text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">
+                                                                                    {agendamento.justificativa}
+                                                                                </p>
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -1497,18 +1506,7 @@ export default function GerenciarAgendamentos({
                                                                         </Tooltip>
                                                                     </div>
                                                                 </div>
-                                                                
-                                                                {/* Linha temporal do conflito */}
-                                                                {grupo.agendamentos.length > 1 && (
-                                                                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                                                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                                                            <AlertTriangle className="h-3 w-3 text-orange-500" />
-                                                                            <span>
-                                                                                Este evento conflita com {grupo.agendamentos.length - 1} outro{grupo.agendamentos.length - 1 !== 1 ? 's' : ''} agendamento{grupo.agendamentos.length - 1 !== 1 ? 's' : ''} no mesmo período
-                                                                            </span>
-                                                                        </div>
-                                                                    </div>
-                                                                )}
+
                                                             </div>
                                                         </div>
                                                     ))}
