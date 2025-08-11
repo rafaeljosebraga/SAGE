@@ -1264,12 +1264,14 @@ export default function GerenciarAgendamentos({
                                             ? 'bg-green-50/30 dark:bg-green-950/20 border-green-200 dark:border-green-800' 
                                             : 'bg-white dark:bg-gray-900/80 dark:border-gray-700'
                                     }`}>
-                                        <CardHeader className={`${
+                                        <CardHeader className={`flex flex-col gap-1.5 px-6 ${
                                             tipoConflitoFilter === 'resolvidos_hoje'
                                                 ? 'bg-gradient-to-r from-green-50 to-green-100 dark:from-green-950/40 dark:to-green-900/50'
-                                                : 'bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-950/40 dark:to-orange-900/50'
+                                                : 'bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-950/40 dark:to-orange-900/50 min-h-[75px]'
                                         }`}>
-                                            <div className="flex items-center justify-between">
+                                            <div className={`flex items-center justify-between ${
+                                                tipoConflitoFilter !== 'resolvidos_hoje' ? 'h-full' : ''
+                                            }`}>
                                                 <div className="flex items-center gap-4">
                                                     <div className="flex-shrink-0">
                                                         <div className={`p-3 rounded-full ${
@@ -1307,12 +1309,6 @@ export default function GerenciarAgendamentos({
                                                                 <span className="flex items-center gap-1 text-muted-foreground">
                                                                     <MapPin className="h-3 w-3" />
                                                                     {grupo.espaco.localizacao.nome}
-                                                                </span>
-                                                            )}
-                                                            {tipoConflitoFilter === 'resolvidos_hoje' && (grupo as any).resolvido_em && (
-                                                                <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
-                                                                    <Clock className="h-3 w-3" />
-                                                                    {format(new Date((grupo as any).resolvido_em), 'HH:mm', { locale: ptBR })}
                                                                 </span>
                                                             )}
                                                         </CardDescription>
@@ -1362,22 +1358,31 @@ export default function GerenciarAgendamentos({
                                                     </div>
                                                 )}
                                                 {tipoConflitoFilter === 'resolvidos_hoje' && (grupo as any).resolvido_por && (
-                                                    <div className="flex items-center gap-2">
-                                                        <UserAvatar user={(grupo as any).resolvido_por} size="sm" />
-                                                        <div className="flex flex-col">
-                                                            <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
-                                                                {(grupo as any).resolvido_por.name}
-                                                            </span>
-                                                            {(grupo as any).resolvido_por.email && (
-                                                                <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                                    {(grupo as any).resolvido_por.email}
-                                                                </span>
-                                                            )}
+                                                    <div className="flex flex-col gap-2 px-3 py-2 rounded-lg bg-white/50 dark:bg-gray-800/30">
+                                                        <div className="flex items-center gap-2">
+                                                            <UserAvatar user={(grupo as any).resolvido_por} size="sm" />
+                                                            <div className="flex flex-col">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                                                                        {(grupo as any).resolvido_por.name}
+                                                                    </span>
+                                                                    {(grupo as any).resolvido_por.perfil_acesso && (
+                                                                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${getPerfilColor((grupo as any).resolvido_por.perfil_acesso)}`}>
+                                                                            {formatPerfil((grupo as any).resolvido_por.perfil_acesso)}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                {(grupo as any).resolvido_por.email && (
+                                                                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                                        {(grupo as any).resolvido_por.email}
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                         </div>
-                                                        {(grupo as any).resolvido_por.perfil_acesso && (
-                                                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${getPerfilColor((grupo as any).resolvido_por.perfil_acesso)}`}>
-                                                                {formatPerfil((grupo as any).resolvido_por.perfil_acesso)}
-                                                            </span>
+                                                        {(grupo as any).resolvido_em && (
+                                                            <div className="text-xs text-gray-600 dark:text-gray-400 ml-1">
+                                                                Aprovado {format(new Date((grupo as any).resolvido_em), 'dd/MM/yyyy', { locale: ptBR })} às {format(new Date((grupo as any).resolvido_em), 'HH:mm', { locale: ptBR })}
+                                                            </div>
                                                         )}
                                                     </div>
                                                 )}
