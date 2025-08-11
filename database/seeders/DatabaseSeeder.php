@@ -18,6 +18,8 @@ class DatabaseSeeder extends Seeder
             EspacoSeeder::class,
             FotoSeeder::class,
             RecursoSeeder::class,
+            // AgendamentoSeeder::class, // Descomente se precisar de agendamentos base
+            // MultipleConflictSeeder::class, // Descomente para criar conflitos de teste
         ]);
     }
 }

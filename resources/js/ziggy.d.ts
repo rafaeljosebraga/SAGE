@@ -205,7 +205,7 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
-    "agendamentos.gerenciar": [],
+    "agendamentos.avaliar": [],
     "agendamentos.aprovar": [
         {
             "name": "agendamento",

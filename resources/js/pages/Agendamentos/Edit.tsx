@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Head, Link, useForm, router } from '@inertiajs/react';
-import { ArrowLeft, Calendar, Clock, MapPin, Users, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, MapPin, Users, AlertTriangle, User as UserIcon } from 'lucide-react';
 
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
@@ -12,10 +12,28 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useAgendamentoColors } from '@/components/ui/agend-colors';
+import { useAgendamentoColors, StatusBadge } from '@/components/ui/agend-colors';
 import { useToast } from '@/hooks/use-toast';
+import { UserAvatar } from '@/components/user-avatar';
 
-import type { PageProps, Agendamento, Espaco, Recurso, BreadcrumbItem } from '@/types';
+import type { PageProps, Agendamento, Espaco, Recurso, BreadcrumbItem, User } from '@/types';
+
+interface ConflictingAgendamento {
+    id: number;
+    titulo: string;
+    justificativa?: string;
+    data_inicio: string;
+    hora_inicio: string;
+    data_fim: string;
+    hora_fim: string;
+    status: string;
+    color_index?: number;
+    user: User;
+    espaco: {
+        id: number;
+        nome: string;
+    };
+}
 
 interface Props extends PageProps {
     agendamento: Agendamento;
@@ -25,7 +43,7 @@ interface Props extends PageProps {
 
 export default function AgendamentosEdit({ agendamento, espacos, recursos }: Props) {
     // Usar o hook de cores
-    const { getEventBorderColor } = useAgendamentoColors();
+    const { getEventBorderColor, getEventColors } = useAgendamentoColors();
     
     // Usar o hook de toast
     const { toast } = useToast();
@@ -35,10 +53,10 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
     );
 
     // Estado para modal de conflito de horário
-    const [conflictTimeModal, setConflictTimeModal] = useState<{
+    const [conflictModal, setConflictModal] = useState<{
         open: boolean;
-        message: string;
-    }>({ open: false, message: "" });
+        conflitos: ConflictingAgendamento[];
+    }>({ open: false, conflitos: [] });
 
     // Estado para modal de erro de validação
     const [validationErrorModal, setValidationErrorModal] = useState<{
@@ -154,6 +172,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
         hora_fim: formatTimeForInput(agendamento.hora_fim),
         observacoes: agendamento.observacoes || '',
         recursos_solicitados: agendamento.recursos_solicitados || [] as number[],
+        force_update: false as boolean,
     });
 
     
@@ -191,7 +210,16 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
             return;
         }
 
-        put(`/agendamentos/${agendamento.id}`, {
+        // Garantir que recursos_solicitados seja um array válido
+        const dataToSend = {
+            ...data,
+            recursos_solicitados: Array.isArray(data.recursos_solicitados) ? data.recursos_solicitados : []
+        };
+        
+
+        
+        // Usar router.put diretamente com os dados
+        router.put(`/agendamentos/${agendamento.id}`, dataToSend, {
             onSuccess: () => {
                 // Mostrar toast de sucesso
                 toast({
@@ -207,14 +235,62 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                     router.get(getBackUrl());
                 }, 1000);
             },
-            onError: (errors) => {
-                console.error('Erro ao atualizar agendamento:', errors);
+            onError: (errors: any) => {
+
                 
                 // Verificar se há conflitos de horário
-                if (errors.horario) {
-                    setConflictTimeModal({ 
-                        open: true, 
-                        message: errors.horario 
+                if (errors.conflitos) {
+                    try {
+                        const conflitos = JSON.parse(errors.conflitos as string) as ConflictingAgendamento[];
+                        setConflictModal({ 
+                            open: true, 
+                            conflitos: conflitos 
+                        });
+                        return; // Não mostrar toast de erro quando há conflitos
+                    } catch (e) {
+
+                        toast({
+                            title: "Erro de conflito",
+                            description: "Há conflitos de horário, mas não foi possível carregá-los.",
+                            variant: "destructive",
+                        });
+                        return;
+                    }
+                } else if (errors.horario) {
+                    // Fallback para o formato antigo
+                    toast({
+                        title: "Conflito de horário",
+                        description: errors.horario as string,
+                        variant: "destructive",
+                    });
+                } else {
+                    // Mostrar erro genérico com mais detalhes se possível
+                    let errorMessage = "Ocorreu um erro ao atualizar o agendamento.";
+                    let errorDetails = "";
+                    
+                    if (typeof errors === 'object' && errors !== null) {
+                        const errorKeys = Object.keys(errors);
+                        if (errorKeys.length > 0) {
+                            const firstError = errors[errorKeys[0]];
+                            if (Array.isArray(firstError)) {
+                                errorMessage = firstError[0];
+                                errorDetails = `Campo: ${errorKeys[0]}`;
+                            } else if (typeof firstError === 'string') {
+                                errorMessage = firstError;
+                                errorDetails = `Campo: ${errorKeys[0]}`;
+                            }
+                        }
+                        
+                        // Se há múltiplos erros, mostrar todos
+                        if (errorKeys.length > 1) {
+                            errorDetails += ` (e mais ${errorKeys.length - 1} erro(s))`;
+                        }
+                    }
+                    
+                    toast({
+                        title: "Erro ao atualizar",
+                        description: errorDetails ? `${errorMessage} - ${errorDetails}` : errorMessage,
+                        variant: "destructive",
                     });
                 }
             }
@@ -225,6 +301,120 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
         setData('espaco_id', value);
         const espaco = espacos.find(e => e.id.toString() === value);
         setSelectedEspaco(espaco || null);
+    };
+
+    // Função para confirmar edição com conflitos
+    const handleConfirmWithConflicts = () => {
+        setConflictModal({ open: false, conflitos: [] });
+        
+        // Criar dados com force_update = true de forma explícita
+        const dataWithForce = {
+            espaco_id: data.espaco_id,
+            titulo: data.titulo,
+            justificativa: data.justificativa,
+            data_inicio: data.data_inicio,
+            hora_inicio: data.hora_inicio,
+            data_fim: data.data_fim,
+            hora_fim: data.hora_fim,
+            observacoes: data.observacoes,
+            recursos_solicitados: Array.isArray(data.recursos_solicitados) ? data.recursos_solicitados : [],
+            force_update: true
+        };
+        
+
+        
+        // Tentar com FormData para garantir que os dados sejam enviados corretamente
+        const formData = new FormData();
+        Object.keys(dataWithForce).forEach(key => {
+            const value = dataWithForce[key as keyof typeof dataWithForce];
+            if (key === 'recursos_solicitados' && Array.isArray(value)) {
+                value.forEach((recurso, index) => {
+                    formData.append(`recursos_solicitados[${index}]`, recurso.toString());
+                });
+            } else if (key === 'force_update') {
+                formData.append(key, value ? '1' : '0');
+            } else {
+                formData.append(key, value?.toString() || '');
+            }
+        });
+        
+        // Adicionar método PUT para Laravel
+        formData.append('_method', 'PUT');
+        
+        // Usar router.post com FormData
+        router.post(`/agendamentos/${agendamento.id}`, formData, {
+            onSuccess: () => {
+                toast({
+                    title: "Agendamento atualizado com sucesso!",
+                    description: "As alterações foram salvas. O conflito será analisado.",
+                    variant: 'success',
+                    duration: 5000,
+                    className: 'bg-green-500 text-white',
+                });
+                
+                setTimeout(() => {
+                    router.get(getBackUrl());
+                }, 1000);
+            },
+            onError: (errors: any) => {
+
+                
+                // Verificar se há conflitos (não deveria acontecer aqui, mas por segurança)
+                if (errors.conflitos) {
+                    toast({
+                        title: "Conflito persistente",
+                        description: "Ainda há conflitos de horário. Tente novamente ou contate o administrador.",
+                        variant: "destructive",
+                    });
+                    return;
+                }
+                
+                // Mostrar detalhes do erro se disponível
+                let errorMessage = "Ocorreu um erro inesperado.";
+                let errorDetails = "";
+                
+                if (typeof errors === 'object' && errors !== null) {
+                    // Tentar extrair mensagem de erro mais específica
+                    const errorKeys = Object.keys(errors);
+                    if (errorKeys.length > 0) {
+                        const firstError = errors[errorKeys[0]];
+                        if (Array.isArray(firstError)) {
+                            errorMessage = firstError[0];
+                            errorDetails = `Campo: ${errorKeys[0]}`;
+                        } else if (typeof firstError === 'string') {
+                            errorMessage = firstError;
+                            errorDetails = `Campo: ${errorKeys[0]}`;
+                        }
+                    }
+                    
+                    // Se há múltiplos erros, mostrar todos
+                    if (errorKeys.length > 1) {
+                        errorDetails += ` (e mais ${errorKeys.length - 1} erro(s))`;
+                    }
+                }
+                
+                toast({
+                    title: "Erro ao atualizar",
+                    description: errorDetails ? `${errorMessage} - ${errorDetails}` : errorMessage,
+                    variant: "destructive",
+                });
+            }
+        });
+    };
+
+    // Função para formatar data para exibição
+    const formatDateForDisplay = (dateString: string) => {
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('pt-BR');
+        } catch {
+            return dateString;
+        }
+    };
+
+    // Função para formatar horário para exibição
+    const formatTimeForDisplay = (timeString: string) => {
+        return timeString.substring(0, 5); // Remove segundos se houver
     };
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -536,25 +726,163 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                 </form>
 
                 {/* Modal de Conflito de Horário */}
-                <Dialog open={conflictTimeModal.open} onOpenChange={(open) => setConflictTimeModal({ open, message: "" })}>
-                    <DialogContent className="max-w-md">
-                        <DialogHeader>
+                <Dialog open={conflictModal.open} onOpenChange={(open) => setConflictModal({ open, conflitos: [] })}>
+                    <DialogContent className="max-w-[90vw] sm:max-w-2xl max-h-[95vh] overflow-hidden rounded-lg flex flex-col">
+                        <DialogHeader className="flex-shrink-0 pb-4">
                             <DialogTitle className="flex items-center gap-2">
                                 <AlertTriangle className="h-5 w-5 text-yellow-600" />
-                                Conflito de Horário
+                                Conflito de Horário Detectado
                             </DialogTitle>
-                            <DialogDescription className="py-4 text-base">
-                                Existe(m) agendamento(s) conflitante(s) no horário solicitado.
+                            <DialogDescription>
+                                Existem agendamentos que conflitam com o horário solicitado. Você pode cancelar ou confirmar mesmo assim.
                             </DialogDescription>
                         </DialogHeader>
-                        <DialogFooter>
-                            <Button
-                                onClick={() => setConflictTimeModal({ open: false, message: "" })}
-                                className="w-full"
-                            >
-                                OK
-                            </Button>
-                        </DialogFooter>
+                        
+                        <div className="flex flex-col gap-2 flex-1 min-h-0">
+                            {/* Área de visualização de agendamentos com scroll personalizado */}
+                            <div className="flex flex-col gap-0 flex-1 min-h-0">
+                                <div className="flex items-center justify-between flex-shrink-0">
+                                    <h4 className="font-medium text-sm text-muted-foreground">
+                                        Agendamentos em conflito ({conflictModal.conflitos.length}):
+                                    </h4>
+                                </div>
+
+                                <div className="space-y-1 overflow-y-auto max-h-[70vh] pr-2 rounded-md flex-1 min-h-0 mb-1 last:-mb-2">
+                                    {conflictModal.conflitos.map((conflito) => {
+                                        // Usar as cores reais do agendamento
+                                        const colors = getEventColors(conflito as any);
+                                        
+                                        // Função para formatar data para exibição
+                                        const formatDateForDisplay = (dateString: string) => {
+                                            try {
+                                                const dateOnly = dateString.split("T")[0];
+                                                const [year, month, day] = dateOnly.split("-");
+                                                return `${day}/${month}/${year}`;
+                                            } catch {
+                                                return dateString;
+                                            }
+                                        };
+
+                                        // Função para formatar hora para exibição
+                                        const formatTimeForDisplay = (timeString: string) => {
+                                            return timeString.substring(0, 5);
+                                        };
+
+                                        // Função para formatar período - ajustada para dados limitados
+                                        const formatPeriod = (agendamento: any) => {
+                                            const dataInicioFormatada = formatDateForDisplay(agendamento.data_inicio);
+                                            const horaInicioFormatada = formatTimeForDisplay(agendamento.hora_inicio);
+                                            const horaFimFormatada = formatTimeForDisplay(agendamento.hora_fim);
+                                            
+                                            // Se não tem data_fim ou é igual à data_inicio, assumir mesmo dia
+                                            if (!agendamento.data_fim || agendamento.data_inicio === agendamento.data_fim || 
+                                                (agendamento.data_inicio.includes('T') && agendamento.data_fim?.includes('T') && 
+                                                 agendamento.data_inicio.split('T')[0] === agendamento.data_fim.split('T')[0])) {
+                                                return `${dataInicioFormatada} das ${horaInicioFormatada} às ${horaFimFormatada}`;
+                                            }
+                                            
+                                            // Se são dias diferentes
+                                            const dataFimFormatada = formatDateForDisplay(agendamento.data_fim);
+                                            return `${dataInicioFormatada} às ${horaInicioFormatada} até ${dataFimFormatada} às ${horaFimFormatada}`;
+                                        };
+
+                                        // Funções auxiliares para formatação
+                                        const formatPerfil = (perfil: string | undefined) => {
+                                            if (!perfil) return "Não definido";
+                                            return perfil.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+                                        };
+
+                                        const getPerfilColor = (perfil: string | undefined) => {
+                                            if (!perfil) return "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-700";
+                                            
+                                            switch (perfil.toLowerCase()) {
+                                                case "administrador":
+                                                    return "bg-[#EF7D4C] dark:bg-[#D16A3A] text-white border-transparent";
+                                                case "coordenador":
+                                                    return "bg-[#957157] dark:bg-[#7A5D47] text-white border-transparent";
+                                                case "diretor_geral":
+                                                    return "bg-[#F1DEC5] dark:bg-[#8B7355] text-gray-600 dark:text-gray-200 border-transparent";
+                                                case "servidores":
+                                                    return "bg-[#285355] dark:bg-[#1F4142] text-white border-transparent";
+                                                default:
+                                                    return "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-700";
+                                            }
+                                        };
+                                        
+                                        return (
+                                            <Card
+                                                key={conflito.id}
+                                                className={`transition-all duration-200 hover:shadow-md hover:bg-muted/30 ${colors.border} border-l-4 rounded-lg overflow-hidden`}
+                                            >
+                                                <CardContent className="p-3">
+                                                    <div className="flex items-start gap-3">
+                                                        <div className="flex-1 space-y-2">
+                                                            <div className="flex items-start justify-between">
+                                                                <h5 className="font-medium">{conflito.titulo}</h5>
+                                                                <StatusBadge status={conflito.status} />
+                                                            </div>
+
+                                                            <div className="space-y-1">
+                                                                <div className="flex items-center gap-2 text-sm">
+                                                                    {conflito.user && <UserAvatar user={conflito.user} size="sm" />}
+                                                                    <div className="flex flex-col">
+                                                                        <span className="font-medium">{conflito.user?.name || 'Usuário não encontrado'}</span>
+                                                                        {conflito.user?.email && (
+                                                                            <span className="text-xs text-muted-foreground">{conflito.user.email}</span>
+                                                                        )}
+                                                                    </div>
+                                                                    {conflito.user?.perfil_acesso && (
+                                                                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPerfilColor(conflito.user.perfil_acesso)}`}>
+                                                                            {formatPerfil(conflito.user.perfil_acesso)}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                <div className="flex items-center gap-4 text-sm opacity-80">
+                                                                    <div className="flex items-center gap-1">
+                                                                        <Clock className="h-4 w-4" />
+                                                                        {formatPeriod(conflito)}
+                                                                    </div>
+                                                                    <div className="flex items-center gap-1">
+                                                                        <MapPin className="h-4 w-4" />
+                                                                        {conflito.espaco?.nome || 'Mesmo espaço solicitado'}
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                {conflito.justificativa && (
+                                                                    <div className="mt-1 text-sm">
+                                                                        <span className="font-medium">Justificativa:</span>
+                                                                        <p className="text-muted-foreground">{conflito.justificativa}</p>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Botões de ação - fixos na parte inferior */}
+                            <div className="flex-shrink-0 border-t border-border pt-4">
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => setConflictModal({ open: false, conflitos: [] })}
+                                        className="flex-1 rounded-lg"
+                                    >
+                                        Cancelar
+                                    </Button>
+                                    <Button
+                                        onClick={handleConfirmWithConflicts}
+                                        className="flex-1 bg-yellow-600 hover:bg-yellow-700 rounded-lg"
+                                    >
+                                        Confirmar Conflito
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
                     </DialogContent>
                 </Dialog>
 

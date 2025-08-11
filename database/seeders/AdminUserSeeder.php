@@ -60,5 +60,50 @@ class AdminUserSeeder extends Seeder
                 'email_verified_at' => now(),
             ]
         );
+
+        // Usuários adicionais para conflitos de teste
+        User::updateOrCreate(
+            ['email' => 'professor1@sage.com'],
+            [
+                'name' => 'Ana Professora',
+                'email' => 'professor1@sage.com',
+                'perfil_acesso' => 'coordenador',
+                'password' => Hash::make('professor123'),
+                'email_verified_at' => now(),
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'professor2@sage.com'],
+            [
+                'name' => 'Roberto Professor',
+                'email' => 'professor2@sage.com',
+                'perfil_acesso' => 'servidores',
+                'password' => Hash::make('professor123'),
+                'email_verified_at' => now(),
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'coordenador2@sage.com'],
+            [
+                'name' => 'Lucia Coordenadora',
+                'email' => 'coordenador2@sage.com',
+                'perfil_acesso' => 'coordenador',
+                'password' => Hash::make('coordenador123'),
+                'email_verified_at' => now(),
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'servidor2@sage.com'],
+            [
+                'name' => 'Pedro Servidor',
+                'email' => 'servidor2@sage.com',
+                'perfil_acesso' => 'servidores',
+                'password' => Hash::make('servidor123'),
+                'email_verified_at' => now(),
+            ]
+        );
     }
 }

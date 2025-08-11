@@ -295,6 +295,35 @@ export const useAgendamentoColors = () => {
         return color.border;
     };
 
+    // Função para obter todas as cores do evento (background, text, border)
+    const getEventColors = (agendamento: Agendamento) => {
+        // Se o evento já passou, usar cinza
+        if (isEventPast(agendamento)) {
+            return {
+                bg: 'bg-gray-100 dark:bg-gray-600',
+                text: 'text-gray-900 dark:text-gray-100',
+                border: 'border-l-gray-500'
+            };
+        }
+
+        // Se o agendamento tem color_index definido, usar ele (cor fixa)
+        if (agendamento.color_index !== null && agendamento.color_index !== undefined) {
+            const colorIndex = agendamento.color_index % colorPalette.length;
+            return colorPalette[colorIndex];
+        }
+
+        // Fallback para agendamentos antigos sem color_index
+        const seriesId = getEventSeriesId(agendamento);
+        const hash1 = generateHash(`primary_${seriesId}`);
+        const hash2 = generateHash(`secondary_${seriesId}`);
+        const hash3 = generateHash(`tertiary_${seriesId}`);
+        
+        const combinedHash = Math.abs(hash1 + (hash2 * 17) + (hash3 * 23));
+        const colorIndex = getDistributedColorIndex(combinedHash, colorPalette.length);
+        
+        return colorPalette[colorIndex];
+    };
+
     // Função para obter cor de fundo do status (para calendário)
     const getStatusBgColor = (status: string): string => {
         switch (status) {
@@ -367,6 +396,7 @@ export const useAgendamentoColors = () => {
         getStatusColor,
         getEventBackgroundColor,
         getEventBorderColor,
+        getEventColors,
         getStatusBgColor,
         getStatusText,
         getStatusIcon,

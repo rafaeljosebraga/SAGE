@@ -2,15 +2,19 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
+
 use Carbon\Carbon;
 
 class Agendamento extends Model
 {
+    use HasFactory;
+    
     protected $table = 'agendamentos';
 
     protected $fillable = [
@@ -44,6 +48,7 @@ class Agendamento extends Model
         'data_fim_recorrencia',
         'is_representante_grupo',
         'recursos_solicitados',
+        'tem_conflito',
     ];
 
     // Accessor para garantir que as horas sejam retornadas no formato correto
@@ -73,6 +78,42 @@ class Agendamento extends Model
             return substr($value, 0, 5);
         }
         return $value;
+    }
+
+    // Accessor para formatar data_inicio para JSON
+    public function getDataInicioAttribute($value)
+    {
+        if (!$value) return null;
+        
+        // Se é uma instância de Carbon, formatar como Y-m-d
+        if ($value instanceof \Carbon\Carbon) {
+            return $value->format('Y-m-d');
+        }
+        
+        // Se é uma string de data, tentar converter
+        try {
+            return \Carbon\Carbon::parse($value)->format('Y-m-d');
+        } catch (\Exception $e) {
+            return $value;
+        }
+    }
+
+    // Accessor para formatar data_fim para JSON
+    public function getDataFimAttribute($value)
+    {
+        if (!$value) return null;
+        
+        // Se é uma instância de Carbon, formatar como Y-m-d
+        if ($value instanceof \Carbon\Carbon) {
+            return $value->format('Y-m-d');
+        }
+        
+        // Se é uma string de data, tentar converter
+        try {
+            return \Carbon\Carbon::parse($value)->format('Y-m-d');
+        } catch (\Exception $e) {
+            return $value;
+        }
     }
 
     // Relacionamento com Espaço
@@ -111,6 +152,18 @@ class Agendamento extends Model
         return $this->belongsToMany(Recurso::class, 'agendamentos_recursos')
                     ->withPivot(['quantidade', 'observacoes'])
                     ->withTimestamps();
+    }
+
+    // Relacionamento com conflitos
+    public function conflitos(): HasMany
+    {
+        return $this->hasMany(AgendamentoConflito::class);
+    }
+
+    // Relacionamento para obter conflito ativo
+    public function conflitoAtivo(): HasOne
+    {
+        return $this->hasOne(AgendamentoConflito::class)->where('status_conflito', 'pendente');
     }
 
     // Accessor para compatibilidade - aprovado_por
@@ -211,63 +264,57 @@ class Agendamento extends Model
     // Método para verificar conflitos de horário
     public function temConflito($espacoId, $dataInicio, $horaInicio, $dataFim, $horaFim, $excludeId = null)
     {
-        $query = self::where('espaco_id', $espacoId)
-            ->whereIn('status', ['pendente', 'aprovado'])
-            ->where(function ($q) use ($dataInicio, $horaInicio, $dataFim, $horaFim) {
-                // Verifica sobreposição de períodos (data + hora)
-                $q->where(function ($dateQuery) use ($dataInicio, $horaInicio, $dataFim, $horaFim) {
-                    // Caso 1: O início do novo agendamento está dentro de um período existente
-                    $dateQuery->where(function ($subQuery) use ($dataInicio, $horaInicio) {
-                        $subQuery->where('data_inicio', '<', $dataInicio)
-                                ->orWhere(function ($timeQuery) use ($dataInicio, $horaInicio) {
-                                    $timeQuery->where('data_inicio', '=', $dataInicio)
-                                             ->where('hora_inicio', '<=', $horaInicio);
-                                });
-                    })->where(function ($subQuery) use ($dataInicio, $horaInicio) {
-                        $subQuery->where('data_fim', '>', $dataInicio)
-                                ->orWhere(function ($timeQuery) use ($dataInicio, $horaInicio) {
-                                    $timeQuery->where('data_fim', '=', $dataInicio)
-                                             ->where('hora_fim', '>', $horaInicio);
-                                });
-                    });
-                })->orWhere(function ($dateQuery) use ($dataInicio, $horaInicio, $dataFim, $horaFim) {
-                    // Caso 2: O fim do novo agendamento está dentro de um período existente
-                    $dateQuery->where(function ($subQuery) use ($dataFim, $horaFim) {
-                        $subQuery->where('data_inicio', '<', $dataFim)
-                                ->orWhere(function ($timeQuery) use ($dataFim, $horaFim) {
-                                    $timeQuery->where('data_inicio', '=', $dataFim)
-                                             ->where('hora_inicio', '<', $horaFim);
-                                });
-                    })->where(function ($subQuery) use ($dataFim, $horaFim) {
-                        $subQuery->where('data_fim', '>', $dataFim)
-                                ->orWhere(function ($timeQuery) use ($dataFim, $horaFim) {
-                                    $timeQuery->where('data_fim', '=', $dataFim)
-                                             ->where('hora_fim', '>=', $horaFim);
-                                });
-                    });
-                })->orWhere(function ($dateQuery) use ($dataInicio, $horaInicio, $dataFim, $horaFim) {
-                    // Caso 3: O novo agendamento engloba completamente um período existente
-                    $dateQuery->where(function ($subQuery) use ($dataInicio, $horaInicio) {
-                        $subQuery->where('data_inicio', '>', $dataInicio)
-                                ->orWhere(function ($timeQuery) use ($dataInicio, $horaInicio) {
-                                    $timeQuery->where('data_inicio', '=', $dataInicio)
-                                             ->where('hora_inicio', '>=', $horaInicio);
-                                });
-                    })->where(function ($subQuery) use ($dataFim, $horaFim) {
-                        $subQuery->where('data_fim', '<', $dataFim)
-                                ->orWhere(function ($timeQuery) use ($dataFim, $horaFim) {
-                                    $timeQuery->where('data_fim', '=', $dataFim)
-                                             ->where('hora_fim', '<=', $horaFim);
-                                });
-                    });
-                });
-            });
-
-        if ($excludeId) {
-            $query->where('id', '!=', $excludeId);
+        try {
+            // Converter para Carbon para comparação mais robusta
+            $inicioNovo = Carbon::createFromFormat('Y-m-d H:i', $dataInicio . ' ' . $horaInicio);
+            $fimNovo = Carbon::createFromFormat('Y-m-d H:i', $dataFim . ' ' . $horaFim);
+            
+            $query = self::where('espaco_id', $espacoId)
+                ->whereIn('status', ['pendente', 'aprovado']);
+                
+            // Excluir o agendamento atual se especificado
+            if ($excludeId) {
+                $query->where('id', '!=', $excludeId);
+            }
+            
+            // Buscar todos os agendamentos que podem conflitar
+            $agendamentos = $query->get(['id', 'data_inicio', 'hora_inicio', 'data_fim', 'hora_fim']);
+            
+            foreach ($agendamentos as $agendamento) {
+                try {
+                    // Formatar datas do agendamento existente
+                    $dataInicioExistente = $agendamento->data_inicio;
+                    $dataFimExistente = $agendamento->data_fim;
+                    
+                    // Se são objetos Carbon, converter para string
+                    if ($dataInicioExistente instanceof Carbon) {
+                        $dataInicioExistente = $dataInicioExistente->format('Y-m-d');
+                    }
+                    if ($dataFimExistente instanceof Carbon) {
+                        $dataFimExistente = $dataFimExistente->format('Y-m-d');
+                    }
+                    
+                    $inicioExistente = Carbon::createFromFormat('Y-m-d H:i', $dataInicioExistente . ' ' . $agendamento->hora_inicio);
+                    $fimExistente = Carbon::createFromFormat('Y-m-d H:i', $dataFimExistente . ' ' . $agendamento->hora_fim);
+                    
+                    // Verificar se há sobreposição
+                    // Dois períodos se sobrepõem se:
+                    // - O início do novo é antes do fim do existente E
+                    // - O fim do novo é depois do início do existente
+                    if ($inicioNovo->lt($fimExistente) && $fimNovo->gt($inicioExistente)) {
+                        return true;
+                    }
+                } catch (\Exception $e) {
+                    // Se houver erro na conversão de data, pular este agendamento
+                    continue;
+                }
+            }
+            
+            return false;
+        } catch (\Exception $e) {
+            // Se houver erro na conversão das datas novas, retornar true para segurança
+            return true;
         }
-
-        return $query->exists();
     }
 
     // Método para formatar período
@@ -386,5 +433,97 @@ class Agendamento extends Model
     public function removerRecurso($recursoId)
     {
         return $this->recursosSolicitados()->where('recurso_id', $recursoId)->delete();
+    }
+
+    // Métodos para trabalhar com conflitos
+    public function detectarConflitos()
+    {
+        return self::where('espaco_id', $this->espaco_id)
+            ->where('id', '!=', $this->id)
+            ->whereIn('status', ['pendente', 'aprovado'])
+            ->whereRaw("(data_inicio::text || ' ' || hora_inicio::text)::timestamp < (? || ' ' || ?)::timestamp", [$this->data_fim, $this->hora_fim])
+            ->whereRaw("(data_fim::text || ' ' || hora_fim::text)::timestamp > (? || ' ' || ?)::timestamp", [$this->data_inicio, $this->hora_inicio])
+            ->get();
+    }
+
+    public function criarConflito($agendamentosConflitantes = null)
+    {
+        if (!$agendamentosConflitantes) {
+            $agendamentosConflitantes = $this->detectarConflitos();
+        }
+
+        if ($agendamentosConflitantes->isEmpty()) {
+            return null;
+        }
+
+        // Verificar se algum dos agendamentos conflitantes já tem um grupo de conflito
+        $grupoExistente = null;
+        foreach ($agendamentosConflitantes as $agendamento) {
+            $conflito = $agendamento->conflitoAtivo;
+            if ($conflito) {
+                $grupoExistente = $conflito->grupo_conflito;
+                break;
+            }
+        }
+
+        $observacoes = "Conflito de horário detectado para o espaço {$this->espaco->nome} no período de {$this->data_inicio} {$this->hora_inicio} até {$this->data_fim} {$this->hora_fim}";
+
+        if ($grupoExistente) {
+            // Verificar se este agendamento já está no grupo
+            $jaExiste = AgendamentoConflito::where('grupo_conflito', $grupoExistente)
+                ->where('agendamento_id', $this->id)
+                ->exists();
+                
+            if (!$jaExiste) {
+                try {
+                    // Adicionar apenas este agendamento ao grupo existente
+                    AgendamentoConflito::create([
+                        'grupo_conflito' => $grupoExistente,
+                        'agendamento_id' => $this->id,
+                        'observacoes_conflito' => $observacoes,
+                    ]);
+                } catch (\Illuminate\Database\QueryException $e) {
+                    // Se der erro de chave duplicada, verificar se o registro já existe
+                    if (str_contains($e->getMessage(), 'duplicate key value violates unique constraint')) {
+                        // Registro já existe, não fazer nada
+                    } else {
+                        // Re-lançar outros tipos de erro
+                        throw $e;
+                    }
+                }
+            }
+            return $grupoExistente;
+        } else {
+            // Criar novo grupo com todos os agendamentos conflitantes
+            $todosIds = $agendamentosConflitantes->pluck('id')->push($this->id)->toArray();
+            
+            // Só criar grupo se houver pelo menos 2 agendamentos
+            if (count($todosIds) < 2) {
+                return null; // Não há conflito real
+            }
+            
+            return AgendamentoConflito::criarGrupoConflito($todosIds, $observacoes);
+        }
+    }
+
+    public function temConflitoPendente()
+    {
+        return $this->conflitoAtivo()->exists();
+    }
+
+    public function obterGrupoConflito()
+    {
+        $conflito = $this->conflitoAtivo;
+        if (!$conflito) {
+            return collect();
+        }
+
+        return AgendamentoConflito::obterGrupoConflito($conflito->grupo_conflito);
+    }
+
+    // Accessor para verificar se tem conflito
+    public function getTemConflitoAttribute()
+    {
+        return $this->temConflitoPendente();
     }
 }

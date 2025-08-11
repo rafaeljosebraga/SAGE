@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Agendamento;
+use App\Models\AgendamentoConflito;
 use App\Models\Espaco;
 use App\Models\Recurso;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Carbon\Carbon;
 
@@ -134,6 +136,22 @@ class AgendamentoController extends Controller
             return back()->withErrors(['hora_fim' => 'A hora de fim deve ser posterior à hora de início.']);
         }
 
+        // Verificar se já existe um agendamento com o mesmo título, espaço e período exato
+        $agendamentoDuplicado = Agendamento::where('espaco_id', $validated['espaco_id'])
+            ->where('titulo', $validated['titulo'])
+            ->where('data_inicio', $validated['data_inicio'])
+            ->where('hora_inicio', $validated['hora_inicio'])
+            ->where('data_fim', $validated['data_fim'])
+            ->where('hora_fim', $validated['hora_fim'])
+            ->whereIn('status', ['pendente', 'aprovado'])
+            ->first();
+
+        if ($agendamentoDuplicado) {
+            return back()->withErrors([
+                'titulo' => 'Já existe um agendamento com o mesmo nome, local, data e horário. Por favor, altere pelo menos um desses dados para criar um novo agendamento.'
+            ])->withInput();
+        }
+
         // Verificar conflitos de horário usando o método do modelo
         $temConflito = (new Agendamento())->temConflito(
             $validated['espaco_id'],
@@ -142,6 +160,8 @@ class AgendamentoController extends Controller
             $validated['data_fim'],
             $validated['hora_fim']
         );
+
+
 
         $conflitos = collect();
         if ($temConflito) {
@@ -205,9 +225,37 @@ class AgendamentoController extends Controller
 
         // Se há conflitos e não foi forçado, retornar erro com os conflitos
         if ($conflitos->isNotEmpty() && !($validated['force_create'] ?? false)) {
-            return back()->withErrors([
-                'conflitos' => $conflitos
-            ])->withInput();
+            // Simplificar os dados dos conflitos para o frontend
+            $conflitosSimplificados = $conflitos->map(function ($conflito) {
+                return [
+                    'id' => $conflito->id,
+                    'titulo' => $conflito->titulo,
+                    'justificativa' => $conflito->justificativa,
+                    'data_inicio' => $conflito->data_inicio,
+                    'hora_inicio' => $conflito->hora_inicio,
+                    'hora_fim' => $conflito->hora_fim,
+                    'status' => $conflito->status,
+                    'user' => $conflito->user ? [
+                        'id' => $conflito->user->id,
+                        'name' => $conflito->user->name,
+                        'email' => $conflito->user->email,
+                        'perfil_acesso' => $conflito->user->perfil_acesso,
+                        'profile_photo' => $conflito->user->profile_photo,
+                        'profile_photo_url' => $conflito->user->profile_photo_url,
+                        'created_at' => $conflito->user->created_at,
+                        'updated_at' => $conflito->user->updated_at,
+                    ] : null,
+                    'espaco' => [
+                        'id' => $conflito->espaco->id ?? null,
+                        'nome' => $conflito->espaco->nome ?? 'Espaço não encontrado'
+                    ]
+                ];
+            })->toArray();
+            
+            // Retornar como string JSON que o frontend pode parsear
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'conflitos' => json_encode($conflitosSimplificados)
+            ]);
         }
 
         $validated['user_id'] = auth()->id();
@@ -220,15 +268,23 @@ class AgendamentoController extends Controller
         // Obter color_index único (sem duplicatas)
         $validated['color_index'] = \App\Helpers\ColorHelper::generateUniqueColorIndex($colorSeed);
 
-        // Se foi forçado com conflitos, marcar como prioridade alta
-        if ($conflitos->isNotEmpty() && ($validated['force_create'] ?? false)) {
-            $validated['observacoes'] = ($validated['observacoes'] ?? '') .
-                "\n\n[SOLICITAÇÃO DE PRIORIDADE] Este agendamento foi solicitado com prioridade sobre agendamentos conflitantes.";
-        }
+        // Se foi forçado com conflitos, apenas prosseguir sem modificar observações
+        // A solicitação de prioridade será registrada através dos conflitos criados
 
         // Criar agendamentos (único ou recorrentes)
         $agendamentos = $this->criarAgendamentos($validated);
         $agendamento = $agendamentos->first(); // Para compatibilidade com o código existente
+
+        // Se há conflitos, criar registros de conflito para cada agendamento criado
+        if ($conflitos->isNotEmpty()) {
+            foreach ($agendamentos as $novoAgendamento) {
+                // Detectar conflitos específicos para este agendamento
+                $conflitosEspecificos = $novoAgendamento->detectarConflitos();
+                if ($conflitosEspecificos->isNotEmpty()) {
+                    $novoAgendamento->criarConflito($conflitosEspecificos);
+                }
+            }
+        }
 
         // Personalizar mensagem baseada na quantidade de agendamentos criados
         if ($agendamentos->count() > 1) {
@@ -237,10 +293,10 @@ class AgendamentoController extends Controller
             $message = 'Solicitação de agendamento criada com sucesso! Aguarde aprovação.';
         }
 
-        if ($conflitos->isNotEmpty() && ($validated['force_create'] ?? false)) {
+        if ($conflitos->isNotEmpty()) {
             $message = $agendamentos->count() > 1
-                ? "Solicitações de agendamento com prioridade criadas! {$agendamentos->count()} agendamentos recorrentes foram criados. O diretor analisará os conflitos."
-                : 'Solicitação de agendamento com prioridade criada! O diretor analisará os conflitos.';
+                ? "Solicitações de agendamento criadas! {$agendamentos->count()} agendamentos recorrentes foram criados. Há conflitos de horário que serão analisados pelo diretor."
+                : 'Solicitação de agendamento criada! Há conflito de horário que será analisado pelo diretor.';
         }
 
         // Verificar se deve voltar para o calendário
@@ -281,6 +337,7 @@ class AgendamentoController extends Controller
         return Inertia::render('Agendamentos/Show', [
             'agendamento' => $agendamento,
             'recursosSolicitados' => $recursosSolicitados,
+            'return_url' => request('return_url'),
         ]);
     }
 
@@ -298,8 +355,39 @@ class AgendamentoController extends Controller
 
         // Garantir que as datas e horas estejam no formato correto
         $agendamentoFormatado = $agendamento->toArray();
-        $agendamentoFormatado['data_inicio'] = $agendamento->data_inicio ? $agendamento->data_inicio->format('Y-m-d') : '';
-        $agendamentoFormatado['data_fim'] = $agendamento->data_fim ? $agendamento->data_fim->format('Y-m-d') : '';
+        
+        // Formatar data_inicio
+        if ($agendamento->data_inicio) {
+            if ($agendamento->data_inicio instanceof \Carbon\Carbon) {
+                $agendamentoFormatado['data_inicio'] = $agendamento->data_inicio->format('Y-m-d');
+            } else {
+                // Se é uma string, tentar converter para o formato correto
+                try {
+                    $agendamentoFormatado['data_inicio'] = \Carbon\Carbon::parse($agendamento->data_inicio)->format('Y-m-d');
+                } catch (\Exception $e) {
+                    $agendamentoFormatado['data_inicio'] = $agendamento->data_inicio;
+                }
+            }
+        } else {
+            $agendamentoFormatado['data_inicio'] = '';
+        }
+        
+        // Formatar data_fim
+        if ($agendamento->data_fim) {
+            if ($agendamento->data_fim instanceof \Carbon\Carbon) {
+                $agendamentoFormatado['data_fim'] = $agendamento->data_fim->format('Y-m-d');
+            } else {
+                // Se é uma string, tentar converter para o formato correto
+                try {
+                    $agendamentoFormatado['data_fim'] = \Carbon\Carbon::parse($agendamento->data_fim)->format('Y-m-d');
+                } catch (\Exception $e) {
+                    $agendamentoFormatado['data_fim'] = $agendamento->data_fim;
+                }
+            }
+        } else {
+            $agendamentoFormatado['data_fim'] = '';
+        }
+        
         $agendamentoFormatado['hora_inicio'] = $agendamento->hora_inicio ? substr($agendamento->hora_inicio, 0, 5) : '';
         $agendamentoFormatado['hora_fim'] = $agendamento->hora_fim ? substr($agendamento->hora_fim, 0, 5) : '';
 
@@ -341,11 +429,14 @@ class AgendamentoController extends Controller
             'observacoes' => 'nullable|string|max:500',
             'recursos_solicitados' => 'nullable|array',
             'recursos_solicitados.*' => 'exists:recursos,id',
+            'force_update' => 'boolean',
         ], [
             'hora_inicio.date_format' => 'O campo hora início deve corresponder ao formato H:i.',
             'hora_fim.date_format' => 'O campo hora fim deve corresponder ao formato H:i.',
             'data_fim.after_or_equal' => 'A data de fim deve ser igual ou posterior à data de início.',
         ]);
+
+
 
         // Verificar se o espaço está disponível
         $espaco = Espaco::findOrFail($validated['espaco_id']);
@@ -362,18 +453,103 @@ class AgendamentoController extends Controller
             return back()->withErrors(['hora_fim' => 'A hora de fim deve ser posterior à hora de início.']);
         }
 
-        // Verificar conflitos de horário (excluindo o agendamento atual)
-        $temConflito = (new Agendamento())->temConflito(
-            $validated['espaco_id'],
-            $validated['data_inicio'],
-            $validated['hora_inicio'],
-            $validated['data_fim'],
-            $validated['hora_fim'],
-            $agendamento->id
+        // Verificar se já existe um agendamento com o mesmo título, espaço e período exato (excluindo o atual)
+        $agendamentoDuplicado = Agendamento::where('espaco_id', $validated['espaco_id'])
+            ->where('titulo', $validated['titulo'])
+            ->where('data_inicio', $validated['data_inicio'])
+            ->where('hora_inicio', $validated['hora_inicio'])
+            ->where('data_fim', $validated['data_fim'])
+            ->where('hora_fim', $validated['hora_fim'])
+            ->where('id', '!=', $agendamento->id)
+            ->whereIn('status', ['pendente', 'aprovado'])
+            ->first();
+
+        if ($agendamentoDuplicado) {
+            return back()->withErrors([
+                'titulo' => 'Já existe um agendamento com o mesmo nome, local, data e horário. Por favor, altere pelo menos um desses dados para atualizar o agendamento.'
+            ])->withInput();
+        }
+
+        // Verificar se realmente houve mudanças nos campos que podem gerar conflito
+        $mudancasRelevantes = (
+            $agendamento->espaco_id != $validated['espaco_id'] ||
+            $agendamento->data_inicio != $validated['data_inicio'] ||
+            $agendamento->hora_inicio != $validated['hora_inicio'] ||
+            $agendamento->data_fim != $validated['data_fim'] ||
+            $agendamento->hora_fim != $validated['hora_fim']
         );
 
-        if ($temConflito) {
-            return back()->withErrors(['horario' => 'Já existe um agendamento para este espaço no horário solicitado.']);
+        // Verificar conflitos atuais antes da edição
+        $conflitosAnteriores = $agendamento->detectarConflitos();
+        $tinhaConflito = $conflitosAnteriores->isNotEmpty();
+
+        // Só verificar conflitos se houve mudanças relevantes
+        $conflitos = collect();
+        if ($mudancasRelevantes) {
+            $temConflito = (new Agendamento())->temConflito(
+                (int)$validated['espaco_id'],
+                $validated['data_inicio'],
+                $validated['hora_inicio'],
+                $validated['data_fim'],
+                $validated['hora_fim'],
+                (int)$agendamento->id
+            );
+
+            if ($temConflito) {
+                // Buscar os agendamentos conflitantes para mostrar ao usuário (PostgreSQL)
+                $conflitos = Agendamento::where('espaco_id', $validated['espaco_id'])
+                    ->whereIn('status', ['pendente', 'aprovado'])
+                    ->where('id', '!=', $agendamento->id)
+                    ->whereRaw("(data_inicio::text || ' ' || hora_inicio::text)::timestamp < (? || ' ' || ?)::timestamp", [$validated['data_fim'], $validated['hora_fim']])
+                    ->whereRaw("(data_fim::text || ' ' || hora_fim::text)::timestamp > (? || ' ' || ?)::timestamp", [$validated['data_inicio'], $validated['hora_inicio']])
+                    ->with(['user', 'espaco'])
+                    ->get();
+            }
+        }
+
+        // Verificar force_update de forma mais explícita
+        $forceUpdate = $validated['force_update'] ?? false;
+        if (is_string($forceUpdate)) {
+            $forceUpdate = $forceUpdate === 'true' || $forceUpdate === '1';
+        }
+        
+
+        
+        // Se há conflitos e não foi forçado, retornar erro com os conflitos
+        if ($conflitos->isNotEmpty() && !$forceUpdate) {
+            // Simplificar os dados dos conflitos para o frontend
+            $conflitosSimplificados = $conflitos->map(function ($conflito) {
+                return [
+                    'id' => $conflito->id,
+                    'titulo' => $conflito->titulo,
+                    'justificativa' => $conflito->justificativa,
+                    'data_inicio' => $conflito->data_inicio,
+                    'hora_inicio' => $conflito->hora_inicio,
+                    'data_fim' => $conflito->data_fim,
+                    'hora_fim' => $conflito->hora_fim,
+                    'status' => $conflito->status,
+                    'color_index' => $conflito->color_index,
+                    'user' => $conflito->user ? [
+                        'id' => $conflito->user->id,
+                        'name' => $conflito->user->name,
+                        'email' => $conflito->user->email,
+                        'perfil_acesso' => $conflito->user->perfil_acesso,
+                        'profile_photo' => $conflito->user->profile_photo,
+                        'profile_photo_url' => $conflito->user->profile_photo_url,
+                        'created_at' => $conflito->user->created_at,
+                        'updated_at' => $conflito->user->updated_at,
+                    ] : null,
+                    'espaco' => [
+                        'id' => $conflito->espaco->id ?? null,
+                        'nome' => $conflito->espaco->nome ?? 'Espaço não encontrado'
+                    ]
+                ];
+            })->toArray();
+            
+            // Retornar como string JSON que o frontend pode parsear
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'conflitos' => json_encode($conflitosSimplificados)
+            ]);
         }
 
         $validated['recursos_solicitados'] = $validated['recursos_solicitados'] ?? [];
@@ -383,7 +559,16 @@ class AgendamentoController extends Controller
                      $validated['hora_inicio'] . $validated['hora_fim'] . $validated['justificativa'];
         $validated['color_index'] = \App\Helpers\ColorHelper::generateUniqueColorIndex($colorSeed, $agendamento->id);
 
+        // Remover force_update dos dados antes de salvar
+        unset($validated['force_update']);
+
+        // Atualizar o agendamento
         $agendamento->update($validated);
+
+        // Gerenciar conflitos após a atualização (apenas se houve mudanças relevantes)
+        if ($mudancasRelevantes) {
+            $this->gerenciarConflitosAposEdicao($agendamento, $tinhaConflito, $conflitos, $conflitosAnteriores);
+        }
 
         // Para requisições Inertia, retornar back() para permitir o redirecionamento pelo frontend
         if (request()->header('X-Inertia')) {
@@ -392,6 +577,47 @@ class AgendamentoController extends Controller
 
         return redirect()->route('agendamentos.index')
             ->with('success', 'Agendamento atualizado com sucesso!');
+    }
+
+    /**
+     * Gerenciar conflitos após edição do agendamento
+     */
+    private function gerenciarConflitosAposEdicao($agendamento, $tinhaConflito, $conflitosNovos, $conflitosAnteriores)
+    {
+        // Se tinha conflito antes e agora não tem mais, resolver conflitos antigos
+        if ($tinhaConflito && $conflitosNovos->isEmpty()) {
+            // Remover este agendamento dos conflitos antigos
+            $agendamento->conflitos()->where('status_conflito', 'pendente')->delete();
+            
+            // Verificar se os agendamentos que estavam em conflito ainda têm conflitos entre si
+            foreach ($conflitosAnteriores as $conflitanteAnterior) {
+                $conflitosRestantes = $conflitanteAnterior->detectarConflitos();
+                if ($conflitosRestantes->isEmpty()) {
+                    // Se não tem mais conflitos, remover dos conflitos
+                    $conflitanteAnterior->conflitos()->where('status_conflito', 'pendente')->delete();
+                }
+            }
+        }
+
+        // Se não tinha conflito antes e agora tem, criar novos conflitos
+        if (!$tinhaConflito && $conflitosNovos->isNotEmpty()) {
+            $agendamento->criarConflito($conflitosNovos);
+        }
+
+        // Se tinha conflito antes e ainda tem (mas possivelmente com agendamentos diferentes)
+        if ($tinhaConflito && $conflitosNovos->isNotEmpty()) {
+            // Usar transação para garantir atomicidade
+            DB::transaction(function () use ($agendamento, $conflitosNovos) {
+                // Remover TODOS os conflitos pendentes relacionados a este agendamento
+                // para evitar duplicatas
+                AgendamentoConflito::where('agendamento_id', $agendamento->id)
+                    ->where('status_conflito', 'pendente')
+                    ->delete();
+                
+                // Criar novos conflitos
+                $agendamento->criarConflito($conflitosNovos);
+            });
+        }
     }
 
     /**
@@ -433,7 +659,9 @@ class AgendamentoController extends Controller
      */
     public function gerenciar(Request $request)
     {
-        $query = Agendamento::with(['espaco.localizacao', 'user', 'aprovacao.aprovadoPor'])
+
+        
+        $query = Agendamento::with(['espaco.localizacao', 'user', 'aprovacao.aprovadoPor', 'conflitoAtivo'])
             ->representantesDeGrupo()
             ->comContadorGrupo();
 
@@ -442,11 +670,15 @@ class AgendamentoController extends Controller
             $query->where('espaco_id', $request->espaco_id);
         }
 
-        if ($request->filled('status')) {
+        // Aplicar filtro de status apenas se não houver filtros específicos de aprovado_hoje ou rejeitado_hoje
+        if ($request->filled('status') && !$request->filled('aprovado_hoje') && !$request->filled('rejeitado_hoje')) {
             // Se status for 'all', não aplicar filtro de status (mostrar todos)
             if ($request->status !== 'all') {
                 $query->where('status', $request->status);
             }
+        } else if (!$request->filled('status') && !$request->filled('aprovado_hoje') && !$request->filled('rejeitado_hoje') && !$request->filled('mes_atual')) {
+            // Se não há filtro de status específico e não há filtros especiais, mostrar apenas pendentes por padrão
+            $query->where('status', 'pendente');
         }
 
         if ($request->filled('data_inicio')) {
@@ -471,16 +703,32 @@ class AgendamentoController extends Controller
         // Filtro específico para aprovados hoje
         if ($request->filled('aprovado_hoje') && $request->aprovado_hoje === 'true') {
             $query->where('status', 'aprovado')
-                ->whereHas('aprovacao', function ($q) {
-                    $q->whereDate('aprovado_em', today());
+                ->where(function($subQuery) {
+                    // Tentar primeiro com a tabela de aprovacao
+                    $subQuery->whereHas('aprovacao', function ($q) {
+                        $q->whereDate('aprovado_em', today());
+                    })
+                    // Fallback: usar updated_at se não houver registro na tabela aprovacao
+                    ->orWhere(function($fallbackQuery) {
+                        $fallbackQuery->whereDoesntHave('aprovacao')
+                            ->whereDate('updated_at', today());
+                    });
                 });
         }
 
         // Filtro específico para rejeitados hoje
         if ($request->filled('rejeitado_hoje') && $request->rejeitado_hoje === 'true') {
             $query->where('status', 'rejeitado')
-                ->whereHas('aprovacao', function ($q) {
-                    $q->whereDate('aprovado_em', today());
+                ->where(function($subQuery) {
+                    // Tentar primeiro com a tabela de aprovacao
+                    $subQuery->whereHas('aprovacao', function ($q) {
+                        $q->whereDate('aprovado_em', today());
+                    })
+                    // Fallback: usar updated_at se não houver registro na tabela aprovacao
+                    ->orWhere(function($fallbackQuery) {
+                        $fallbackQuery->whereDoesntHave('aprovacao')
+                            ->whereDate('updated_at', today());
+                    });
                 });
         }
 
@@ -536,13 +784,16 @@ class AgendamentoController extends Controller
                 ->whereMonth('created_at', now()->month)
                 ->whereYear('created_at', now()->year)
                 ->count(),
+            'conflitos_pendentes' => \App\Models\AgendamentoConflito::pendentes()
+                ->distinct('grupo_conflito')
+                ->count('grupo_conflito'),
         ];
 
-        return Inertia::render('Agendamentos/Gerenciar', [
+        return Inertia::render('Agendamentos/Avaliar', [
             'agendamentos' => $paginatedAgendamentos,
             'espacos' => $espacos,
             'estatisticas' => $estatisticas,
-            'filters' => $request->only(['espaco_id', 'status', 'data_inicio', 'data_fim', 'solicitante', 'nome_agendamento']),
+            'filters' => $request->only(['espaco_id', 'status', 'data_inicio', 'data_fim', 'solicitante', 'nome_agendamento', 'aprovado_hoje', 'rejeitado_hoje', 'mes_atual']),
         ]);
     }
 
@@ -809,10 +1060,6 @@ class AgendamentoController extends Controller
                 $agendamentos->push($agendamento);
                 return $agendamentos;
             } catch (\Exception $e) {
-                \Log::error('Erro ao criar agendamento único: ' . $e->getMessage(), [
-                    'validated' => $validated,
-                    'exception' => $e->getTraceAsString()
-                ]);
                 throw $e;
             }
         }
@@ -829,7 +1076,6 @@ class AgendamentoController extends Controller
                 'is_representante_grupo' => true,
             ]);
         } catch (\Exception $e) {
-            \Log::error('Erro ao criar registro de recorrência: ' . $e->getMessage());
             throw new \Exception('Erro ao criar agendamento recorrente: ' . $e->getMessage());
         }
 
@@ -870,8 +1116,7 @@ class AgendamentoController extends Controller
                 $agendamentos->push($agendamento);
                 $primeiroAgendamento = false;
             } catch (\Exception $e) {
-                // Log do erro mas continua criando os próximos agendamentos
-                \Log::warning("Erro ao criar agendamento recorrente para {$dataHoraAtual->format('Y-m-d H:i')}: " . $e->getMessage());
+                // Continua criando os próximos agendamentos
             }
 
             // Avançar para a próxima data/hora baseado no tipo de recorrência
