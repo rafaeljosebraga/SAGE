@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class Agendamento extends Model
@@ -440,54 +441,8 @@ class Agendamento extends Model
         return self::where('espaco_id', $this->espaco_id)
             ->where('id', '!=', $this->id)
             ->whereIn('status', ['pendente', 'aprovado'])
-            ->where(function ($q) {
-                $q->where(function ($dateQuery) {
-                    // Verifica sobreposição de períodos (data + hora)
-                    $dateQuery->where(function ($subQuery) {
-                        $subQuery->where('data_inicio', '<', $this->data_inicio)
-                                ->orWhere(function ($timeQuery) {
-                                    $timeQuery->where('data_inicio', '=', $this->data_inicio)
-                                             ->where('hora_inicio', '<=', $this->hora_inicio);
-                                });
-                    })->where(function ($subQuery) {
-                        $subQuery->where('data_fim', '>', $this->data_inicio)
-                                ->orWhere(function ($timeQuery) {
-                                    $timeQuery->where('data_fim', '=', $this->data_inicio)
-                                             ->where('hora_fim', '>', $this->hora_inicio);
-                                });
-                    });
-                })->orWhere(function ($dateQuery) {
-                    // Caso 2: O fim do novo agendamento está dentro de um período existente
-                    $dateQuery->where(function ($subQuery) {
-                        $subQuery->where('data_inicio', '<', $this->data_fim)
-                                ->orWhere(function ($timeQuery) {
-                                    $timeQuery->where('data_inicio', '=', $this->data_fim)
-                                             ->where('hora_inicio', '<', $this->hora_fim);
-                                });
-                    })->where(function ($subQuery) {
-                        $subQuery->where('data_fim', '>', $this->data_fim)
-                                ->orWhere(function ($timeQuery) {
-                                    $timeQuery->where('data_fim', '=', $this->data_fim)
-                                             ->where('hora_fim', '>=', $this->hora_fim);
-                                });
-                    });
-                })->orWhere(function ($dateQuery) {
-                    // Caso 3: O novo agendamento engloba completamente um período existente
-                    $dateQuery->where(function ($subQuery) {
-                        $subQuery->where('data_inicio', '>', $this->data_inicio)
-                                ->orWhere(function ($timeQuery) {
-                                    $timeQuery->where('data_inicio', '=', $this->data_inicio)
-                                             ->where('hora_inicio', '>=', $this->hora_inicio);
-                                });
-                    })->where(function ($subQuery) {
-                        $subQuery->where('data_fim', '<', $this->data_fim)
-                                ->orWhere(function ($timeQuery) {
-                                    $timeQuery->where('data_fim', '=', $this->data_fim)
-                                             ->where('hora_fim', '<=', $this->hora_fim);
-                                });
-                    });
-                });
-            })
+            ->whereRaw("(data_inicio::text || ' ' || hora_inicio::text)::timestamp < (? || ' ' || ?)::timestamp", [$this->data_fim, $this->hora_fim])
+            ->whereRaw("(data_fim::text || ' ' || hora_fim::text)::timestamp > (? || ' ' || ?)::timestamp", [$this->data_inicio, $this->hora_inicio])
             ->get();
     }
 
@@ -514,12 +469,30 @@ class Agendamento extends Model
         $observacoes = "Conflito de horário detectado para o espaço {$this->espaco->nome} no período de {$this->data_inicio} {$this->hora_inicio} até {$this->data_fim} {$this->hora_fim}";
 
         if ($grupoExistente) {
-            // Adicionar apenas este agendamento ao grupo existente
-            AgendamentoConflito::create([
-                'grupo_conflito' => $grupoExistente,
-                'agendamento_id' => $this->id,
-                'observacoes_conflito' => $observacoes,
-            ]);
+            // Verificar se este agendamento já está no grupo
+            $jaExiste = AgendamentoConflito::where('grupo_conflito', $grupoExistente)
+                ->where('agendamento_id', $this->id)
+                ->exists();
+                
+            if (!$jaExiste) {
+                try {
+                    // Adicionar apenas este agendamento ao grupo existente
+                    AgendamentoConflito::create([
+                        'grupo_conflito' => $grupoExistente,
+                        'agendamento_id' => $this->id,
+                        'observacoes_conflito' => $observacoes,
+                    ]);
+                } catch (\Illuminate\Database\QueryException $e) {
+                    // Se der erro de chave duplicada, verificar se o registro já existe
+                    if (str_contains($e->getMessage(), 'duplicate key value violates unique constraint')) {
+                        // Registro já existe, não fazer nada
+                        Log::warning("Tentativa de criar conflito duplicado para agendamento {$this->id} no grupo {$grupoExistente}");
+                    } else {
+                        // Re-lançar outros tipos de erro
+                        throw $e;
+                    }
+                }
+            }
             return $grupoExistente;
         } else {
             // Criar novo grupo com todos os agendamentos conflitantes

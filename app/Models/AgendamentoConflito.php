@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class AgendamentoConflito extends Model
@@ -41,11 +42,29 @@ class AgendamentoConflito extends Model
         $grupoConflito = Str::uuid()->toString();
         
         foreach ($agendamentosIds as $agendamentoId) {
-            self::create([
-                'grupo_conflito' => $grupoConflito,
-                'agendamento_id' => $agendamentoId,
-                'observacoes_conflito' => $observacoes,
-            ]);
+            try {
+                // Verificar se já existe antes de criar
+                $jaExiste = self::where('grupo_conflito', $grupoConflito)
+                    ->where('agendamento_id', $agendamentoId)
+                    ->exists();
+                
+                if (!$jaExiste) {
+                    self::create([
+                        'grupo_conflito' => $grupoConflito,
+                        'agendamento_id' => $agendamentoId,
+                        'observacoes_conflito' => $observacoes,
+                    ]);
+                }
+            } catch (\Illuminate\Database\QueryException $e) {
+                // Se der erro de chave duplicada, verificar se o registro já existe
+                if (str_contains($e->getMessage(), 'duplicate key value violates unique constraint')) {
+                    // Registro já existe, não fazer nada
+                    Log::warning("Tentativa de criar conflito duplicado para agendamento {$agendamentoId} no grupo {$grupoConflito}");
+                } else {
+                    // Re-lançar outros tipos de erro
+                    throw $e;
+                }
+            }
         }
         
         return $grupoConflito;

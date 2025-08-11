@@ -4,6 +4,7 @@ import { ptBR } from 'date-fns/locale';
 import { Calendar, Clock, MapPin, User, Plus, Eye, AlertTriangle, Trash2, X, CheckCircle } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -378,112 +379,93 @@ export default function AgendamentosModals({
 
             {/* Modal de Conflito */}
             <Dialog open={conflictModal.open} onOpenChange={(open) => setConflictModal({ ...conflictModal, open })}>
-                <DialogContent className="max-w-2xl">
+                <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden rounded-lg">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
                             <AlertTriangle className="h-5 w-5 text-yellow-600" />
                             Conflito de Horário Detectado
                         </DialogTitle>
-                        <DialogDescription>
-                            Existe(m) agendamento(s) conflitante(s) no horário solicitado.
+                        <DialogDescription className="py-2">
+                            Existem agendamentos que conflitam com o horário solicitado. Deseja continuar mesmo assim?
                         </DialogDescription>
                     </DialogHeader>
-
-                    <div className="space-y-4">
+                    
+                    <div className="space-y-4 overflow-y-auto max-h-[50vh] pr-2 rounded-md">
                         <div>
-                            <h4 className="font-medium mb-2">Agendamentos Conflitantes:</h4>
-                            <div className="space-y-2 max-h-64 overflow-y-auto">
+                            <h4 className="font-medium text-sm text-muted-foreground mb-3">
+                                Agendamentos conflitantes ({conflictModal.conflitos.length}):
+                            </h4>
+                            <div className="space-y-3">
                                 {conflictModal.conflitos.map((conflito) => {
-                                    const formatPerfilAcesso = (perfil?: string) => {
-                                        switch (perfil) {
-                                            case 'diretor_geral':
-                                                return 'Diretor Geral';
-                                            case 'coordenador':
-                                                return 'Coordenador';
-                                            case 'professor':
-                                                return 'Professor';
-                                            case 'funcionario':
-                                                return 'Servidor';
-                                            case 'aluno':
-                                                return 'Aluno';
-                                            default:
-                                                return null;
+                                    // Usar as cores reais do agendamento
+                                    const { getEventColors } = useAgendamentoColors();
+                                    const colors = getEventColors(conflito as any);
+                                    
+                                    // Função para formatar data para exibição
+                                    const formatDateForDisplay = (dateString: string) => {
+                                        try {
+                                            const dateOnly = dateString.split("T")[0];
+                                            const [year, month, day] = dateOnly.split("-");
+                                            return `${day}/${month}/${year}`;
+                                        } catch {
+                                            return dateString;
                                         }
                                     };
 
-                                    const getPerfilShort = (perfil?: string) => {
-                                        switch (perfil) {
-                                            case 'diretor_geral':
-                                                return 'Diretor';
-                                            case 'coordenador':
-                                                return 'Coordenador';
-                                            case 'professor':
-                                                return 'Professor';
-                                            case 'funcionario':
-                                                return 'Servidor';
-                                            case 'aluno':
-                                                return 'Aluno';
-                                            default:
-                                                return '';
-                                        }
+                                    // Função para formatar hora para exibição
+                                    const formatTimeForDisplay = (timeString: string) => {
+                                        return timeString.substring(0, 5);
                                     };
-
-                                    const papel = formatPerfilAcesso(conflito.user?.perfil_acesso);
-                                    const perfilShort = getPerfilShort(conflito.user?.perfil_acesso);
-
+                                    
                                     return (
-                                        <div key={conflito.id} className="p-3 border rounded-lg bg-red-50 dark:bg-red-900/20">
-                                            <div className="mb-3">
-                                                <div className="font-medium text-sm">{conflito.titulo}</div>
-                                            </div>
-                                            
-                                            <div className="flex items-center gap-2">
-                                                <div className="flex flex-col">
-                                                    <span className="text-sm font-medium">
-                                                        {conflito.user?.name}{perfilShort ? ` (${perfilShort})` : ''}
-                                                    </span>
-                                                    <span className="text-xs text-muted-foreground">
-                                                        {conflito.user?.email}
-                                                    </span>
-                                                    <div className="text-xs text-muted-foreground">
-                                                        {(() => { 
-                                                            try { 
-                                                                const dateOnly = conflito.data_inicio.split("T")[0]; 
-                                                                const [year, month, day] = dateOnly.split("-"); 
-                                                                return `${day}/${month}/${year}`; 
-                                                            } catch { 
-                                                                return conflito.data_inicio; 
-                                                            } 
-                                                        })()} • {conflito.hora_inicio} às {conflito.hora_fim}
+                                        <Card key={conflito.id} className={`border-l-4 ${colors.border} rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow`}>
+                                            <CardContent className="p-4 rounded-r-lg">
+                                                <div className="flex items-start justify-between">
+                                                    <div className="space-y-1">
+                                                        <h5 className="font-medium">{conflito.titulo}</h5>
+                                                        <div className="flex items-center gap-4 text-sm opacity-80">
+                                                            <div className="flex items-center gap-1">
+                                                                <Calendar className="h-4 w-4" />
+                                                                {formatDateForDisplay(conflito.data_inicio)}
+                                                                {conflito.data_inicio !== conflito.data_fim && 
+                                                                    ` - ${formatDateForDisplay(conflito.data_fim)}`
+                                                                }
+                                                            </div>
+                                                            <div className="flex items-center gap-1">
+                                                                <Clock className="h-4 w-4" />
+                                                                {formatTimeForDisplay(conflito.hora_inicio)} - {formatTimeForDisplay(conflito.hora_fim)}
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center gap-4 text-sm opacity-80">
+                                                            <div className="flex items-center gap-1">
+                                                                <MapPin className="h-4 w-4" />
+                                                                {conflito.espaco?.nome || 'Espaço não encontrado'}
+                                                            </div>
+                                                            <div className="flex items-center gap-1">
+                                                                <User className="h-4 w-4" />
+                                                                {conflito.user?.name || 'Usuário não encontrado'}
+                                                            </div>
+                                                        </div>
                                                     </div>
+                                                    <StatusBadge status={conflito.status} />
                                                 </div>
-                                                <div className="ml-auto">
-                                                    <div className="inline-flex items-center gap-2">
-                                                        {papel && (
-                                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#F1DEC5] text-gray-600 border-transparent">
-                                                                {papel}
-                                                            </span>
-                                                        )}
-                                                        <StatusBadge status={conflito.status} />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                            </CardContent>
+                                        </Card>
                                     );
                                 })}
                             </div>
                         </div>
                     </div>
 
-                    <DialogFooter>
+                    <DialogFooter className="flex-col sm:flex-row gap-2 pt-4 border-t">
                         <Button
                             variant="outline"
                             onClick={() => setConflictModal({ open: false, conflitos: [], formData: null })}
+                            className="w-full sm:w-auto rounded-lg"
                         >
                             Cancelar
                         </Button>
                         <Button
-                            variant="destructive"
                             onClick={() => {
                                 handleConflictSubmit();
                                 toast({
@@ -498,8 +480,9 @@ export default function AgendamentosModals({
                                     duration: 5000,
                                 });
                             }}
+                            className="w-full sm:w-auto bg-yellow-600 hover:bg-yellow-700 rounded-lg"
                         >
-                            Solicitar Prioridade
+                            Pedir Prioridade
                         </Button>
                     </DialogFooter>
                 </DialogContent>

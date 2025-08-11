@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Head, Link, useForm, router } from '@inertiajs/react';
-import { ArrowLeft, Calendar, Clock, MapPin, Users, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, MapPin, Users, AlertTriangle, User } from 'lucide-react';
 
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
@@ -12,10 +12,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useAgendamentoColors } from '@/components/ui/agend-colors';
+import { useAgendamentoColors, StatusBadge } from '@/components/ui/agend-colors';
 import { useToast } from '@/hooks/use-toast';
 
 import type { PageProps, Agendamento, Espaco, Recurso, BreadcrumbItem } from '@/types';
+
+interface ConflictingAgendamento {
+    id: number;
+    titulo: string;
+    data_inicio: string;
+    hora_inicio: string;
+    data_fim: string;
+    hora_fim: string;
+    status: string;
+    color_index?: number;
+    user: {
+        name: string;
+    };
+    espaco: {
+        nome: string;
+    };
+}
 
 interface Props extends PageProps {
     agendamento: Agendamento;
@@ -25,7 +42,7 @@ interface Props extends PageProps {
 
 export default function AgendamentosEdit({ agendamento, espacos, recursos }: Props) {
     // Usar o hook de cores
-    const { getEventBorderColor } = useAgendamentoColors();
+    const { getEventBorderColor, getEventColors } = useAgendamentoColors();
     
     // Usar o hook de toast
     const { toast } = useToast();
@@ -35,10 +52,10 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
     );
 
     // Estado para modal de conflito de horário
-    const [conflictTimeModal, setConflictTimeModal] = useState<{
+    const [conflictModal, setConflictModal] = useState<{
         open: boolean;
-        message: string;
-    }>({ open: false, message: "" });
+        conflitos: ConflictingAgendamento[];
+    }>({ open: false, conflitos: [] });
 
     // Estado para modal de erro de validação
     const [validationErrorModal, setValidationErrorModal] = useState<{
@@ -154,6 +171,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
         hora_fim: formatTimeForInput(agendamento.hora_fim),
         observacoes: agendamento.observacoes || '',
         recursos_solicitados: agendamento.recursos_solicitados || [] as number[],
+        force_update: false as boolean,
     });
 
     
@@ -191,7 +209,16 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
             return;
         }
 
-        put(`/agendamentos/${agendamento.id}`, {
+        // Garantir que recursos_solicitados seja um array válido
+        const dataToSend = {
+            ...data,
+            recursos_solicitados: Array.isArray(data.recursos_solicitados) ? data.recursos_solicitados : []
+        };
+        
+        console.log('Enviando dados normais:', dataToSend);
+        
+        // Usar router.put diretamente com os dados
+        router.put(`/agendamentos/${agendamento.id}`, dataToSend, {
             onSuccess: () => {
                 // Mostrar toast de sucesso
                 toast({
@@ -207,14 +234,62 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                     router.get(getBackUrl());
                 }, 1000);
             },
-            onError: (errors) => {
+            onError: (errors: any) => {
                 console.error('Erro ao atualizar agendamento:', errors);
                 
                 // Verificar se há conflitos de horário
-                if (errors.horario) {
-                    setConflictTimeModal({ 
-                        open: true, 
-                        message: errors.horario 
+                if (errors.conflitos) {
+                    try {
+                        const conflitos = JSON.parse(errors.conflitos as string) as ConflictingAgendamento[];
+                        setConflictModal({ 
+                            open: true, 
+                            conflitos: conflitos 
+                        });
+                        return; // Não mostrar toast de erro quando há conflitos
+                    } catch (e) {
+                        console.error('Erro ao parsear conflitos:', e);
+                        toast({
+                            title: "Erro de conflito",
+                            description: "Há conflitos de horário, mas não foi possível carregá-los.",
+                            variant: "destructive",
+                        });
+                        return;
+                    }
+                } else if (errors.horario) {
+                    // Fallback para o formato antigo
+                    toast({
+                        title: "Conflito de horário",
+                        description: errors.horario as string,
+                        variant: "destructive",
+                    });
+                } else {
+                    // Mostrar erro genérico com mais detalhes se possível
+                    let errorMessage = "Ocorreu um erro ao atualizar o agendamento.";
+                    let errorDetails = "";
+                    
+                    if (typeof errors === 'object' && errors !== null) {
+                        const errorKeys = Object.keys(errors);
+                        if (errorKeys.length > 0) {
+                            const firstError = errors[errorKeys[0]];
+                            if (Array.isArray(firstError)) {
+                                errorMessage = firstError[0];
+                                errorDetails = `Campo: ${errorKeys[0]}`;
+                            } else if (typeof firstError === 'string') {
+                                errorMessage = firstError;
+                                errorDetails = `Campo: ${errorKeys[0]}`;
+                            }
+                        }
+                        
+                        // Se há múltiplos erros, mostrar todos
+                        if (errorKeys.length > 1) {
+                            errorDetails += ` (e mais ${errorKeys.length - 1} erro(s))`;
+                        }
+                    }
+                    
+                    toast({
+                        title: "Erro ao atualizar",
+                        description: errorDetails ? `${errorMessage} - ${errorDetails}` : errorMessage,
+                        variant: "destructive",
                     });
                 }
             }
@@ -225,6 +300,122 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
         setData('espaco_id', value);
         const espaco = espacos.find(e => e.id.toString() === value);
         setSelectedEspaco(espaco || null);
+    };
+
+    // Função para confirmar edição com conflitos
+    const handleConfirmWithConflicts = () => {
+        setConflictModal({ open: false, conflitos: [] });
+        
+        // Criar dados com force_update = true de forma explícita
+        const dataWithForce = {
+            espaco_id: data.espaco_id,
+            titulo: data.titulo,
+            justificativa: data.justificativa,
+            data_inicio: data.data_inicio,
+            hora_inicio: data.hora_inicio,
+            data_fim: data.data_fim,
+            hora_fim: data.hora_fim,
+            observacoes: data.observacoes,
+            recursos_solicitados: Array.isArray(data.recursos_solicitados) ? data.recursos_solicitados : [],
+            force_update: true
+        };
+        
+
+        
+        // Tentar com FormData para garantir que os dados sejam enviados corretamente
+        const formData = new FormData();
+        Object.keys(dataWithForce).forEach(key => {
+            const value = dataWithForce[key as keyof typeof dataWithForce];
+            if (key === 'recursos_solicitados' && Array.isArray(value)) {
+                value.forEach((recurso, index) => {
+                    formData.append(`recursos_solicitados[${index}]`, recurso.toString());
+                });
+            } else if (key === 'force_update') {
+                formData.append(key, value ? '1' : '0');
+            } else {
+                formData.append(key, value?.toString() || '');
+            }
+        });
+        
+        // Adicionar método PUT para Laravel
+        formData.append('_method', 'PUT');
+        
+        // Usar router.post com FormData
+        router.post(`/agendamentos/${agendamento.id}`, formData, {
+            onSuccess: () => {
+                toast({
+                    title: "Agendamento atualizado com sucesso!",
+                    description: "As alterações foram salvas. O conflito será analisado.",
+                    variant: 'success',
+                    duration: 5000,
+                    className: 'bg-green-500 text-white',
+                });
+                
+                setTimeout(() => {
+                    router.get(getBackUrl());
+                }, 1000);
+            },
+            onError: (errors: any) => {
+                console.error('Erro ao forçar atualização:', errors);
+                console.error('Tipo do erro:', typeof errors);
+                console.error('Chaves do erro:', Object.keys(errors || {}));
+                
+                // Verificar se há conflitos (não deveria acontecer aqui, mas por segurança)
+                if (errors.conflitos) {
+                    toast({
+                        title: "Conflito persistente",
+                        description: "Ainda há conflitos de horário. Tente novamente ou contate o administrador.",
+                        variant: "destructive",
+                    });
+                    return;
+                }
+                
+                // Mostrar detalhes do erro se disponível
+                let errorMessage = "Ocorreu um erro inesperado.";
+                let errorDetails = "";
+                
+                if (typeof errors === 'object' && errors !== null) {
+                    // Tentar extrair mensagem de erro mais específica
+                    const errorKeys = Object.keys(errors);
+                    if (errorKeys.length > 0) {
+                        const firstError = errors[errorKeys[0]];
+                        if (Array.isArray(firstError)) {
+                            errorMessage = firstError[0];
+                            errorDetails = `Campo: ${errorKeys[0]}`;
+                        } else if (typeof firstError === 'string') {
+                            errorMessage = firstError;
+                            errorDetails = `Campo: ${errorKeys[0]}`;
+                        }
+                    }
+                    
+                    // Se há múltiplos erros, mostrar todos
+                    if (errorKeys.length > 1) {
+                        errorDetails += ` (e mais ${errorKeys.length - 1} erro(s))`;
+                    }
+                }
+                
+                toast({
+                    title: "Erro ao atualizar",
+                    description: errorDetails ? `${errorMessage} - ${errorDetails}` : errorMessage,
+                    variant: "destructive",
+                });
+            }
+        });
+    };
+
+    // Função para formatar data para exibição
+    const formatDateForDisplay = (dateString: string) => {
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('pt-BR');
+        } catch {
+            return dateString;
+        }
+    };
+
+    // Função para formatar horário para exibição
+    const formatTimeForDisplay = (timeString: string) => {
+        return timeString.substring(0, 5); // Remove segundos se houver
     };
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -536,23 +727,81 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                 </form>
 
                 {/* Modal de Conflito de Horário */}
-                <Dialog open={conflictTimeModal.open} onOpenChange={(open) => setConflictTimeModal({ open, message: "" })}>
-                    <DialogContent className="max-w-md">
+                <Dialog open={conflictModal.open} onOpenChange={(open) => setConflictModal({ open, conflitos: [] })}>
+                    <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden rounded-lg">
                         <DialogHeader>
                             <DialogTitle className="flex items-center gap-2">
                                 <AlertTriangle className="h-5 w-5 text-yellow-600" />
-                                Conflito de Horário
+                                Conflito de Horário Detectado
                             </DialogTitle>
-                            <DialogDescription className="py-4 text-base">
-                                Existe(m) agendamento(s) conflitante(s) no horário solicitado.
+                            <DialogDescription className="py-2">
+                                Existem agendamentos que conflitam com o horário solicitado. Deseja continuar mesmo assim?
                             </DialogDescription>
                         </DialogHeader>
-                        <DialogFooter>
+                        
+                        <div className="space-y-4 overflow-y-auto max-h-[50vh] pr-2 rounded-md">
+                            <div>
+                                <h4 className="font-medium text-sm text-muted-foreground mb-3">
+                                    Agendamentos conflitantes ({conflictModal.conflitos.length}):
+                                </h4>
+                                <div className="space-y-3">
+                                    {conflictModal.conflitos.map((conflito) => {
+                                        // Usar as cores reais do agendamento
+                                        const colors = getEventColors(conflito as any);
+                                        
+                                        return (
+                                            <Card key={conflito.id} className={`border-l-4 ${colors.border} rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow`}>
+                                                <CardContent className="p-4 rounded-r-lg">
+                                                    <div className="flex items-start justify-between">
+                                                        <div className="space-y-1">
+                                                            <h5 className="font-medium">{conflito.titulo}</h5>
+                                                            <div className="flex items-center gap-4 text-sm opacity-80">
+                                                                <div className="flex items-center gap-1">
+                                                                    <Calendar className="h-4 w-4" />
+                                                                    {formatDateForDisplay(conflito.data_inicio)}
+                                                                    {conflito.data_inicio !== conflito.data_fim && 
+                                                                        ` - ${formatDateForDisplay(conflito.data_fim)}`
+                                                                    }
+                                                                </div>
+                                                                <div className="flex items-center gap-1">
+                                                                    <Clock className="h-4 w-4" />
+                                                                    {formatTimeForDisplay(conflito.hora_inicio)} - {formatTimeForDisplay(conflito.hora_fim)}
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex items-center gap-4 text-sm opacity-80">
+                                                                <div className="flex items-center gap-1">
+                                                                    <MapPin className="h-4 w-4" />
+                                                                    {conflito.espaco.nome}
+                                                                </div>
+                                                                <div className="flex items-center gap-1">
+                                                                    <User className="h-4 w-4" />
+                                                                    {conflito.user.name}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <StatusBadge status={conflito.status} />
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+
+                        <DialogFooter className="flex-col sm:flex-row gap-2 pt-4 border-t">
                             <Button
-                                onClick={() => setConflictTimeModal({ open: false, message: "" })}
-                                className="w-full"
+                                variant="outline"
+                                onClick={() => setConflictModal({ open: false, conflitos: [] })}
+                                className="w-full sm:w-auto rounded-lg"
                             >
-                                OK
+                                Cancelar
+                            </Button>
+                            <Button
+                                onClick={handleConfirmWithConflicts}
+                                className="w-full sm:w-auto bg-yellow-600 hover:bg-yellow-700 rounded-lg"
+                            >
+                                Confirmar Conflito
                             </Button>
                         </DialogFooter>
                     </DialogContent>
