@@ -118,7 +118,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                             dateToUse = savedDate;
                         }
                     } catch (error) {
-                        console.warn('Data salva inválida, usando data atual:', error);
+
                     }
                 }
                 
@@ -138,7 +138,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                     espacos: espacosToUse
                 };
             } catch (error) {
-                console.warn('Erro ao recuperar estado salvo, usando valores padrão:', error);
+
             }
         }
         
@@ -241,7 +241,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
 
         // Se mais de um modal estiver aberto, pode haver conflitos de foco
         if (openModals > 1) {
-            console.warn('Múltiplos modais abertos simultaneamente, isso pode causar problemas de acessibilidade');
+
         }
     }, [
         createModal.open,
@@ -307,7 +307,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                 const parsed = JSON.parse(currentState);
                 existingDates = parsed.dates || {};
             } catch (error) {
-                console.warn('Erro ao recuperar estado atual:', error);
+
             }
         }
 
@@ -326,7 +326,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         try {
             localStorage.setItem('agendamentos-view-state', JSON.stringify(stateToSave));
         } catch (error) {
-            console.warn('Erro ao salvar estado:', error);
+
         }
     }, [viewMode, currentDate, selectedEspacos]);
 
@@ -560,7 +560,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
 
                 // Verificar se as datas são válidas
                 if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
-                    console.warn('Data inválida encontrada:', { a: a.data_inicio, b: b.data_inicio });
+
                     return 0;
                 }
 
@@ -581,7 +581,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
 
                 // Verificar se as datas são válidas
                 if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
-                    console.warn('Data inválida encontrada:', { a: a.data_fim, b: b.data_fim });
+
                     return 0;
                 }
 
@@ -882,7 +882,6 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                 });
             },
             onError: (errors: any) => {
-                console.log('Resposta de erro ao criar agendamento:', errors);
                 
                 if (errors.conflitos) {
                     let conflitosArray = null;
@@ -954,7 +953,6 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                 resetForm();
             },
             onError: (errors) => {
-                console.log('Resposta de erro ao criar agendamento com conflito:', errors);
                 alert('Erro ao criar agendamento.');
             }
         });
@@ -1023,7 +1021,6 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                 return;
                             }
                         } else {
-                            console.log('Resposta de erro ao criar agendamento:', errors);
                             alert('Erro ao criar agendamento. Verifique os dados informados.');
                         }
                         setPastTimeModal({ open: false });

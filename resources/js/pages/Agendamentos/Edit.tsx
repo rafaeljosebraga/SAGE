@@ -215,7 +215,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
             recursos_solicitados: Array.isArray(data.recursos_solicitados) ? data.recursos_solicitados : []
         };
         
-        console.log('Enviando dados normais:', dataToSend);
+
         
         // Usar router.put diretamente com os dados
         router.put(`/agendamentos/${agendamento.id}`, dataToSend, {
@@ -235,7 +235,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                 }, 1000);
             },
             onError: (errors: any) => {
-                console.error('Erro ao atualizar agendamento:', errors);
+
                 
                 // Verificar se há conflitos de horário
                 if (errors.conflitos) {
@@ -247,7 +247,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                         });
                         return; // Não mostrar toast de erro quando há conflitos
                     } catch (e) {
-                        console.error('Erro ao parsear conflitos:', e);
+
                         toast({
                             title: "Erro de conflito",
                             description: "Há conflitos de horário, mas não foi possível carregá-los.",
@@ -356,9 +356,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                 }, 1000);
             },
             onError: (errors: any) => {
-                console.error('Erro ao forçar atualização:', errors);
-                console.error('Tipo do erro:', typeof errors);
-                console.error('Chaves do erro:', Object.keys(errors || {}));
+
                 
                 // Verificar se há conflitos (não deveria acontecer aqui, mas por segurança)
                 if (errors.conflitos) {

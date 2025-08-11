@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+
 use Carbon\Carbon;
 
 class Agendamento extends Model
@@ -486,7 +486,6 @@ class Agendamento extends Model
                     // Se der erro de chave duplicada, verificar se o registro já existe
                     if (str_contains($e->getMessage(), 'duplicate key value violates unique constraint')) {
                         // Registro já existe, não fazer nada
-                        Log::warning("Tentativa de criar conflito duplicado para agendamento {$this->id} no grupo {$grupoExistente}");
                     } else {
                         // Re-lançar outros tipos de erro
                         throw $e;

@@ -484,7 +484,7 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                 
                 // Verificar se as datas são válidas
                 if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
-                    console.warn('Data inválida encontrada:', { a: a.data_inicio, b: b.data_inicio });
+
                     return 0;
                 }
                 
@@ -507,7 +507,7 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                 
                 // Verificar se as datas são válidas
                 if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
-                    console.warn('Data inválida encontrada:', { a: a.data_fim, b: b.data_fim });
+
                     return 0;
                 }
                 

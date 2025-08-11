@@ -1039,10 +1039,6 @@ class AgendamentoController extends Controller
                 $agendamentos->push($agendamento);
                 return $agendamentos;
             } catch (\Exception $e) {
-                \Log::error('Erro ao criar agendamento único: ' . $e->getMessage(), [
-                    'validated' => $validated,
-                    'exception' => $e->getTraceAsString()
-                ]);
                 throw $e;
             }
         }
@@ -1059,7 +1055,6 @@ class AgendamentoController extends Controller
                 'is_representante_grupo' => true,
             ]);
         } catch (\Exception $e) {
-            \Log::error('Erro ao criar registro de recorrência: ' . $e->getMessage());
             throw new \Exception('Erro ao criar agendamento recorrente: ' . $e->getMessage());
         }
 
@@ -1100,8 +1095,7 @@ class AgendamentoController extends Controller
                 $agendamentos->push($agendamento);
                 $primeiroAgendamento = false;
             } catch (\Exception $e) {
-                // Log do erro mas continua criando os próximos agendamentos
-                \Log::warning("Erro ao criar agendamento recorrente para {$dataHoraAtual->format('Y-m-d H:i')}: " . $e->getMessage());
+                // Continua criando os próximos agendamentos
             }
 
             // Avançar para a próxima data/hora baseado no tipo de recorrência
