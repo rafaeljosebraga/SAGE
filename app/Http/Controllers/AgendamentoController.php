@@ -655,15 +655,19 @@ class AgendamentoController extends Controller
     }
 
     /**
-     * Página de gerenciamento de agendamentos para diretores
+     * Página de avaliação individual de agendamentos SEM conflito para diretores
+     * Agendamentos COM conflito devem ser resolvidos em GerenciarAgendamentosController
      */
     public function gerenciar(Request $request)
     {
-
-        
+        // Filtrar apenas agendamentos SEM conflito para avaliação individual
         $query = Agendamento::with(['espaco.localizacao', 'user', 'aprovacao.aprovadoPor', 'conflitoAtivo'])
             ->representantesDeGrupo()
-            ->comContadorGrupo();
+            ->comContadorGrupo()
+            // Adicionar filtro para excluir agendamentos que têm conflito ativo
+            ->whereDoesntHave('conflitoAtivo', function ($q) {
+                $q->where('status_conflito', 'pendente');
+            });
 
         // Filtros
         if ($request->filled('espaco_id')) {
@@ -763,15 +767,23 @@ class AgendamentoController extends Controller
             ->orderBy('nome')
             ->get(['id', 'nome']);
 
-        // Estatísticas - contar apenas representantes de grupo para evitar duplicação
+        // Estatísticas - contar apenas representantes de grupo SEM conflito para avaliação individual
         $hoje = now()->format('Y-m-d');
 
         $estatisticas = [
-            'pendentes' => Agendamento::representantesDeGrupo()->where('status', 'pendente')->count(),
+            'pendentes' => Agendamento::representantesDeGrupo()
+                ->where('status', 'pendente')
+                ->whereDoesntHave('conflitoAtivo', function ($q) {
+                    $q->where('status_conflito', 'pendente');
+                })
+                ->count(),
             'aprovados_hoje' => Agendamento::representantesDeGrupo()
                 ->where('status', 'aprovado')
                 ->whereHas('aprovacao', function ($q) use ($hoje) {
                     $q->whereRaw('DATE(aprovado_em) = ?', [$hoje]);
+                })
+                ->whereDoesntHave('conflitoAtivo', function ($q) {
+                    $q->where('status_conflito', 'pendente');
                 })
                 ->count(),
             'rejeitados_hoje' => Agendamento::representantesDeGrupo()
@@ -779,10 +791,16 @@ class AgendamentoController extends Controller
                 ->whereHas('aprovacao', function ($q) use ($hoje) {
                     $q->whereRaw('DATE(aprovado_em) = ?', [$hoje]);
                 })
+                ->whereDoesntHave('conflitoAtivo', function ($q) {
+                    $q->where('status_conflito', 'pendente');
+                })
                 ->count(),
             'total_mes' => Agendamento::representantesDeGrupo()
                 ->whereMonth('created_at', now()->month)
                 ->whereYear('created_at', now()->year)
+                ->whereDoesntHave('conflitoAtivo', function ($q) {
+                    $q->where('status_conflito', 'pendente');
+                })
                 ->count(),
             'conflitos_pendentes' => \App\Models\AgendamentoConflito::pendentes()
                 ->distinct('grupo_conflito')
@@ -1134,9 +1152,6 @@ class AgendamentoController extends Controller
 
             $contador++;
         }
-
-
-
         return $agendamentos;
     }
 }
