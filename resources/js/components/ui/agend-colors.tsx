@@ -392,6 +392,170 @@ export const useAgendamentoColors = () => {
         }
     };
 
+    const getEventGradientBackground = (agendamento: Agendamento): string => {
+        // Se o evento já passou, usar cinza
+        if (isEventPast(agendamento)) {
+            return 'bg-gradient-to-l from-gray-50 to-gray-100 dark:from-gray-950/40 dark:to-gray-900/50 text-gray-900 dark:text-gray-100';
+        }
+
+        // Se o agendamento tem color_index definido, usar ele (cor fixa)
+        if (agendamento.color_index !== null && agendamento.color_index !== undefined) {
+            const colorIndex = agendamento.color_index % colorPalette.length;
+            const color = colorPalette[colorIndex];
+            
+            // Extrair a cor base do bg para criar o degradê
+            const bgColor = color.bg;
+            let gradientClass = '';
+            
+            if (bgColor.includes('blue-100')) {
+                gradientClass = 'bg-gradient-to-l from-blue-50 to-blue-100 dark:from-blue-600/30 dark:to-blue-600';
+            } else if (bgColor.includes('blue-200')) {
+                gradientClass = 'bg-gradient-to-l from-blue-100 to-blue-200 dark:from-blue-700/30 dark:to-blue-700';
+            } else if (bgColor.includes('blue-300')) {
+                gradientClass = 'bg-gradient-to-l from-blue-200 to-blue-300 dark:from-blue-800/30 dark:to-blue-800';
+            } else if (bgColor.includes('blue-400')) {
+                gradientClass = 'bg-gradient-to-l from-blue-300 to-blue-400 dark:from-blue-600/30 dark:to-blue-600';
+            } else if (bgColor.includes('blue-500')) {
+                gradientClass = 'bg-gradient-to-l from-blue-400 to-blue-500 dark:from-blue-600/30 dark:to-blue-600';
+            } else if (bgColor.includes('blue-600')) {
+                gradientClass = 'bg-gradient-to-l from-blue-500 to-blue-600 dark:from-blue-600/30 dark:to-blue-600';
+            } else if (bgColor.includes('sky-100')) {
+                gradientClass = 'bg-gradient-to-l from-sky-50 to-sky-100 dark:from-sky-600/30 dark:to-sky-600';
+            } else if (bgColor.includes('sky-200')) {
+                gradientClass = 'bg-gradient-to-l from-sky-100 to-sky-200 dark:from-sky-700/30 dark:to-sky-700';
+            } else if (bgColor.includes('sky-300')) {
+                gradientClass = 'bg-gradient-to-l from-sky-200 to-sky-300 dark:from-sky-800/30 dark:to-sky-800';
+            } else if (bgColor.includes('sky-400')) {
+                gradientClass = 'bg-gradient-to-l from-sky-300 to-sky-400 dark:from-sky-600/30 dark:to-sky-600';
+            } else if (bgColor.includes('sky-500')) {
+                gradientClass = 'bg-gradient-to-l from-sky-400 to-sky-500 dark:from-sky-400/30 dark:to-sky-400';
+            } else if (bgColor.includes('sky-600')) {
+                gradientClass = 'bg-gradient-to-l from-sky-500 to-sky-600 dark:from-sky-600/30 dark:to-sky-600';
+            } else if (bgColor.includes('cyan-100')) {
+                gradientClass = 'bg-gradient-to-l from-cyan-50 to-cyan-100 dark:from-cyan-600/30 dark:to-cyan-600';
+            } else if (bgColor.includes('cyan-200')) {
+                gradientClass = 'bg-gradient-to-l from-cyan-100 to-cyan-200 dark:from-cyan-700/30 dark:to-cyan-700';
+            } else if (bgColor.includes('cyan-300')) {
+                gradientClass = 'bg-gradient-to-l from-cyan-200 to-cyan-300 dark:from-cyan-800/30 dark:to-cyan-800';
+            } else if (bgColor.includes('cyan-400')) {
+                gradientClass = 'bg-gradient-to-l from-cyan-300 to-cyan-400 dark:from-cyan-600/30 dark:to-cyan-600';
+            } else if (bgColor.includes('cyan-500')) {
+                gradientClass = 'bg-gradient-to-l from-cyan-400 to-cyan-500 dark:from-cyan-600/30 dark:to-cyan-600';
+            } else if (bgColor.includes('purple-100')) {
+                gradientClass = 'bg-gradient-to-l from-purple-50 to-purple-100 dark:from-purple-600/30 dark:to-purple-600';
+            } else if (bgColor.includes('purple-200')) {
+                gradientClass = 'bg-gradient-to-l from-purple-100 to-purple-200 dark:from-purple-700/30 dark:to-purple-700';
+            } else if (bgColor.includes('purple-300')) {
+                gradientClass = 'bg-gradient-to-l from-purple-200 to-purple-300 dark:from-purple-800/30 dark:to-purple-800';
+            } else if (bgColor.includes('purple-400')) {
+                gradientClass = 'bg-gradient-to-l from-purple-300 to-purple-400 dark:from-purple-600/30 dark:to-purple-600';
+            } else if (bgColor.includes('purple-500')) {
+                gradientClass = 'bg-gradient-to-l from-purple-400 to-purple-500 dark:from-purple-600/30 dark:to-purple-600';
+            } else if (bgColor.includes('purple-600')) {
+                gradientClass = 'bg-gradient-to-l from-purple-500 to-purple-600 dark:from-purple-600/30 dark:to-purple-600';
+            } else if (bgColor.includes('green-100')) {
+                gradientClass = 'bg-gradient-to-l from-green-50 to-green-100 dark:from-green-600/30 dark:to-green-600';
+            } else if (bgColor.includes('green-200')) {
+                gradientClass = 'bg-gradient-to-l from-green-100 to-green-200 dark:from-green-700/30 dark:to-green-700';
+            } else if (bgColor.includes('green-300')) {
+                gradientClass = 'bg-gradient-to-l from-green-200 to-green-300 dark:from-green-800/30 dark:to-green-800';
+            } else if (bgColor.includes('green-400')) {
+                gradientClass = 'bg-gradient-to-l from-green-300 to-green-400 dark:from-green-600/30 dark:to-green-600';
+            } else if (bgColor.includes('green-500')) {
+                gradientClass = 'bg-gradient-to-l from-green-400 to-green-500 dark:from-green-600/30 dark:to-green-600';
+            } else if (bgColor.includes('green-600')) {
+                gradientClass = 'bg-gradient-to-l from-green-500 to-green-600 dark:from-green-600/30 dark:to-green-600';
+            } else if (bgColor.includes('pink-100')) {
+                gradientClass = 'bg-gradient-to-l from-pink-50 to-pink-100 dark:from-pink-600/30 dark:to-pink-600';
+            } else if (bgColor.includes('pink-200')) {
+                gradientClass = 'bg-gradient-to-l from-pink-100 to-pink-200 dark:from-pink-700/30 dark:to-pink-700';
+            } else if (bgColor.includes('pink-300')) {
+                gradientClass = 'bg-gradient-to-l from-pink-200 to-pink-300 dark:from-pink-800/30 dark:to-pink-800';
+            } else if (bgColor.includes('pink-400')) {
+                gradientClass = 'bg-gradient-to-l from-pink-300 to-pink-400 dark:from-pink-600/30 dark:to-pink-600';
+            } else if (bgColor.includes('pink-500')) {
+                gradientClass = 'bg-gradient-to-l from-pink-400 to-pink-500 dark:from-pink-600/30 dark:to-pink-600';
+            } else if (bgColor.includes('pink-600')) {
+                gradientClass = 'bg-gradient-to-l from-pink-500 to-pink-600 dark:from-pink-600/30 dark:to-pink-600';
+            } else if (bgColor.includes('yellow-100')) {
+                gradientClass = 'bg-gradient-to-l from-yellow-50 to-yellow-100 dark:from-yellow-600/30 dark:to-yellow-600';
+            } else if (bgColor.includes('yellow-200')) {
+                gradientClass = 'bg-gradient-to-l from-yellow-100 to-yellow-200 dark:from-yellow-700/30 dark:to-yellow-700';
+            } else if (bgColor.includes('yellow-300')) {
+                gradientClass = 'bg-gradient-to-l from-yellow-200 to-yellow-300 dark:from-yellow-800/30 dark:to-yellow-800';
+            } else if (bgColor.includes('yellow-400')) {
+                gradientClass = 'bg-gradient-to-l from-yellow-300 to-yellow-400 dark:from-yellow-600/30 dark:to-yellow-600';
+            } else if (bgColor.includes('yellow-500')) {
+                gradientClass = 'bg-gradient-to-l from-yellow-400 to-yellow-500 dark:from-yellow-600/30 dark:to-yellow-600';
+            } else if (bgColor.includes('yellow-600')) {
+                gradientClass = 'bg-gradient-to-l from-yellow-500 to-yellow-600 dark:from-yellow-600/30 dark:to-yellow-600';
+            } else if (bgColor.includes('red-100')) {
+                gradientClass = 'bg-gradient-to-l from-red-50 to-red-100 dark:from-red-600/30 dark:to-red-600';
+            } else if (bgColor.includes('red-200')) {
+                gradientClass = 'bg-gradient-to-l from-red-100 to-red-200 dark:from-red-700/30 dark:to-red-700';
+            } else if (bgColor.includes('red-300')) {
+                gradientClass = 'bg-gradient-to-l from-red-200 to-red-300 dark:from-red-800/30 dark:to-red-800';
+            } else if (bgColor.includes('red-400')) {
+                gradientClass = 'bg-gradient-to-l from-red-300 to-red-400 dark:from-red-600/30 dark:to-red-600';
+            } else if (bgColor.includes('red-500')) {
+                gradientClass = 'bg-gradient-to-l from-red-400 to-red-500 dark:from-red-600/30 dark:to-red-600';
+            } else if (bgColor.includes('red-600')) {
+                gradientClass = 'bg-gradient-to-l from-red-500 to-red-600 dark:from-red-600/30 dark:to-red-600';
+            } else if (bgColor.includes('orange-100')) {
+                gradientClass = 'bg-gradient-to-l from-orange-50 to-orange-100 dark:from-orange-600/30 dark:to-orange-600';
+            } else if (bgColor.includes('orange-200')) {
+                gradientClass = 'bg-gradient-to-l from-orange-100 to-orange-200 dark:from-orange-700/30 dark:to-orange-700';
+            } else if (bgColor.includes('orange-300')) {
+                gradientClass = 'bg-gradient-to-l from-orange-200 to-orange-300 dark:from-orange-800/30 dark:to-orange-800';
+            } else if (bgColor.includes('orange-400')) {
+                gradientClass = 'bg-gradient-to-l from-orange-300 to-orange-400 dark:from-orange-600/30 dark:to-orange-600';
+            } else if (bgColor.includes('orange-500')) {
+                gradientClass = 'bg-gradient-to-l from-orange-400 to-orange-500 dark:from-orange-600/30 dark:to-orange-600';
+            } else {
+                // Fallback para cores não mapeadas
+                gradientClass = 'bg-gradient-to-l from-gray-50 to-gray-100 dark:from-gray-950/40 dark:to-gray-900/50';
+            }
+            
+            return `${gradientClass} ${color.text}`;
+        }
+
+        // Fallback para agendamentos antigos sem color_index
+        const seriesId = getEventSeriesId(agendamento);
+        const hash1 = generateHash(`primary_${seriesId}`);
+        const hash2 = generateHash(`secondary_${seriesId}`);
+        const hash3 = generateHash(`tertiary_${seriesId}`);
+        
+        const combinedHash = Math.abs(hash1 + (hash2 * 17) + (hash3 * 23));
+        const colorIndex = getDistributedColorIndex(combinedHash, colorPalette.length);
+        const color = colorPalette[colorIndex];
+        
+        // Aplicar a mesma lógica de degradê para o fallback
+        const bgColor = color.bg;
+        let gradientClass = 'bg-gradient-to-l from-gray-50 to-gray-100 dark:from-gray-600/30 dark:to-gray-600';
+        
+        if (bgColor.includes('blue')) {
+            gradientClass = 'bg-gradient-to-l from-blue-50 to-blue-100 dark:from-blue-600/30 dark:to-blue-600';
+        } else if (bgColor.includes('green')) {
+            gradientClass = 'bg-gradient-to-l from-green-50 to-green-100 dark:from-green-600/30 dark:to-green-600';
+        } else if (bgColor.includes('purple')) {
+            gradientClass = 'bg-gradient-to-l from-purple-50 to-purple-100 dark:from-purple-600/30 dark:to-purple-600';
+        } else if (bgColor.includes('pink')) {
+            gradientClass = 'bg-gradient-to-l from-pink-50 to-pink-100 dark:from-pink-600/30 dark:to-pink-600';
+        } else if (bgColor.includes('yellow')) {
+            gradientClass = 'bg-gradient-to-l from-yellow-50 to-yellow-100 dark:from-yellow-600/30 dark:to-yellow-600';
+        } else if (bgColor.includes('red')) {
+            gradientClass = 'bg-gradient-to-l from-red-50 to-red-100 dark:from-red-600/30 dark:to-red-600';
+        } else if (bgColor.includes('orange')) {
+            gradientClass = 'bg-gradient-to-l from-orange-50 to-orange-100 dark:from-orange-600/30 dark:to-orange-600';
+        } else if (bgColor.includes('sky')) {
+            gradientClass = 'bg-gradient-to-l from-sky-50 to-sky-100 dark:from-sky-600/30 dark:to-sky-600';
+        } else if (bgColor.includes('cyan')) {
+            gradientClass = 'bg-gradient-to-l from-cyan-50 to-cyan-100 dark:from-cyan-600/30 dark:to-cyan-600';
+        }
+        
+        return `${gradientClass} ${color.text}`;
+    };
+
     return {
         getStatusColor,
         getEventBackgroundColor,
@@ -400,6 +564,7 @@ export const useAgendamentoColors = () => {
         getStatusBgColor,
         getStatusText,
         getStatusIcon,
+        getEventGradientBackground,
         isEventPast,
         colorPalette
     };
