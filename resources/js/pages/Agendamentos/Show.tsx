@@ -475,7 +475,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                     {/* Informações Principais */}
                     <div className="lg:col-span-2 space-y-4">
                         {/* Detalhes do Agendamento */}
-                        <Card className={`border-l-4 ${getEventBorderColor(agendamento)}`}>
+                        <Card className={`border-l-4 ${getEventBorderColor(agendamento)} mx-4`}>
                             <CardHeader>
                                 <CardTitle>Informações do Agendamento</CardTitle>
                             </CardHeader>
@@ -573,7 +573,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
 
                         {/* Status e Aprovação */}
                         {agendamento.status === 'pendente' && (
-                            <Card className="border-l-4 border-l-orange-500">
+                            <Card className="border-l-4 border-l-orange-500 cursor-pointer shadow-sm hover:scale-[1.01] hover:shadow-md dark:hover:shadow-white/5 transition-all duration-200 group mx-4">
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2">
                                         <Clock className="h-5 w-5" />
@@ -768,7 +768,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                     <div className="space-y-4">
                         {/* Informações do Espaço */}
                         {agendamento.espaco && (
-                            <Card>
+                            <Card className="mx-4">
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2">
                                         <MapPin className="h-5 w-5" />
@@ -821,7 +821,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
 
                         {/* Informações do Solicitante */}
                         {agendamento.user && (
-                            <Card>
+                            <Card className="mx-4">
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2">
                                         <User className="h-5 w-5" />
@@ -853,7 +853,7 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                         )}
 
                         {/* Informações de Criação */}
-                        <Card>
+                        <Card className="mx-4">
                             <CardHeader>
                                 <CardTitle>Informações</CardTitle>
                             </CardHeader>

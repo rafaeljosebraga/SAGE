@@ -461,7 +461,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                 hora_inicio: data.hora_inicio || agendamento.hora_inicio,
                                 data_fim: data.data_fim || agendamento.data_fim,
                                 hora_fim: data.hora_fim || agendamento.hora_fim
-                            })}`}>
+                            })} mx-4`}>
                                 <CardHeader>
                                     <CardTitle>Informações do Agendamento</CardTitle>
                                 </CardHeader>
@@ -535,7 +535,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                 hora_inicio: data.hora_inicio || agendamento.hora_inicio,
                                 data_fim: data.data_fim || agendamento.data_fim,
                                 hora_fim: data.hora_fim || agendamento.hora_fim
-                            })}`}>
+                            })} mx-4`}>
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2">
                                         <Calendar className="h-5 w-5" />
@@ -608,7 +608,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                 hora_inicio: data.hora_inicio || agendamento.hora_inicio,
                                 data_fim: data.data_fim || agendamento.data_fim,
                                 hora_fim: data.hora_fim || agendamento.hora_fim
-                                })}`}>
+                                })} mx-4 mb-8`}>
                                     <CardHeader>
                                         <CardTitle>Recursos Adicionais</CardTitle>
                                         <CardDescription>
@@ -657,7 +657,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                         {/* Sidebar - Informações do Espaço */}
                         <div className="space-y-6">
                             {selectedEspaco && (
-                                <Card>
+                                <Card className="mx-4">
                                     <CardHeader>
                                         <CardTitle className="flex items-center gap-2">
                                             <MapPin className="h-5 w-5" />
@@ -702,7 +702,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                             )}
 
                             {/* Ações */}
-                            <Card>
+                            <Card className="mx-4">
                                 <CardContent className="p-6">
                                     <div className="space-y-4">
                                         <Button
