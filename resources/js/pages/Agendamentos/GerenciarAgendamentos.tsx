@@ -1362,11 +1362,23 @@ export default function GerenciarAgendamentos({
                                                     </div>
                                                 )}
                                                 {tipoConflitoFilter === 'resolvidos_hoje' && (grupo as any).resolvido_por && (
-                                                    <div className="text-sm text-green-600 dark:text-green-400">
-                                                        <span className="flex items-center gap-1">
-                                                            <User className="h-3 w-3" />
-                                                            Resolvido por: {(grupo as any).resolvido_por.name}
-                                                        </span>
+                                                    <div className="flex items-center gap-2">
+                                                        <UserAvatar user={(grupo as any).resolvido_por} size="sm" />
+                                                        <div className="flex flex-col">
+                                                            <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                                                                {(grupo as any).resolvido_por.name}
+                                                            </span>
+                                                            {(grupo as any).resolvido_por.email && (
+                                                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                                    {(grupo as any).resolvido_por.email}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        {(grupo as any).resolvido_por.perfil_acesso && (
+                                                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${getPerfilColor((grupo as any).resolvido_por.perfil_acesso)}`}>
+                                                                {formatPerfil((grupo as any).resolvido_por.perfil_acesso)}
+                                                            </span>
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>
