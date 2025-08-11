@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Combobox } from '@/components/ui/combobox';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { StatusBadge, useAgendamentoColors } from '@/components/ui/agend-colors';
@@ -287,22 +288,18 @@ export default function AgendamentosModals({
 
                                 <div>
                                     <Label htmlFor="espaco_id">Espaço *</Label>
-                                    <Select
+                                    <Combobox
+                                        id="espaco_id"
                                         name="espaco_id"
                                         value={formData.espaco_id}
                                         onValueChange={(value) => setFormData({ ...formData, espaco_id: value })}
-                                    >
-                                        <SelectTrigger id="espaco_id">
-                                            <SelectValue placeholder="Selecione um espaço" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {espacos.map((espaco) => (
-                                                <SelectItem key={espaco.id} value={espaco.id.toString()}>
-                                                    {espaco.nome} (Cap: {espaco.capacidade})
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                        placeholder="Selecione um espaço"
+                                        searchPlaceholder="Buscar espaço..."
+                                        options={espacos.map((espaco) => ({
+                                            value: espaco.id.toString(),
+                                            label: `${espaco.nome} (Cap: ${espaco.capacidade})`
+                                        }))}
+                                    />
                                 </div>
 
                                 <div>
