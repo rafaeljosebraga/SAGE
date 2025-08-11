@@ -126,7 +126,7 @@ export default function AgendamentosModals({
     confirmForceDelete,
     espacos
 }: ModalsProps) {
-    const { getEventBackgroundColor } = useAgendamentoColors();
+    const { getEventBackgroundColor, getEventColors } = useAgendamentoColors();
     const { toast } = useToast();
     
     // useEffect para gerenciar foco quando modais fecham - solução mais agressiva
@@ -515,7 +515,6 @@ export default function AgendamentosModals({
                             <div className="space-y-1 overflow-y-auto max-h-[70vh] pr-2 rounded-md flex-1 min-h-0 mb-1 last:-mb-2">
                                 {conflictModal.conflitos.map((conflito) => {
                                     // Usar as cores reais do agendamento
-                                    const { getEventColors } = useAgendamentoColors();
                                     const colors = getEventColors(conflito as any);
                                     
                                     // Função para formatar data para exibição
@@ -664,88 +663,183 @@ export default function AgendamentosModals({
 
             {/* Modal de Visualização do Dia */}
             <Dialog open={dayViewModal.open} onOpenChange={(open) => setDayViewModal({ ...dayViewModal, open })}>
-                <DialogContent className="max-w-4xl max-h-[90vh] rounded-2xl flex flex-col">
+                <DialogContent className="max-w-[90vw] sm:max-w-2xl max-h-[95vh] overflow-hidden rounded-lg flex flex-col">
                     <DialogHeader className="flex-shrink-0 pb-4">
                         <DialogTitle className="flex items-center gap-2">
-                            <Calendar className="h-5 w-5" />
+                            <Calendar className="h-5 w-5 text-blue-600" />
                             {dayViewModal.selectedDate && format(dayViewModal.selectedDate, 'EEEE, dd \'de\' MMMM \'de\' yyyy', { locale: ptBR })}
                         </DialogTitle>
                         <DialogDescription>
-                            {dayViewModal.events.length} agendamento(s) para este dia
+                            Visualizando todos os agendamentos para este dia.
                         </DialogDescription>
                     </DialogHeader>
-
-                    <div className="flex-1 overflow-y-auto px-1 min-h-0">
-                        {dayViewModal.events.length === 0 ? (
-                            <div className="text-center py-8 text-muted-foreground">
-                                <Calendar className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                                <p>Nenhum agendamento para este dia</p>
+                    
+                    <div className="flex flex-col gap-2 flex-1 min-h-0">
+                        {/* Área de visualização de agendamentos com scroll personalizado */}
+                        <div className="flex flex-col gap-0 flex-1 min-h-0">
+                            <div className="flex items-center justify-between flex-shrink-0">
+                                <h4 className="font-medium text-sm text-muted-foreground">
+                                    Agendamentos encontrados ({dayViewModal.events.length}):
+                                </h4>
                             </div>
-                        ) : (
-                            <div className="space-y-3">
-                                {dayViewModal.events.map((event) => (
-                                    <div
-                                        key={event.id}
-                                        className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:shadow-md ${getEventBackgroundColor(event)} border-border/20`}
-                                        onClick={() => {
-                                            setDayViewModal({ open: false, selectedDate: null, events: [] });
-                                            handleEventClick(event);
-                                        }}
-                                    >
-                                        <div className="flex items-start justify-between gap-4">
-                                            <div className="flex-1 space-y-2">
-                                                <div className="flex items-center gap-2">
-                                                    <h3 className="font-semibold text-lg">{event.titulo}</h3>
-                                                    <StatusBadge status={event.status} />
-                                                </div>
 
-                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                                                    <div className="flex items-center gap-2">
-                                                        <Clock className="h-4 w-4 text-muted-foreground" />
-                                                        <span>{event.hora_inicio.substring(0, 5)} - {event.hora_fim.substring(0, 5)}</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                                                        <span>{event.espaco?.nome || 'Espaço não encontrado'}</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <User className="h-4 w-4 text-muted-foreground" />
-                                                        <span>{event.user?.name || 'Usuário não encontrado'}</span>
-                                                    </div>
-                                                </div>
-
-                                                {event.justificativa && (
-                                                    <p className="text-sm text-foreground">
-                                                        <strong className="text-foreground">Justificativa:</strong> {event.justificativa}
-                                                    </p>
-                                                )}
-
-                                                {event.observacoes && (
-                                                    <p className="text-sm text-foreground">
-                                                        <strong className="text-foreground">Observações:</strong> {event.observacoes}
-                                                    </p>
-                                                )}
-                                            </div>
-
-                                            <div className="flex items-center gap-2">
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <Button variant="outline" size="sm" asChild className="hover:border-blue-500 group">
-                                                            <Link href={`/agendamentos/${event.id}`}>
-                                                                <Eye className="h-4 w-4 group-hover:text-blue-500" />
-                                                            </Link>
-                                                        </Button>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent>
-                                                        <p>Visualizar</p>
-                                                    </TooltipContent>
-                                                </Tooltip>
-                                            </div>
-                                        </div>
+                            {dayViewModal.events.length === 0 ? (
+                                <div className="text-center py-8 text-muted-foreground flex-1 flex items-center justify-center">
+                                    <div>
+                                        <Calendar className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                                        <p>Nenhum agendamento para este dia</p>
                                     </div>
-                                ))}
-                            </div>
-                        )}
+                                </div>
+                            ) : (
+                                <div className="space-y-1 overflow-y-auto max-h-[70vh] pr-2 rounded-md flex-1 min-h-0 mb-1 last:-mb-2">
+                                    {dayViewModal.events.map((event) => {
+                                        // Usar as cores reais do agendamento
+                                        const colors = getEventColors(event);
+                                        
+                                        // Função para formatar data para exibição
+                                        const formatDateForDisplay = (dateString: string) => {
+                                            try {
+                                                const dateOnly = dateString.split("T")[0];
+                                                const [year, month, day] = dateOnly.split("-");
+                                                return `${day}/${month}/${year}`;
+                                            } catch {
+                                                return dateString;
+                                            }
+                                        };
+
+                                        // Função para formatar hora para exibição
+                                        const formatTimeForDisplay = (timeString: string) => {
+                                            return timeString.substring(0, 5);
+                                        };
+
+                                        // Função para formatar período
+                                        const formatPeriod = (agendamento: any) => {
+                                            const dataInicioFormatada = formatDateForDisplay(agendamento.data_inicio);
+                                            const horaInicioFormatada = formatTimeForDisplay(agendamento.hora_inicio);
+                                            const horaFimFormatada = formatTimeForDisplay(agendamento.hora_fim);
+                                            
+                                            // Se não tem data_fim ou é igual à data_inicio, assumir mesmo dia
+                                            if (!agendamento.data_fim || agendamento.data_inicio === agendamento.data_fim || 
+                                                (agendamento.data_inicio.includes('T') && agendamento.data_fim?.includes('T') && 
+                                                 agendamento.data_inicio.split('T')[0] === agendamento.data_fim.split('T')[0])) {
+                                                return `${dataInicioFormatada} das ${horaInicioFormatada} às ${horaFimFormatada}`;
+                                            }
+                                            
+                                            // Se são dias diferentes
+                                            const dataFimFormatada = formatDateForDisplay(agendamento.data_fim);
+                                            return `${dataInicioFormatada} às ${horaInicioFormatada} até ${dataFimFormatada} às ${horaFimFormatada}`;
+                                        };
+
+                                        // Funções auxiliares para formatação
+                                        const formatPerfil = (perfil: string | undefined) => {
+                                            if (!perfil) return "Não definido";
+                                            return perfil.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+                                        };
+
+                                        const getPerfilColor = (perfil: string | undefined) => {
+                                            if (!perfil) return "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-700";
+                                            
+                                            switch (perfil.toLowerCase()) {
+                                                case "administrador":
+                                                    return "bg-[#EF7D4C] dark:bg-[#D16A3A] text-white border-transparent";
+                                                case "coordenador":
+                                                    return "bg-[#957157] dark:bg-[#7A5D47] text-white border-transparent";
+                                                case "diretor_geral":
+                                                    return "bg-[#F1DEC5] dark:bg-[#8B7355] text-gray-600 dark:text-gray-200 border-transparent";
+                                                case "servidores":
+                                                    return "bg-[#285355] dark:bg-[#1F4142] text-white border-transparent";
+                                                default:
+                                                    return "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-700";
+                                            }
+                                        };
+                                        
+                                        return (
+                                            <Card
+                                                key={event.id}
+                                                className={`transition-all duration-200 hover:shadow-md hover:bg-muted/30 ${colors.border} border-l-4 rounded-lg overflow-hidden cursor-pointer`}
+                                                onClick={() => {
+                                                    setDayViewModal({ open: false, selectedDate: null, events: [] });
+                                                    handleEventClick(event);
+                                                }}
+                                            >
+                                                <CardContent className="p-3">
+                                                    <div className="flex items-start gap-3">
+                                                        <div className="flex-1 space-y-2">
+                                                            <div className="flex items-start justify-between">
+                                                                <h5 className="font-medium">{event.titulo}</h5>
+                                                                <StatusBadge status={event.status} />
+                                                            </div>
+
+                                                            <div className="space-y-1">
+                                                                <div className="flex items-center gap-2 text-sm">
+                                                                    {event.user && <UserAvatar user={event.user} size="sm" />}
+                                                                    <div className="flex flex-col">
+                                                                        <span className="font-medium">{event.user?.name || 'Usuário não encontrado'}</span>
+                                                                        {event.user?.email && (
+                                                                            <span className="text-xs text-muted-foreground">{event.user.email}</span>
+                                                                        )}
+                                                                    </div>
+                                                                    {event.user?.perfil_acesso && (
+                                                                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPerfilColor(event.user.perfil_acesso)}`}>
+                                                                            {formatPerfil(event.user.perfil_acesso)}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                <div className="flex items-center gap-4 text-sm opacity-80">
+                                                                    <div className="flex items-center gap-1">
+                                                                        <Clock className="h-4 w-4" />
+                                                                        {formatPeriod(event)}
+                                                                    </div>
+                                                                    <div className="flex items-center gap-1">
+                                                                        <MapPin className="h-4 w-4" />
+                                                                        {event.espaco?.nome || 'Espaço não encontrado'}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            {event.justificativa && (
+                                                                <div className="text-sm">
+                                                                    <span className="font-medium text-muted-foreground">Justificativa:</span>
+                                                                    <p className="text-foreground mt-1">{event.justificativa}</p>
+                                                                </div>
+                                                            )}
+
+                                                            {event.observacoes && (
+                                                                <div className="text-sm">
+                                                                    <span className="font-medium text-muted-foreground">Observações:</span>
+                                                                    <p className="text-foreground mt-1">{event.observacoes}</p>
+                                                                </div>
+                                                            )}
+                                                        </div>
+
+                                                        <div className="flex items-center gap-2 flex-shrink-0">
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <Button 
+                                                                        variant="outline" 
+                                                                        size="sm" 
+                                                                        asChild 
+                                                                        className="hover:border-blue-500 group"
+                                                                        onClick={(e) => e.stopPropagation()}
+                                                                    >
+                                                                        <Link href={`/agendamentos/${event.id}`}>
+                                                                            <Eye className="h-4 w-4 group-hover:text-blue-500" />
+                                                                        </Link>
+                                                                    </Button>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    <p>Visualizar detalhes</p>
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                        </div>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     <DialogFooter className="flex-shrink-0 border-t pt-4 mt-4">
