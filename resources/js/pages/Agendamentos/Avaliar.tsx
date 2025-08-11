@@ -717,7 +717,7 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                 {/* Estatísticas */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <Card 
-                        className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:bg-yellow-100/60 dark:hover:bg-yellow-900/20 hover:border-yellow-200 dark:hover:border-yellow-800 group"
+                        className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:bg-yellow-100/60 dark:hover:bg-yellow-900/20 hover:border-yellow-200 dark:hover:border-yellow-800 group relative overflow-hidden"
                         onClick={() => {
                             // Navegar com filtro de pendentes na URL
                             router.visit('/avaliar-agendamentos?status=pendente', {
@@ -726,26 +726,57 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                             });
                         }}
                     >
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Pendentes</CardTitle>
-                            <AlertCircle 
-                                className={`h-4 w-4 text-yellow-600 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg group-hover:text-yellow-500 ${
-                                    estatisticas.pendentes > 0 
-                                        ? 'animate-bounce duration-[0.4s] scale-110 drop-shadow-lg' 
-                                        : ''
-                                }`} 
-                            />
+                        {/* Background decorativo */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-yellow-50/50 to-amber-50/30 dark:from-yellow-950/20 dark:to-amber-950/10" />
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-200/20 dark:bg-yellow-800/10 rounded-full -translate-y-16 translate-x-16" />
+                        
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative z-10">
+                            <CardTitle className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Pendentes</CardTitle>
+                            <div className="relative">
+                                <AlertCircle 
+                                    className={`h-5 w-5 text-yellow-600 dark:text-yellow-400 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg group-hover:text-yellow-500 ${
+                                        estatisticas.pendentes > 0 
+                                            ? 'animate-bounce duration-[0.4s] scale-110 drop-shadow-lg' 
+                                            : ''
+                                    }`} 
+                                />
+                            </div>
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-yellow-600">{estatisticas.pendentes}</div>
-                            <p className="text-xs text-muted-foreground">
-                                Aguardando aprovação
-                            </p>
+                        <CardContent className="relative z-10">
+                            <div className="space-y-3">
+                                {/* Número principal */}
+                                <div className="flex items-baseline gap-2">
+                                    <div className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">
+                                        {estatisticas.pendentes}
+                                    </div>
+                                    <div className="text-sm font-medium text-yellow-700 dark:text-yellow-300">
+                                        agendamentos
+                                    </div>
+                                </div>
+                                
+                                {/* Detalhamento */}
+                                <div className="bg-white/60 dark:bg-gray-900/40 rounded-lg p-3 border border-yellow-200/50 dark:border-yellow-800/30">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 bg-yellow-500 rounded-full" />
+                                            <span className="text-xs font-medium text-yellow-800 dark:text-yellow-200">
+                                                Aguardando aprovação
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="mt-1 text-xs text-yellow-600/80 dark:text-yellow-400/80">
+                                        {estatisticas.pendentes > 0 
+                                            ? `${estatisticas.pendentes} solicitaç${estatisticas.pendentes !== 1 ? 'ões' : 'ão'} aguardando análise`
+                                            : 'Nenhuma solicitação pendente'
+                                        }
+                                    </div>
+                                </div>
+                            </div>
                         </CardContent>
                     </Card>
 
                     <Card 
-                        className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:bg-green-100/60 dark:hover:bg-green-900/20 hover:border-green-200 dark:hover:border-green-800 group"
+                        className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:bg-green-100/60 dark:hover:bg-green-900/20 hover:border-green-200 dark:hover:border-green-800 group relative overflow-hidden"
                         onClick={() => {
                             // Navegar com filtro de aprovados hoje na URL e definir status como aprovado
                             router.visit('/avaliar-agendamentos?aprovado_hoje=true&status=aprovado', {
@@ -754,20 +785,51 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                             });
                         }}
                     >
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Aprovados Hoje</CardTitle>
-                            <CheckCircle className="h-4 w-4 text-green-600 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg group-hover:text-green-500" />
+                        {/* Background decorativo */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-green-50/50 to-emerald-50/30 dark:from-green-950/20 dark:to-emerald-950/10" />
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-green-200/20 dark:bg-green-800/10 rounded-full -translate-y-16 translate-x-16" />
+                        
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative z-10">
+                            <CardTitle className="text-sm font-medium text-green-800 dark:text-green-200">Aprovados Hoje</CardTitle>
+                            <div className="relative">
+                                <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg group-hover:text-green-500" />
+                            </div>
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-green-600">{estatisticas.aprovados_hoje}</div>
-                            <p className="text-xs text-muted-foreground">
-                                Aprovações do dia
-                            </p>
+                        <CardContent className="relative z-10">
+                            <div className="space-y-3">
+                                {/* Número principal */}
+                                <div className="flex items-baseline gap-2">
+                                    <div className="text-3xl font-bold text-green-600 dark:text-green-400">
+                                        {estatisticas.aprovados_hoje}
+                                    </div>
+                                    <div className="text-sm font-medium text-green-700 dark:text-green-300">
+                                        aprovações
+                                    </div>
+                                </div>
+                                
+                                {/* Detalhamento */}
+                                <div className="bg-white/60 dark:bg-gray-900/40 rounded-lg p-3 border border-green-200/50 dark:border-green-800/30">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 bg-green-500 rounded-full" />
+                                            <span className="text-xs font-medium text-green-800 dark:text-green-200">
+                                                Aprovações do dia
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="mt-1 text-xs text-green-600/80 dark:text-green-400/80">
+                                        {estatisticas.aprovados_hoje > 0 
+                                            ? `${estatisticas.aprovados_hoje} agendamento${estatisticas.aprovados_hoje !== 1 ? 's' : ''} aprovado${estatisticas.aprovados_hoje !== 1 ? 's' : ''} hoje`
+                                            : 'Nenhum agendamento aprovado hoje'
+                                        }
+                                    </div>
+                                </div>
+                            </div>
                         </CardContent>
                     </Card>
 
                     <Card 
-                        className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:bg-red-100/60 dark:hover:bg-red-900/20 hover:border-red-200 dark:hover:border-red-800 group"
+                        className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:bg-red-100/60 dark:hover:bg-red-900/20 hover:border-red-200 dark:hover:border-red-800 group relative overflow-hidden"
                         onClick={() => {
                             // Navegar com filtro de rejeitados hoje na URL e definir status como rejeitado
                             router.visit('/avaliar-agendamentos?rejeitado_hoje=true&status=rejeitado', {
@@ -776,20 +838,51 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                             });
                         }}
                     >
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Rejeitados Hoje</CardTitle>
-                            <XCircle className="h-4 w-4 text-red-600 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg group-hover:text-red-500" />
+                        {/* Background decorativo */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-red-50/50 to-rose-50/30 dark:from-red-950/20 dark:to-rose-950/10" />
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-red-200/20 dark:bg-red-800/10 rounded-full -translate-y-16 translate-x-16" />
+                        
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative z-10">
+                            <CardTitle className="text-sm font-medium text-red-800 dark:text-red-200">Rejeitados Hoje</CardTitle>
+                            <div className="relative">
+                                <XCircle className="h-5 w-5 text-red-600 dark:text-red-400 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg group-hover:text-red-500" />
+                            </div>
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-red-600">{estatisticas.rejeitados_hoje}</div>
-                            <p className="text-xs text-muted-foreground">
-                                Rejeições do dia
-                            </p>
+                        <CardContent className="relative z-10">
+                            <div className="space-y-3">
+                                {/* Número principal */}
+                                <div className="flex items-baseline gap-2">
+                                    <div className="text-3xl font-bold text-red-600 dark:text-red-400">
+                                        {estatisticas.rejeitados_hoje}
+                                    </div>
+                                    <div className="text-sm font-medium text-red-700 dark:text-red-300">
+                                        rejeições
+                                    </div>
+                                </div>
+                                
+                                {/* Detalhamento */}
+                                <div className="bg-white/60 dark:bg-gray-900/40 rounded-lg p-3 border border-red-200/50 dark:border-red-800/30">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 bg-red-500 rounded-full" />
+                                            <span className="text-xs font-medium text-red-800 dark:text-red-200">
+                                                Rejeições do dia
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="mt-1 text-xs text-red-600/80 dark:text-red-400/80">
+                                        {estatisticas.rejeitados_hoje > 0 
+                                            ? `${estatisticas.rejeitados_hoje} agendamento${estatisticas.rejeitados_hoje !== 1 ? 's' : ''} rejeitado${estatisticas.rejeitados_hoje !== 1 ? 's' : ''} hoje`
+                                            : 'Nenhum agendamento rejeitado hoje'
+                                        }
+                                    </div>
+                                </div>
+                            </div>
                         </CardContent>
                     </Card>
 
                     <Card 
-                        className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:bg-blue-100/60 dark:hover:bg-blue-900/20 hover:border-blue-200 dark:hover:border-blue-800 group"
+                        className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:bg-blue-100/60 dark:hover:bg-blue-900/20 hover:border-blue-200 dark:hover:border-blue-800 group relative overflow-hidden"
                         onClick={() => {
                             // Navegar com filtro do mês atual na URL
                             router.visit('/avaliar-agendamentos?mes_atual=true&status=all', {
@@ -798,15 +891,46 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                             });
                         }}
                     >
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Total do Mês</CardTitle>
-                            <TrendingUp className="h-4 w-4 text-blue-600 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg group-hover:text-blue-500" />
+                        {/* Background decorativo */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-sky-50/30 dark:from-blue-950/20 dark:to-sky-950/10" />
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-200/20 dark:bg-blue-800/10 rounded-full -translate-y-16 translate-x-16" />
+                        
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative z-10">
+                            <CardTitle className="text-sm font-medium text-blue-800 dark:text-blue-200">Total do Mês</CardTitle>
+                            <div className="relative">
+                                <TrendingUp className="h-5 w-5 text-blue-600 dark:text-blue-400 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg group-hover:text-blue-500" />
+                            </div>
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-blue-600">{estatisticas.total_mes}</div>
-                            <p className="text-xs text-muted-foreground">
-                                Solicitações no mês
-                            </p>
+                        <CardContent className="relative z-10">
+                            <div className="space-y-3">
+                                {/* Número principal */}
+                                <div className="flex items-baseline gap-2">
+                                    <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                                        {estatisticas.total_mes}
+                                    </div>
+                                    <div className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                                        solicitações
+                                    </div>
+                                </div>
+                                
+                                {/* Detalhamento */}
+                                <div className="bg-white/60 dark:bg-gray-900/40 rounded-lg p-3 border border-blue-200/50 dark:border-blue-800/30">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                                            <span className="text-xs font-medium text-blue-800 dark:text-blue-200">
+                                                Solicitações no mês
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="mt-1 text-xs text-blue-600/80 dark:text-blue-400/80">
+                                        {estatisticas.total_mes > 0 
+                                            ? `${estatisticas.total_mes} solicitaç${estatisticas.total_mes !== 1 ? 'ões' : 'ão'} neste mês`
+                                            : 'Nenhuma solicitação neste mês'
+                                        }
+                                    </div>
+                                </div>
+                            </div>
                         </CardContent>
                     </Card>
                 </div>

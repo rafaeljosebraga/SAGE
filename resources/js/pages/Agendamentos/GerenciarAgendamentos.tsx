@@ -851,79 +851,170 @@ export default function GerenciarAgendamentos({
                 </div>
 
                 {/* Estatísticas */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <Card 
-                        className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:bg-orange-100/60 dark:hover:bg-orange-900/20 hover:border-orange-200 dark:hover:border-orange-800 group"
+                        className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:bg-orange-100/60 dark:hover:bg-orange-900/20 hover:border-orange-200 dark:hover:border-orange-800 group relative overflow-hidden"
                         onClick={() => {
                             // Apenas alterar o filtro local sem recarregar a página
                             setTipoConflitoFilter('com_conflito');
                         }}
                     >
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Conflitos Pendentes</CardTitle>
-                            <AlertTriangle 
-                                className={`h-4 w-4 text-orange-600 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg group-hover:text-orange-500 ${
-                                    estatisticas.conflitos_pendentes > 0 
-                                        ? 'animate-pulse duration-[1s] scale-110 drop-shadow-lg' 
-                                        : ''
-                                }`} 
-                            />
+                        {/* Background decorativo */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-orange-50/50 to-red-50/30 dark:from-orange-950/20 dark:to-red-950/10" />
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-orange-200/20 dark:bg-orange-800/10 rounded-full -translate-y-16 translate-x-16" />
+                        
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative z-10">
+                            <CardTitle className="text-sm font-medium text-orange-800 dark:text-orange-200">
+                                Conflitos Pendentes
+                            </CardTitle>
+                            <div className="relative">
+                                <AlertTriangle 
+                                    className={`h-5 w-5 text-orange-600 dark:text-orange-400 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg group-hover:text-orange-500 ${
+                                        estatisticas.conflitos_pendentes > 0 
+                                            ? 'animate-pulse duration-[1s] scale-110 drop-shadow-lg' 
+                                            : ''
+                                    }`} 
+                                />
+                            </div>
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-orange-600">{totalConflitosFixo}</div>
-                            <p className="text-xs text-muted-foreground">
-                                Grupos de conflito para resolver
-                            </p>
+                        <CardContent className="relative z-10">
+                            <div className="space-y-3">
+                                {/* Número principal */}
+                                <div className="flex items-baseline gap-2">
+                                    <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">
+                                        {totalConflitosFixo}
+                                    </div>
+                                    <div className="text-sm font-medium text-orange-700 dark:text-orange-300">
+                                        grupos
+                                    </div>
+                                </div>
+                                
+                                {/* Detalhamento */}
+                                <div className="bg-white/60 dark:bg-gray-900/40 rounded-lg p-3 border border-orange-200/50 dark:border-orange-800/30">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 bg-orange-500 rounded-full" />
+                                            <span className="text-xs font-medium text-orange-800 dark:text-orange-200">
+                                                Total de agendamentos
+                                            </span>
+                                        </div>
+                                        <div className="text-sm font-semibold text-orange-600 dark:text-orange-400">
+                                            {totalAgendamentosConflitantesFixo}
+                                        </div>
+                                    </div>
+                                    <div className="mt-1 text-xs text-orange-600/80 dark:text-orange-400/80">
+                                        {totalAgendamentosConflitantesFixo > 0 && (
+                                            <>Média de {Math.round(totalAgendamentosConflitantesFixo / Math.max(totalConflitosFixo, 1))} agendamentos por conflito</>
+                                        )}
+                                    </div>
+                                </div>
+                                
+                                                            </div>
                         </CardContent>
                     </Card>
 
                     <Card 
-                        className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:bg-green-100/60 dark:hover:bg-green-900/20 hover:border-green-200 dark:hover:border-green-800 group"
+                        className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:bg-green-100/60 dark:hover:bg-green-900/20 hover:border-green-200 dark:hover:border-green-800 group relative overflow-hidden"
                         onClick={buscarConflitosResolvidosHoje}
                     >
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Resolvidos Hoje</CardTitle>
-                            <CircleCheckBig className="h-4 w-4 text-green-600 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg group-hover:text-green-500" />
+                        {/* Background decorativo */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-green-50/50 to-emerald-50/30 dark:from-green-950/20 dark:to-emerald-950/10" />
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-green-200/20 dark:bg-green-800/10 rounded-full -translate-y-16 translate-x-16" />
+                        
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative z-10">
+                            <CardTitle className="text-sm font-medium text-green-800 dark:text-green-200">
+                                Resolvidos Hoje
+                            </CardTitle>
+                            <div className="relative">
+                                <CircleCheckBig 
+                                    className="h-5 w-5 text-green-600 dark:text-green-400 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg group-hover:text-green-500"
+                                />
+                            </div>
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-green-600">{totalConflitosResolvidosFixo}</div>
-                            <p className="text-xs text-muted-foreground">
-                                Conflitos resolvidos hoje
-                            </p>
+                        <CardContent className="relative z-10">
+                            <div className="space-y-3">
+                                {/* Número principal */}
+                                <div className="flex items-baseline gap-2">
+                                    <div className="text-3xl font-bold text-green-600 dark:text-green-400">
+                                        {totalConflitosResolvidosFixo}
+                                    </div>
+                                    <div className="text-sm font-medium text-green-700 dark:text-green-300">
+                                        conflitos
+                                    </div>
+                                </div>
+                                
+                                {/* Detalhamento */}
+                                <div className="bg-white/60 dark:bg-gray-900/40 rounded-lg p-3 border border-green-200/50 dark:border-green-800/30">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 bg-green-500 rounded-full" />
+                                            <span className="text-xs font-medium text-green-800 dark:text-green-200">
+                                                Resolvidos hoje
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="mt-1 text-xs text-green-600/80 dark:text-green-400/80">
+                                        {totalConflitosResolvidosFixo > 0 
+                                            ? `Excelente trabalho! ${totalConflitosResolvidosFixo} conflito${totalConflitosResolvidosFixo !== 1 ? 's' : ''} resolvido${totalConflitosResolvidosFixo !== 1 ? 's' : ''}`
+                                            : 'Nenhum conflito resolvido hoje'
+                                        }
+                                    </div>
+                                </div>
+                            </div>
                         </CardContent>
                     </Card>
 
                     <Card 
-                        className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:bg-orange-100/60 dark:hover:bg-orange-900/20 hover:border-orange-200 dark:hover:border-orange-800 group"
-                    >
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Agendamentos em Conflito</CardTitle>
-                            <Zap className="h-4 w-4 text-orange-600 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg group-hover:text-orange-500" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-orange-600">{totalAgendamentosConflitantesFixo}</div>
-                            <p className="text-xs text-muted-foreground">
-                                Total de agendamentos conflitantes
-                            </p>
-                        </CardContent>
-                    </Card>
-
-                    <Card 
-                        className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:bg-blue-100/60 dark:hover:bg-blue-900/20 hover:border-blue-200 dark:hover:border-blue-800 group"
+                        className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:bg-blue-100/60 dark:hover:bg-blue-900/20 hover:border-blue-200 dark:hover:border-blue-800 group relative overflow-hidden"
                         onClick={() => {
                             // Apenas alterar o filtro local sem recarregar a página
                             setTipoConflitoFilter('sem_conflito');
                         }}
                     >
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Sem Conflito</CardTitle>
-                            <CheckCircle className="h-4 w-4 text-blue-600 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg group-hover:text-blue-500" />
+                        {/* Background decorativo */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-sky-50/30 dark:from-blue-950/20 dark:to-sky-950/10" />
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-200/20 dark:bg-blue-800/10 rounded-full -translate-y-16 translate-x-16" />
+                        
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative z-10">
+                            <CardTitle className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                                Sem Conflito
+                            </CardTitle>
+                            <div className="relative">
+                                <CheckCircle 
+                                    className="h-5 w-5 text-blue-600 dark:text-blue-400 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg group-hover:text-blue-500"
+                                />
+                            </div>
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-blue-600">{totalSemConflitoFixo}</div>
-                            <p className="text-xs text-muted-foreground">
-                                Agendamentos sem conflito
-                            </p>
+                        <CardContent className="relative z-10">
+                            <div className="space-y-3">
+                                {/* Número principal */}
+                                <div className="flex items-baseline gap-2">
+                                    <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                                        {totalSemConflitoFixo}
+                                    </div>
+                                    <div className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                                        agendamentos
+                                    </div>
+                                </div>
+                                
+                                {/* Detalhamento */}
+                                <div className="bg-white/60 dark:bg-gray-900/40 rounded-lg p-3 border border-blue-200/50 dark:border-blue-800/30">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                                            <span className="text-xs font-medium text-blue-800 dark:text-blue-200">
+                                                Status limpo
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="mt-1 text-xs text-blue-600/80 dark:text-blue-400/80">
+                                        {totalSemConflitoFixo > 0 
+                                            ? `${totalSemConflitoFixo} agendamento${totalSemConflitoFixo !== 1 ? 's' : ''} sem problemas de conflito`
+                                            : 'Nenhum agendamento sem conflito'
+                                        }
+                                    </div>
+                                </div>
+                            </div>
                         </CardContent>
                     </Card>
                 </div>
