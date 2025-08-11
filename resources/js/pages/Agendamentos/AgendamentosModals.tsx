@@ -631,7 +631,26 @@ export default function AgendamentosModals({
                             <div className="flex gap-2">
                                 <Button
                                     variant="outline"
-                                    onClick={() => setConflictModal({ open: false, conflitos: [], formData: null })}
+                                    onClick={() => {
+                                        // Preservar os dados do formulário que estavam sendo enviados
+                                        const formDataToRestore = conflictModal.formData;
+                                        
+                                        // Fechar o modal de conflito
+                                        setConflictModal({ open: false, conflitos: [], formData: null });
+                                        
+                                        // Restaurar os dados no formulário se existirem
+                                        if (formDataToRestore) {
+                                            setFormData(formDataToRestore);
+                                        }
+                                        
+                                        // Reabrir o modal de criação com os dados preservados
+                                        setCreateModal({ 
+                                            open: true,
+                                            selectedDate: formDataToRestore?.data_inicio,
+                                            selectedTime: formDataToRestore?.hora_inicio,
+                                            selectedEspaco: formDataToRestore?.espaco_id ? parseInt(formDataToRestore.espaco_id) : undefined
+                                        });
+                                    }}
                                     className="flex-1 rounded-lg"
                                 >
                                     Cancelar
