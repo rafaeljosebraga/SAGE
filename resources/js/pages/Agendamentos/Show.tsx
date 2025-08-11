@@ -611,155 +611,209 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                             </Card>
                         )}
 
-                        {(agendamento.status === 'rejeitado' || agendamento.status === 'aprovado' || agendamento.status === 'cancelado') && (
-                            <Card className={`border-l-4 ${
-                                agendamento.status === 'aprovado' ? 'border-l-emerald-500' : 
-                                agendamento.status === 'rejeitado' ? 'border-l-rose-500' : 
-                                'border-l-black dark:bg-gray-100 dark:bg-gray-700'
-                            }`}>
-                                {agendamento.status === 'cancelado' ? (
-                                    <div className="border-l border-l-white -ml-[5px] rounded-lg -my-6 py-6">
-                                        <CardHeader>
-                                            <CardTitle className="flex items-center gap-2">
-                                                <MessageSquare className="h-5 w-5" />
-                                                Cancelamento
-                                            </CardTitle>
-                                        </CardHeader>
-                                        <CardContent className="space-y-4">
-                                            {(() => {
-                                                const aprovador = agendamento.aprovacao?.aprovado_por;
-                                                return aprovador ? (
-                                                    <div>
-                                                        <p className="text-sm font-medium mb-3">Cancelado por</p>
-                                                        <div className="flex items-start gap-3">
-                                                            <UserAvatar user={aprovador} />
-                                                            <div className="flex-1">
-                                                                <div className="flex items-center gap-2 flex-wrap">
-                                                                    <p className="font-medium">{aprovador.name}</p>
-                                                                    {aprovador.perfil_acesso && (
-                                                                        <Badge 
-                                                                            variant="outline" 
-                                                                            className={`${getPerfilColor(aprovador.perfil_acesso)}`}
-                                                                        >
-                                                                            {formatPerfil(aprovador.perfil_acesso)}
-                                                                        </Badge>
-                                                                    )}
-                                                                </div>
-                                                                {aprovador.email && (
-                                                                    <p className="text-sm text-muted-foreground">
-                                                                        {aprovador.email}
-                                                                    </p>
+                        {agendamento.status === 'cancelado' && (
+                            <Card className="border-l-4 border-l-black cursor-pointer shadow-sm hover:scale-[1.01] hover:shadow-md dark:hover:shadow-white/5 transition-all duration-200 group mx-4 dark:bg-gray-700">
+                                <div className="border-l border-l-white -ml-[5px] rounded-lg -my-6 py-6">
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <MessageSquare className="h-5 w-5" />
+                                            Cancelamento
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        {(() => {
+                                            const aprovador = agendamento.aprovacao?.aprovado_por;
+                                            return aprovador ? (
+                                                <div>
+                                                    <p className="text-sm font-medium mb-3">Cancelado por</p>
+                                                    <div className="flex items-start gap-3">
+                                                        <UserAvatar user={aprovador} />
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center gap-2 flex-wrap">
+                                                                <p className="font-medium">{aprovador.name}</p>
+                                                                {aprovador.perfil_acesso && (
+                                                                    <Badge 
+                                                                        variant="outline" 
+                                                                        className={`${getPerfilColor(aprovador.perfil_acesso)}`}
+                                                                    >
+                                                                        {formatPerfil(aprovador.perfil_acesso)}
+                                                                    </Badge>
                                                                 )}
                                                             </div>
+                                                            {aprovador.email && (
+                                                                <p className="text-sm text-muted-foreground">
+                                                                    {aprovador.email}
+                                                                </p>
+                                                            )}
                                                         </div>
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex items-center gap-2">
-                                                        <User className="h-4 w-4 text-muted-foreground" />
-                                                        <div>
-                                                            <p className="text-sm font-medium">Cancelado por</p>
-                                                            <p className="text-sm text-muted-foreground">Não informado</p>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })()}
-
-                                            {agendamento.aprovado_em && (
-                                                <div className="flex items-center gap-2">
-                                                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                                                    <div>
-                                                        <p className="text-sm font-medium">Data do Cancelamento</p>
-                                                        <p className="text-sm text-muted-foreground">
-                                                            {formatDateTime(agendamento.aprovado_em)}
-                                                        </p>
                                                     </div>
                                                 </div>
-                                            )}
+                                            ) : (
+                                                <div className="flex items-center gap-2">
+                                                    <User className="h-4 w-4 text-muted-foreground" />
+                                                    <div>
+                                                        <p className="text-sm font-medium">Cancelado por</p>
+                                                        <p className="text-sm text-muted-foreground">Não informado</p>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })()}
 
-                                            {agendamento.motivo_cancelamento && (
+                                        {agendamento.aprovado_em && (
+                                            <div className="flex items-center gap-2">
+                                                <Calendar className="h-4 w-4 text-muted-foreground" />
                                                 <div>
-                                                    <p className="text-sm font-medium mb-1">Motivo do Cancelamento</p>
+                                                    <p className="text-sm font-medium">Data do Cancelamento</p>
                                                     <p className="text-sm text-muted-foreground">
-                                                        {agendamento.motivo_cancelamento}
+                                                        {formatDateTime(agendamento.aprovado_em)}
                                                     </p>
                                                 </div>
-                                            )}
-                                        </CardContent>
-                                    </div>
-                                ) : (
-                                    <>
-                                        <CardHeader>
-                                            <CardTitle className="flex items-center gap-2">
-                                                <MessageSquare className="h-5 w-5" />
-                                                {agendamento.status === 'aprovado' ? 'Aprovação' : 'Rejeição'}
-                                            </CardTitle>
-                                        </CardHeader>
-                                        <CardContent className="space-y-4">
-                                            {(() => {
-                                                const aprovador = agendamento.aprovacao?.aprovado_por;
-                                                return aprovador ? (
-                                                    <div>
-                                                        <p className="text-sm font-medium mb-3">
-                                                            {agendamento.status === 'aprovado' ? 'Aprovado por' : 'Rejeitado por'}
-                                                        </p>
-                                                        <div className="flex items-start gap-3">
-                                                            <UserAvatar user={aprovador} />
-                                                            <div className="flex-1">
-                                                                <div className="flex items-center gap-2 flex-wrap">
-                                                                    <p className="font-medium">{aprovador.name}</p>
-                                                                    {aprovador.perfil_acesso && (
-                                                                        <Badge 
-                                                                            variant="outline" 
-                                                                            className={`${getPerfilColor(aprovador.perfil_acesso)}`}
-                                                                        >
-                                                                            {formatPerfil(aprovador.perfil_acesso)}
-                                                                        </Badge>
-                                                                    )}
-                                                                </div>
-                                                                {aprovador.email && (
-                                                                    <p className="text-sm text-muted-foreground">
-                                                                        {aprovador.email}
-                                                                    </p>
-                                                                )}
-                                                            </div>
+                                            </div>
+                                        )}
+
+                                        {agendamento.motivo_cancelamento && (
+                                            <div>
+                                                <p className="text-sm font-medium mb-1">Motivo do Cancelamento</p>
+                                                <p className="text-sm text-muted-foreground">
+                                                    {agendamento.motivo_cancelamento}
+                                                </p>
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </div>
+                            </Card>
+                        )}
+
+                        {agendamento.status === 'aprovado' && (
+                            <Card className="border-l-4 border-l-emerald-500 cursor-pointer shadow-sm hover:scale-[1.01] hover:shadow-md dark:hover:shadow-white/5 transition-all duration-200 group mx-4">
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <MessageSquare className="h-5 w-5" />
+                                        Aprovação
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    {(() => {
+                                        const aprovador = agendamento.aprovacao?.aprovado_por;
+                                        return aprovador ? (
+                                            <div>
+                                                <p className="text-sm font-medium mb-3">Aprovado por</p>
+                                                <div className="flex items-start gap-3">
+                                                    <UserAvatar user={aprovador} />
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center gap-2 flex-wrap">
+                                                            <p className="font-medium">{aprovador.name}</p>
+                                                            {aprovador.perfil_acesso && (
+                                                                <Badge 
+                                                                    variant="outline" 
+                                                                    className={`${getPerfilColor(aprovador.perfil_acesso)}`}
+                                                                >
+                                                                    {formatPerfil(aprovador.perfil_acesso)}
+                                                                </Badge>
+                                                            )}
                                                         </div>
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex items-center gap-2">
-                                                        <User className="h-4 w-4 text-muted-foreground" />
-                                                        <div>
-                                                            <p className="text-sm font-medium">
-                                                                {agendamento.status === 'aprovado' ? 'Aprovado por' : 'Rejeitado por'}
+                                                        {aprovador.email && (
+                                                            <p className="text-sm text-muted-foreground">
+                                                                {aprovador.email}
                                                             </p>
-                                                            <p className="text-sm text-muted-foreground">Não informado</p>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })()}
-
-                                            {agendamento.aprovado_em && (
-                                                <div className="flex items-center gap-2">
-                                                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                                                    <div>
-                                                        <p className="text-sm font-medium">Data</p>
-                                                        <p className="text-sm text-muted-foreground">
-                                                            {formatDateTime(agendamento.aprovado_em)}
-                                                        </p>
+                                                        )}
                                                     </div>
                                                 </div>
-                                            )}
-
-                                            {agendamento.motivo_rejeicao && (
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-2">
+                                                <User className="h-4 w-4 text-muted-foreground" />
                                                 <div>
-                                                    <p className="text-sm font-medium mb-1">Motivo da Rejeição</p>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        {agendamento.motivo_rejeicao}
-                                                    </p>
+                                                    <p className="text-sm font-medium">Aprovado por</p>
+                                                    <p className="text-sm text-muted-foreground">Não informado</p>
                                                 </div>
-                                            )}
-                                        </CardContent>
-                                    </>
-                                )}
+                                            </div>
+                                        );
+                                    })()}
+
+                                    {agendamento.aprovado_em && (
+                                        <div className="flex items-center gap-2">
+                                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                                            <div>
+                                                <p className="text-sm font-medium">Data da Aprovação</p>
+                                                <p className="text-sm text-muted-foreground">
+                                                    {formatDateTime(agendamento.aprovado_em)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        )}
+
+                        {agendamento.status === 'rejeitado' && (
+                            <Card className="border-l-4 border-l-rose-500 cursor-pointer shadow-sm hover:scale-[1.01] hover:shadow-md dark:hover:shadow-white/5 transition-all duration-200 group mx-4">
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <MessageSquare className="h-5 w-5" />
+                                        Rejeição
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    {(() => {
+                                        const aprovador = agendamento.aprovacao?.aprovado_por;
+                                        return aprovador ? (
+                                            <div>
+                                                <p className="text-sm font-medium mb-3">Rejeitado por</p>
+                                                <div className="flex items-start gap-3">
+                                                    <UserAvatar user={aprovador} />
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center gap-2 flex-wrap">
+                                                            <p className="font-medium">{aprovador.name}</p>
+                                                            {aprovador.perfil_acesso && (
+                                                                <Badge 
+                                                                    variant="outline" 
+                                                                    className={`${getPerfilColor(aprovador.perfil_acesso)}`}
+                                                                >
+                                                                    {formatPerfil(aprovador.perfil_acesso)}
+                                                                </Badge>
+                                                            )}
+                                                        </div>
+                                                        {aprovador.email && (
+                                                            <p className="text-sm text-muted-foreground">
+                                                                {aprovador.email}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-2">
+                                                <User className="h-4 w-4 text-muted-foreground" />
+                                                <div>
+                                                    <p className="text-sm font-medium">Rejeitado por</p>
+                                                    <p className="text-sm text-muted-foreground">Não informado</p>
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
+
+                                    {agendamento.aprovado_em && (
+                                        <div className="flex items-center gap-2">
+                                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                                            <div>
+                                                <p className="text-sm font-medium">Data da Rejeição</p>
+                                                <p className="text-sm text-muted-foreground">
+                                                    {formatDateTime(agendamento.aprovado_em)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {agendamento.motivo_rejeicao && (
+                                        <div>
+                                            <p className="text-sm font-medium mb-1">Motivo da Rejeição</p>
+                                            <p className="text-sm text-muted-foreground">
+                                                {agendamento.motivo_rejeicao}
+                                            </p>
+                                        </div>
+                                    )}
+                                </CardContent>
                             </Card>
                         )}
                     </div>
