@@ -670,7 +670,7 @@ export default function AgendamentosModals({
                                             duration: 5000,
                                         });
                                     }}
-                                    className="flex-1 bg-yellow-600 hover:bg-yellow-700 rounded-lg"
+                                    className="cursor-pointer flex-1 bg-yellow-600 hover:bg-yellow-700 rounded-lg"
                                 >
                                     Pedir Prioridade
                                 </Button>
@@ -913,12 +913,14 @@ export default function AgendamentosModals({
                         <Button
                             variant="outline"
                             onClick={() => setPastTimeModal({ open: false })}
+                            className="cursor-pointer"
                         >
                             Cancelar
                         </Button>
                         <Button
                             variant="default"
                             onClick={handlePastTimeConfirm}
+                            className="cursor-pointer"
                         >
                             Sim, Agendar Mesmo Assim
                         </Button>

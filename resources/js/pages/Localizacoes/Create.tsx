@@ -186,7 +186,7 @@ export default function LocalizacoesCreate({ auth }: LocalizacoesCreateProps) {
                                     value={data.nome}
                                     onChange={(e) => setData('nome', e.target.value)}
                                     placeholder="Nome da localização (ex: Prédio A, Bloco Central)"
-                                    className={errors.nome ? 'border-red-500' : ''}
+                                    className={errors.nome ? 'border-red-500 bg-white dark:bg-black' : 'bg-white border-black dark:bg-black'}
                                 />
                                 {errors.nome && (
                                     <p className="text-sm text-red-500">{errors.nome}</p>
@@ -201,7 +201,7 @@ export default function LocalizacoesCreate({ auth }: LocalizacoesCreateProps) {
                                     onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setData('descricao', e.target.value)}
                                     placeholder="Descrição da localização"
                                     rows={4}
-                                    className={errors.descricao ? 'border-red-500' : ''}
+                                    className={errors.nome ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}
                                 />
                                 {errors.descricao && (
                                     <p className="text-sm text-red-500">{errors.descricao}</p>

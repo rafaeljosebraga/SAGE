@@ -119,13 +119,12 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                                     type="button"
                                     variant="outline"
                                     className="
-                                                ml-4
-                                                bg-white dark:bg-white
-                                                text-black dark:text-black
-                                                hover:!bg-[#EF7D4C] hover:!text-white
-                                                dark:hover:!bg-[#EF7D4C] dark:hover:!text-white
-                                                transition-colors
-                                    "
+                                ml-1
+                                bg-white dark:bg-white 
+                                text-black dark:text-black 
+                                hover:bg-gray-100 dark:hover:bg-gray-200 
+                                cursor-pointer 
+                                transition-colors"
                                 >
                                     <ArrowLeft className="mr-2 h-4 w-4" />
                                     Voltar
@@ -154,13 +153,12 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                             type="button"
                             variant="outline"
                             className="
-                                        ml-4
-                                        bg-white dark:bg-white
-                                        text-black dark:text-black
-                                        hover:!bg-[#EF7D4C] hover:!text-white
-                                        dark:hover:!bg-[#EF7D4C] dark:hover:!text-white
-                                        transition-colors
-                            "
+                                ml-1
+                                bg-white dark:bg-white 
+                                text-black dark:text-black 
+                                hover:bg-gray-100 dark:hover:bg-gray-200 
+                                cursor-pointer 
+                                transition-colors"
                             onClick={() => (window.location.href = '/recursos')}
                         >
                             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -188,7 +186,7 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                                             if (errors.nome) clearErrors('nome');
                                         }}
                                         placeholder="Nome do recurso"
-                                        className={errors.nome ? 'border-red-500' : ''}
+                                        className={errors.nome ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}
                                     />
                                     {errors.nome && (
                                         <p className="text-sm text-red-500">{errors.nome}</p>
@@ -204,7 +202,7 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                                             if (errors.status) clearErrors('status');
                                         }}
                                     >
-                                        <SelectTrigger className={errors.status ? 'border-red-500' : ''}>
+                                        <SelectTrigger className={errors.nome ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}>
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -230,7 +228,7 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                                     }}
                                     placeholder="Descrição do recurso"
                                     rows={3}
-                                    className={errors.descricao ? 'border-red-500' : ''}
+                                    className={errors.nome ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}
                                 />
                                 {errors.descricao && (
                                     <p className="text-sm text-red-500">{errors.descricao}</p>
@@ -267,7 +265,7 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                                             if (errors.marca) clearErrors('marca');
                                         }}
                                         placeholder="Marca do equipamento"
-                                        className={errors.marca ? 'border-red-500' : ''}
+                                        className={errors.nome ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}
                                     />
                                     {errors.marca && (
                                         <p className="text-sm text-red-500">{errors.marca}</p>
@@ -285,7 +283,7 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                                             if (errors.modelo) clearErrors('modelo');
                                         }}
                                         placeholder="Modelo do equipamento"
-                                        className={errors.modelo ? 'border-red-500' : ''}
+                                        className={errors.nome ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}
                                     />
                                     {errors.modelo && (
                                         <p className="text-sm text-red-500">{errors.modelo}</p>
@@ -304,7 +302,7 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                                     }}
                                     placeholder="Observações gerais sobre o recurso"
                                     rows={3}
-                                    className={errors.observacoes ? 'border-red-500' : ''}
+                                    className={errors.nome ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}
                                 />
                                 {errors.observacoes && (
                                     <p className="text-sm text-red-500">{errors.observacoes}</p>
@@ -317,7 +315,13 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                         <Button
                             type="submit"
                             disabled={processing}
-                             className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black"
+                            className="
+                                ml-1
+                                bg-white dark:bg-white
+                                text-black dark:text-black
+                                hover:bg-gray-100 dark:hover:bg-gray-300
+                                cursor-pointer 
+                                transition-colors" 
                         >
                             <Save className="mr-2 h-4 w-4" />
                             {processing ? 'Salvando...' : 'Salvar Alterações'}
@@ -328,6 +332,14 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                             type="button"
                             variant="outline"
                             disabled={processing}
+                            className="
+                                        bg-black dark:bg-black
+                                        text-white dark:text-white
+                                        hover:bg-gray-800 dark:hover:bg-gray-900
+                                        hover:text-white
+                                        cursor-pointer
+                                        trasition-colors
+                                    "
                             >
                             Cancelar
                             </Button>

@@ -953,7 +953,7 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                                         placeholder="Buscar por nome..."
                                         value={nomeAgendamentoFilter}
                                         onChange={(e) => setNomeAgendamentoFilter(e.target.value)}
-                                        className="pl-8 pr-10"
+                                        className="pl-8 pr-10 border border-black bg-white dark:bg-black"
                                     />
                                     <Tooltip>
                                         <TooltipTrigger asChild>
@@ -995,7 +995,7 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                                         }, 100);
                                     }}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className=" border border-black bg-white dark:bg-black" >
                                         <SelectValue placeholder="Status" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -1014,7 +1014,7 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                                     value={espacoFilter}
                                     onValueChange={(value) => setEspacoFilter(value)}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className=" border border-black bg-white dark:bg-black" >
                                         <SelectValue placeholder="Todos os espaços" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -1036,7 +1036,7 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                                         placeholder="Nome do solicitante"
                                         value={solicitanteFilter}
                                         onChange={(e) => setSolicitanteFilter(e.target.value)}
-                                        className="pl-8 pr-10"
+                                        className="pl-8 pr-10 border border-black bg-white dark:bg-black"
                                     />
                                     <Tooltip>
                                         <TooltipTrigger asChild>
@@ -1063,7 +1063,7 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                                         type="date"
                                         value={dataInicioFilter}
                                         onChange={(e) => setDataInicioFilter(e.target.value)}
-                                        className="pr-10"
+                                        className="pr-10 border border-black bg-white dark:bg-black"
                                     />
                                     <Tooltip>
                                         <TooltipTrigger asChild>
@@ -1091,7 +1091,7 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                                         type="date"
                                         value={dataFimFilter}
                                         onChange={(e) => setDataFimFilter(e.target.value)}
-                                        className="pr-10"
+                                        className="pr-10 border border-black bg-white dark:bg-black"
                                     />
                                     <Tooltip>
                                         <TooltipTrigger asChild>
@@ -1240,7 +1240,7 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                                             <div className="flex items-center gap-2 ml-4">
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
-                                                        <Button variant="outline" size="sm" asChild className="hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 dark:hover:bg-blue-900/30 dark:hover:border-blue-700 dark:hover:text-blue-300">
+                                                        <Button variant="outline" size="sm" asChild className="cursor-pointer hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 dark:hover:bg-blue-900/30 dark:hover:border-blue-700 dark:hover:text-blue-300">
                                                             <Link href={`/agendamentos/${agendamento.id}?return_url=${encodeURIComponent(generateReturnUrl())}`}>
                                                                 <Eye className="h-4 w-4" />
                                                             </Link>
@@ -1260,7 +1260,7 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                                                                     variant="outline"
                                                                     size="sm"
                                                                     onClick={() => handleApproveConfirm(agendamento)}
-                                                                    className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                                                                    className="text-green-600 hover:text-green-700 hover:bg-green-50 hover:border-green-300 cursor-pointer dark:hover:bg-green-900/30 dark:hover:border-green-700 dark:hover:text-green-300"
                                                                 >
                                                                     <Check className="h-4 w-4" />
                                                                 </Button>
@@ -1276,12 +1276,12 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                                                                     variant="outline"
                                                                     size="sm"
                                                                     onClick={() => handleReject(agendamento)}
-                                                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                                    className="text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-300 cursor-pointer dark:hover:bg-red-900/30 dark:hover:border-red-700 dark:hover:text-red-300"
                                                                 >
                                                                     <X className="h-4 w-4" />
                                                                 </Button>
                                                             </TooltipTrigger>
-                                                            <TooltipContent>
+                                                            <TooltipContent className="cursor-pointer">
                                                                 <p>Rejeitar</p>
                                                             </TooltipContent>
                                                         </Tooltip>
@@ -1417,6 +1417,7 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                             <Button 
                                 variant="outline" 
                                 onClick={() => setRejectionDialog({ open: false, agendamento: null })}
+                                className="cursor-pointer"
                             >
                                 Cancelar
                             </Button>
@@ -1424,6 +1425,7 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                                 variant="destructive" 
                                 onClick={confirmReject}
                                 disabled={!rejectionReason.trim()}
+                                className="cursor-pointer"
                             >
                                 {rejectionDialog.agendamento?.grupo_recorrencia ? 'Rejeitar Grupo' : 'Rejeitar Agendamento'}
                             </Button>

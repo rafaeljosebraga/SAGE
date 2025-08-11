@@ -879,6 +879,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                 toast({
                     title: "Agendamento criado com sucesso!",
                     description: "Seu agendamento foi enviado para análise.",
+                    variant: "success",
                 });
             },
             onError: (errors: any) => {
@@ -1065,6 +1066,8 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                     setDeleteModal({ open: false, agendamento: null });
                     toast({
                         title: "Agendamento cancelado com sucesso!",
+                        variant: "success",
+                        duration: 5000,
                     });
                     router.reload();
                 },
@@ -1480,7 +1483,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                                     <Eye className="h-4 w-4 group-hover:text-blue-500" />
                                                 </Button>
                                             </TooltipTrigger>
-                                            <TooltipContent>
+                                            <TooltipContent className='cursor-pointer'>
                                                 <p>Visualizar</p>
                                             </TooltipContent>
                                         </Tooltip>

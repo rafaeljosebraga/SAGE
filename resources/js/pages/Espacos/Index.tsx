@@ -375,7 +375,10 @@ export default function EspacosIndex({ auth, espacos, flash }: EspacosIndexProps
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleViewDetails(espaco)}
-                                className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-blue-700 dark:text-blue-700"
+                                className="cursor-pointer bg-sidebar border border-transparent text-blue-700
+                                hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700
+                                dark:bg-gray-800 dark:border-transparent dark:text-blue-300
+                                dark:hover:bg-blue-900/30 dark:hover:border-blue-700 dark:hover:text-blue-300"
                             >
                                 <Eye className="h-4 w-4" />
                             </Button>
@@ -390,7 +393,10 @@ export default function EspacosIndex({ auth, espacos, flash }: EspacosIndexProps
                                 variant="outline"
                                 size="sm"
                                 asChild
-                                className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-black dark:text-black"
+                                className="cursor-pointer bg-sidebar border border-transparent
+                                hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700
+                                dark:bg-gray-800 dark:hover:bg-blue-900/30 dark:hover:border-blue-700 dark:hover:text-blue-300
+                                text-black dark:text-white"
                             >
                                 <Link href={`/espacos/${espaco.id}/editar`}>
                                     <Pencil className="h-4 w-4" />
@@ -408,8 +414,10 @@ export default function EspacosIndex({ auth, espacos, flash }: EspacosIndexProps
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-[#F26326] hover:text-black dark:text-[#F26326] dark:hover:text-black"
-                                    >
+                                        className="cursor-pointer bg-sidebar border border-transparent text-black dark:text-white
+                                        hover:bg-[#F26326]/10 hover:border-[#F26326]/60 hover:text-[#F26326]
+                                        dark:hover:bg-[#F26326]/30 dark:hover:border-[#F26326]/70 dark:hover:text-[#F26326]"
+                                >
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
                                 </AlertDialogTrigger>
@@ -429,12 +437,12 @@ export default function EspacosIndex({ auth, espacos, flash }: EspacosIndexProps
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                                <AlertDialogCancel>
+                                <AlertDialogCancel className="cursor-pointer">
                                     Cancelar
                                 </AlertDialogCancel>
                                 <AlertDialogAction
                                     onClick={() => handleDelete(espaco)}
-                                    className="bg-red-600 hover:bg-red-700"
+                                    className="cursor-pointer bg-red-600 hover:bg-red-700"
                                 >
                                     Excluir
                                 </AlertDialogAction>
@@ -739,7 +747,10 @@ export default function EspacosIndex({ auth, espacos, flash }: EspacosIndexProps
                                     closeModal();
                                     router.visit(`/espacos/${selectedEspaco.id}/editar`);
                                 }}
-                                className="bg-[#D2CBB9] hover:bg-[#EF7D4C] text-black rounded-lg"
+                                className="cursor-pointer bg-black text-white rounded-lg border border-gray-300
+                                hover:bg-white hover:text-black hover:border-black transition-colors duration-300
+                                dark:bg-white dark:text-black dark:border-gray-600
+                                dark:hover:bg-black dark:hover:text-white"
                             >
                                 <Pencil className="mr-2 h-4 w-4" />
                                 Editar
