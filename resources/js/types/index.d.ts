@@ -210,6 +210,8 @@ export interface GrupoConflito {
     status_conflito: 'pendente' | 'resolvido';
     observacoes_conflito?: string;
     created_at: string;
+    resolvido_em?: string;
+    resolvido_por?: User;
 }
 
 export interface CalendarEvent {

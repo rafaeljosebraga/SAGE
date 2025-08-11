@@ -104,6 +104,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post("conflitos/resolver", [\App\Http\Controllers\GerenciarAgendamentosController::class, "resolverConflito"])->name("conflitos.resolver");
         Route::post("conflitos/rejeitar-todos", [\App\Http\Controllers\GerenciarAgendamentosController::class, "rejeitarTodosConflito"])->name("conflitos.rejeitar-todos");
         Route::get("conflitos/{grupoConflito}/detalhes", [\App\Http\Controllers\GerenciarAgendamentosController::class, "detalhesConflito"])->name("conflitos.detalhes");
+        Route::get("conflitos/resolvidos-hoje", [\App\Http\Controllers\GerenciarAgendamentosController::class, "conflitosResolvidosHoje"])->name("conflitos.resolvidos-hoje");
     });
 });
 

@@ -230,12 +230,24 @@ class AgendamentoController extends Controller
                 return [
                     'id' => $conflito->id,
                     'titulo' => $conflito->titulo,
+                    'justificativa' => $conflito->justificativa,
                     'data_inicio' => $conflito->data_inicio,
                     'hora_inicio' => $conflito->hora_inicio,
                     'hora_fim' => $conflito->hora_fim,
                     'status' => $conflito->status,
-                    'user' => [
-                        'name' => $conflito->user->name ?? 'Usuário não encontrado'
+                    'user' => $conflito->user ? [
+                        'id' => $conflito->user->id,
+                        'name' => $conflito->user->name,
+                        'email' => $conflito->user->email,
+                        'perfil_acesso' => $conflito->user->perfil_acesso,
+                        'profile_photo' => $conflito->user->profile_photo,
+                        'profile_photo_url' => $conflito->user->profile_photo_url,
+                        'created_at' => $conflito->user->created_at,
+                        'updated_at' => $conflito->user->updated_at,
+                    ] : null,
+                    'espaco' => [
+                        'id' => $conflito->espaco->id ?? null,
+                        'nome' => $conflito->espaco->nome ?? 'Espaço não encontrado'
                     ]
                 ];
             })->toArray();
@@ -510,16 +522,25 @@ class AgendamentoController extends Controller
                 return [
                     'id' => $conflito->id,
                     'titulo' => $conflito->titulo,
+                    'justificativa' => $conflito->justificativa,
                     'data_inicio' => $conflito->data_inicio,
                     'hora_inicio' => $conflito->hora_inicio,
                     'data_fim' => $conflito->data_fim,
                     'hora_fim' => $conflito->hora_fim,
                     'status' => $conflito->status,
                     'color_index' => $conflito->color_index,
-                    'user' => [
-                        'name' => $conflito->user->name ?? 'Usuário não encontrado'
-                    ],
+                    'user' => $conflito->user ? [
+                        'id' => $conflito->user->id,
+                        'name' => $conflito->user->name,
+                        'email' => $conflito->user->email,
+                        'perfil_acesso' => $conflito->user->perfil_acesso,
+                        'profile_photo' => $conflito->user->profile_photo,
+                        'profile_photo_url' => $conflito->user->profile_photo_url,
+                        'created_at' => $conflito->user->created_at,
+                        'updated_at' => $conflito->user->updated_at,
+                    ] : null,
                     'espaco' => [
+                        'id' => $conflito->espaco->id ?? null,
                         'nome' => $conflito->espaco->nome ?? 'Espaço não encontrado'
                     ]
                 ];

@@ -132,6 +132,11 @@ export default function GerenciarAgendamentos({
     const [dataInicioSortOrder, setDataInicioSortOrder] = useState<'asc' | 'desc' | 'none'>('none');
     const [dataFimSortOrder, setDataFimSortOrder] = useState<'asc' | 'desc' | 'none'>('none');
 
+    // Estados para conflitos resolvidos hoje
+    const [mostrarResolvidosHoje, setMostrarResolvidosHoje] = useState(false);
+    const [conflitosResolvidosHoje, setConflitosResolvidosHoje] = useState<GrupoConflito[]>([]);
+    const [carregandoResolvidos, setCarregandoResolvidos] = useState(false);
+
     // Sincronizar estado local com parâmetros da URL apenas na primeira carga
     useEffect(() => {
         if (filters.tipo_conflito) {
@@ -165,6 +170,50 @@ export default function GerenciarAgendamentos({
     useEffect(() => {
         setCurrentPageSemConflito(1);
     }, [nomeAgendamentoFilter, solicitanteFilter, statusFilter, espacoFilter, dataInicioFilter, dataFimFilter, nomeSortOrder, solicitanteSortOrder, dataInicioSortOrder, dataFimSortOrder]);
+
+    // Limpar estado de resolvidos hoje quando o filtro mudar
+    useEffect(() => {
+        if (tipoConflitoFilter !== 'resolvidos_hoje') {
+            setMostrarResolvidosHoje(false);
+            setConflitosResolvidosHoje([]);
+        }
+    }, [tipoConflitoFilter]);
+
+    // Função para buscar conflitos resolvidos hoje
+    const buscarConflitosResolvidosHoje = async () => {
+        setCarregandoResolvidos(true);
+        try {
+            const response = await fetch('/conflitos/resolvidos-hoje');
+            if (response.ok) {
+                const data = await response.json();
+                setConflitosResolvidosHoje(data.grupos_resolvidos);
+                setMostrarResolvidosHoje(true);
+                // Resetar outros filtros para mostrar apenas os resolvidos hoje
+                setTipoConflitoFilter('resolvidos_hoje');
+            } else {
+                toast({
+                    title: 'Erro ao carregar dados',
+                    description: 'Não foi possível carregar os conflitos resolvidos hoje.',
+                    variant: 'destructive',
+                });
+            }
+        } catch (error) {
+            toast({
+                title: 'Erro ao carregar dados',
+                description: 'Erro de conexão ao carregar os conflitos resolvidos hoje.',
+                variant: 'destructive',
+            });
+        } finally {
+            setCarregandoResolvidos(false);
+        }
+    };
+
+    // Função para voltar à visualização normal
+    const voltarVisualizacaoNormal = () => {
+        setMostrarResolvidosHoje(false);
+        setConflitosResolvidosHoje([]);
+        setTipoConflitoFilter('com_conflito');
+    };
 
 
 
@@ -354,6 +403,11 @@ export default function GerenciarAgendamentos({
             return [];
         }
 
+        // Se o filtro é "resolvidos_hoje", mostrar apenas os conflitos resolvidos hoje
+        if (tipoConflitoFilter === 'resolvidos_hoje') {
+            return conflitosResolvidosHoje;
+        }
+
         let filtered = [...gruposConflito];
 
         // Aplicar filtros
@@ -524,8 +578,8 @@ export default function GerenciarAgendamentos({
     })();
 
     const filteredAgendamentosSemConflito = (() => {
-        // Se o filtro de tipo é especificamente "com_conflito", não mostrar agendamentos sem conflito
-        if (tipoConflitoFilter === 'com_conflito') {
+        // Se o filtro de tipo é especificamente "com_conflito" ou "resolvidos_hoje", não mostrar agendamentos sem conflito
+        if (tipoConflitoFilter === 'com_conflito' || tipoConflitoFilter === 'resolvidos_hoje') {
             return [];
         }
 
@@ -825,10 +879,11 @@ export default function GerenciarAgendamentos({
 
                     <Card 
                         className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:bg-green-100/60 dark:hover:bg-green-900/20 hover:border-green-200 dark:hover:border-green-800 group"
+                        onClick={buscarConflitosResolvidosHoje}
                     >
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Resolvidos Hoje</CardTitle>
-                            <CheckCircle className="h-4 w-4 text-green-600 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg group-hover:text-green-500" />
+                            <CircleCheckBig className="h-4 w-4 text-green-600 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg group-hover:text-green-500" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold text-green-600">{totalConflitosResolvidosFixo}</div>
@@ -942,6 +997,7 @@ export default function GerenciarAgendamentos({
                                     <SelectContent>
                                         <SelectItem value="com_conflito">Com Conflito</SelectItem>
                                         <SelectItem value="sem_conflito">Sem Conflito</SelectItem>
+                                        <SelectItem value="resolvidos_hoje">Resolvidos Hoje</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -1096,6 +1152,7 @@ export default function GerenciarAgendamentos({
                     <div className="space-y-6">
 
 
+
                         <div className="grid gap-6">
                             {filteredGruposConflito.map((grupo) => {
                                 // Gerar cores únicas para cada agendamento no grupo - com suporte ao tema escuro
@@ -1111,24 +1168,49 @@ export default function GerenciarAgendamentos({
                                 ];
 
                                 return (
-                                    <Card key={grupo.grupo_conflito} className="shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden bg-white dark:bg-gray-900/80 dark:border-gray-700">
-                                        <CardHeader className="bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-950/40 dark:to-orange-900/50">
+                                    <Card key={grupo.grupo_conflito} className={`shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden ${
+                                        tipoConflitoFilter === 'resolvidos_hoje' 
+                                            ? 'bg-green-50/30 dark:bg-green-950/20 border-green-200 dark:border-green-800' 
+                                            : 'bg-white dark:bg-gray-900/80 dark:border-gray-700'
+                                    }`}>
+                                        <CardHeader className={`${
+                                            tipoConflitoFilter === 'resolvidos_hoje'
+                                                ? 'bg-gradient-to-r from-green-50 to-green-100 dark:from-green-950/40 dark:to-green-900/50'
+                                                : 'bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-950/40 dark:to-orange-900/50'
+                                        }`}>
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-4">
                                                     <div className="flex-shrink-0">
-                                                        <div className="p-3 bg-orange-100 dark:bg-orange-900/50 rounded-full">
-                                                            <Building className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                                                        <div className={`p-3 rounded-full ${
+                                                            tipoConflitoFilter === 'resolvidos_hoje'
+                                                                ? 'bg-green-100 dark:bg-green-900/50'
+                                                                : 'bg-orange-100 dark:bg-orange-900/50'
+                                                        }`}>
+                                                            {tipoConflitoFilter === 'resolvidos_hoje' ? (
+                                                                <CircleCheckBig className="h-6 w-6 text-green-600 dark:text-green-400" />
+                                                            ) : (
+                                                                <Building className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                                                            )}
                                                         </div>
                                                     </div>
                                                     <div>
                                                         <CardTitle className="text-xl flex items-center gap-2">
-                                                            <span className="text-orange-700 dark:text-orange-400">Conflito:</span>
+                                                            <span className={tipoConflitoFilter === 'resolvidos_hoje' 
+                                                                ? 'text-green-700 dark:text-green-400' 
+                                                                : 'text-orange-700 dark:text-orange-400'
+                                                            }>
+                                                                {tipoConflitoFilter === 'resolvidos_hoje' ? 'Resolvido:' : 'Conflito:'}
+                                                            </span>
                                                             <span className="text-gray-900 dark:text-gray-100">{grupo.espaco.nome}</span>
                                                         </CardTitle>
                                                         <CardDescription className="text-base mt-1 flex items-center gap-4">
                                                             <span className="flex items-center gap-1">
-                                                                <Zap className="h-4 w-4 text-orange-500" />
-                                                                {grupo.agendamentos.length} eventos conflitantes
+                                                                {tipoConflitoFilter === 'resolvidos_hoje' ? (
+                                                                    <CircleCheckBig className="h-4 w-4 text-green-500" />
+                                                                ) : (
+                                                                    <Zap className="h-4 w-4 text-orange-500" />
+                                                                )}
+                                                                {grupo.agendamentos.length} eventos {tipoConflitoFilter === 'resolvidos_hoje' ? 'resolvidos' : 'conflitantes'}
                                                             </span>
                                                             {grupo.espaco.localizacao && (
                                                                 <span className="flex items-center gap-1 text-muted-foreground">
@@ -1136,50 +1218,66 @@ export default function GerenciarAgendamentos({
                                                                     {grupo.espaco.localizacao.nome}
                                                                 </span>
                                                             )}
+                                                            {tipoConflitoFilter === 'resolvidos_hoje' && (grupo as any).resolvido_em && (
+                                                                <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
+                                                                    <Clock className="h-3 w-3" />
+                                                                    {format(new Date((grupo as any).resolvido_em), 'HH:mm', { locale: ptBR })}
+                                                                </span>
+                                                            )}
                                                         </CardDescription>
                                                     </div>
                                                 </div>
-                                                <div className="flex gap-2">
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Button
-                                                                variant="outline"
-                                                                size="sm"
-                                                                onClick={() => setResolverDialog({
-                                                                    open: true,
-                                                                    grupoConflito: grupo,
-                                                                    agendamentoSelecionado: null
-                                                                })}
-                                                                className="bg-green-600 border-green-600 text-white hover:bg-green-700 hover:border-green-700 dark:bg-green-600 dark:border-green-600 dark:text-white"
-                                                            >
-                                                                <Check className="h-4 w-4 mr-2" />
-                                                                Resolver
-                                                            </Button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>Resolver conflito selecionando um agendamento para aprovar</p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Button
-                                                                variant="destructive"
-                                                                size="sm"
-                                                                onClick={() => setRejeitarTodosDialog({
-                                                                    open: true,
-                                                                    grupoConflito: grupo
-                                                                })}
-                                                                className="bg-orange-600 hover:bg-orange-700 border-orange-600 hover:border-orange-700"
-                                                            >
-                                                                <X className="h-4 w-4 mr-2" />
-                                                                Rejeitar Todos
-                                                            </Button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>Rejeitar todos os agendamentos deste conflito</p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </div>
+                                                {tipoConflitoFilter !== 'resolvidos_hoje' && (
+                                                    <div className="flex gap-2">
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    onClick={() => setResolverDialog({
+                                                                        open: true,
+                                                                        grupoConflito: grupo,
+                                                                        agendamentoSelecionado: null
+                                                                    })}
+                                                                    className="bg-green-600 border-green-600 text-white hover:bg-green-700 hover:border-green-700 dark:bg-green-600 dark:border-green-600 dark:text-white"
+                                                                >
+                                                                    <Check className="h-4 w-4 mr-2" />
+                                                                    Resolver
+                                                                </Button>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>Resolver conflito selecionando um agendamento para aprovar</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <Button
+                                                                    variant="destructive"
+                                                                    size="sm"
+                                                                    onClick={() => setRejeitarTodosDialog({
+                                                                        open: true,
+                                                                        grupoConflito: grupo
+                                                                    })}
+                                                                    className="bg-orange-600 hover:bg-orange-700 border-orange-600 hover:border-orange-700"
+                                                                >
+                                                                    <X className="h-4 w-4 mr-2" />
+                                                                    Rejeitar Todos
+                                                                </Button>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>Rejeitar todos os agendamentos deste conflito</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </div>
+                                                )}
+                                                {tipoConflitoFilter === 'resolvidos_hoje' && (grupo as any).resolvido_por && (
+                                                    <div className="text-sm text-green-600 dark:text-green-400">
+                                                        <span className="flex items-center gap-1">
+                                                            <User className="h-3 w-3" />
+                                                            Resolvido por: {(grupo as any).resolvido_por.name}
+                                                        </span>
+                                                    </div>
+                                                )}
                                             </div>
                                         </CardHeader>
                                         <CardContent className="p-0">
@@ -1336,16 +1434,7 @@ export default function GerenciarAgendamentos({
                 {/* Agendamentos sem conflito - só mostra quando filtro for especificamente 'sem_conflito' */}
                 {tipoConflitoFilter === 'sem_conflito' && currentItemsSemConflito.length > 0 && (
                     <div className="space-y-4">
-                        <div className="flex items-center gap-2 mx-4">
-                            <CircleCheckBig className="h-5 w-5 text-blue-600" />
-                            <h2 className="text-xl font-semibold">Agendamentos sem Conflito</h2>
-                            <Badge variant="secondary" className="ml-2">
-                                {totalItemsSemConflito} agendamento{totalItemsSemConflito !== 1 ? 's' : ''} 
-                                {totalPagesSemConflito > 1 && (
-                                    <span className="text-muted-foreground"> (Página {currentPageSemConflito} de {totalPagesSemConflito})</span>
-                                )}
-                            </Badge>
-                        </div>
+
 
                         <div className="space-y-3">
                             {currentItemsSemConflito.map((agendamento) => (
@@ -1473,12 +1562,19 @@ export default function GerenciarAgendamentos({
                                     <Search className="h-6 w-6 text-muted-foreground" />
                                 </div>
                                 <div className="space-y-2">
-                                    <h3 className="font-semibold text-lg">Nenhum agendamento encontrado</h3>
+                                    <h3 className="font-semibold text-lg">
+                                        {tipoConflitoFilter === 'resolvidos_hoje' 
+                                            ? 'Nenhum conflito resolvido hoje' 
+                                            : 'Nenhum agendamento encontrado'
+                                        }
+                                    </h3>
                                     <p className="text-muted-foreground max-w-sm">
-                                        {(nomeAgendamentoFilter || solicitanteFilter || espacoFilter !== 'all' || 
-                                          statusFilter !== 'all' || tipoConflitoFilter !== 'com_conflito' || dataInicioFilter || dataFimFilter)
-                                            ? 'Tente ajustar os filtros para encontrar os agendamentos que você está procurando.'
-                                            : 'Não há agendamentos disponíveis no momento.'
+                                        {tipoConflitoFilter === 'resolvidos_hoje' 
+                                            ? 'Não há conflitos que foram resolvidos hoje. Quando conflitos forem resolvidos, eles aparecerão aqui.'
+                                            : (nomeAgendamentoFilter || solicitanteFilter || espacoFilter !== 'all' || 
+                                              statusFilter !== 'all' || tipoConflitoFilter !== 'com_conflito' || dataInicioFilter || dataFimFilter)
+                                                ? 'Tente ajustar os filtros para encontrar os agendamentos que você está procurando.'
+                                                : 'Não há agendamentos disponíveis no momento.'
                                         }
                                     </p>
                                 </div>

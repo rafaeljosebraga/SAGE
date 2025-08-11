@@ -316,4 +316,54 @@ class GerenciarAgendamentosController extends Controller
             'observacoes_conflito' => $conflitos->first()->observacoes_conflito,
         ]);
     }
+
+    /**
+     * Obter conflitos resolvidos hoje
+     */
+    public function conflitosResolvidosHoje()
+    {
+        // Verificar permissão
+        if (auth()->user()->perfil_acesso !== 'diretor_geral') {
+            abort(403, 'Você não tem permissão para acessar esta informação.');
+        }
+
+        // Buscar conflitos resolvidos hoje agrupados por grupo_conflito
+        $conflitosResolvidos = AgendamentoConflito::with([
+            'agendamento.user',
+            'agendamento.espaco.localizacao',
+            'agendamento.aprovacao.aprovadoPor',
+            'resolvidoPor'
+        ])
+        ->resolvidos()
+        ->whereDate('resolvido_em', today())
+        ->orderBy('resolvido_em', 'desc')
+        ->get();
+
+        // Agrupar por grupo_conflito
+        $gruposResolvidos = [];
+        foreach ($conflitosResolvidos as $conflito) {
+            $grupoId = $conflito->grupo_conflito;
+            if (!isset($gruposResolvidos[$grupoId])) {
+                $gruposResolvidos[$grupoId] = [
+                    'grupo_conflito' => $grupoId,
+                    'agendamentos' => [],
+                    'espaco' => $conflito->agendamento->espaco,
+                    'status_conflito' => $conflito->status_conflito,
+                    'observacoes_conflito' => $conflito->observacoes_conflito,
+                    'resolvido_em' => $conflito->resolvido_em,
+                    'resolvido_por' => $conflito->resolvidoPor,
+                ];
+            }
+            $gruposResolvidos[$grupoId]['agendamentos'][] = $conflito->agendamento;
+        }
+
+        // Converter para array indexado
+        $gruposResolvidos = array_values($gruposResolvidos);
+
+        return response()->json([
+            'grupos_resolvidos' => $gruposResolvidos,
+            'total_grupos' => count($gruposResolvidos),
+            'total_agendamentos' => $conflitosResolvidos->count(),
+        ]);
+    }
 }
