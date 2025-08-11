@@ -276,10 +276,10 @@ export default function GerenciarAgendamentos({
 
     // Resolver conflito
     const handleResolverConflito = () => {
-        if (!resolverDialog.grupoConflito || !resolverDialog.agendamentoSelecionado || !motivoRejeicao.trim()) {
+        if (!resolverDialog.grupoConflito || !resolverDialog.agendamentoSelecionado || !motivoRejeicao.trim() || motivoRejeicao.trim().length < 5) {
             toast({
                 title: 'Dados incompletos',
-                description: 'Selecione um agendamento para aprovar e informe o motivo da rejeição dos demais.',
+                // description: 'Selecione um agendamento para aprovar e informe o motivo da rejeição dos demais (mínimo 5 caracteres).',
                 variant: 'destructive',
             });
             return;
@@ -1519,106 +1519,153 @@ export default function GerenciarAgendamentos({
                     setMotivoRejeicao('');
                 }
             }}>
-                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle>Resolver Conflito de Horário</DialogTitle>
-                        <DialogDescription>
-                            Selecione qual agendamento deve ser aprovado. Os demais serão rejeitados automaticamente.
-                        </DialogDescription>
+                <DialogContent className="max-w-[90vw] sm:max-w-2xl max-h-[95vh] overflow-hidden rounded-lg flex flex-col">
+                    <DialogHeader className="flex-shrink-0 pb-4">
+                        <DialogTitle className="flex items-center gap-2">
+                            <CircleCheckBig className="h-5 w-5 text-green-600" />
+                            Resolver Conflito de Horário
+                        </DialogTitle>
                     </DialogHeader>
 
                     {resolverDialog.grupoConflito && (
-                        <div className="space-y-4">
-                            <div className="space-y-3">
-                                {resolverDialog.grupoConflito.agendamentos.map((agendamento) => (
-                                    <div 
-                                        key={agendamento.id}
-                                        className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                                            resolverDialog.agendamentoSelecionado === agendamento.id
-                                                ? 'border-green-500 bg-green-50 dark:bg-green-950/20 dark:border-green-400'
-                                                : 'border-border hover:bg-muted/50 dark:hover:bg-muted/30'
-                                        }`}
-                                        onClick={() => setResolverDialog(prev => ({
-                                            ...prev,
-                                            agendamentoSelecionado: agendamento.id
-                                        }))}
-                                    >
-                                        <div className="flex items-start gap-3">
-                                            <div className={`w-4 h-4 rounded-full border-2 mt-1 ${
-                                                resolverDialog.agendamentoSelecionado === agendamento.id
-                                                    ? 'bg-green-500 border-green-500 dark:bg-green-400 dark:border-green-400'
-                                                    : 'border-gray-300 dark:border-gray-600'
-                                            }`} />
-                                            <div className="flex-1">
-                                                <h4 className="font-medium mb-2">{agendamento.titulo}</h4>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
-                                                    <div className="space-y-1">
-                                                        <div className="flex items-center gap-2">
-                                                            <User className="h-4 w-4" />
-                                                            <div className="flex items-center gap-2">
-                                                                {agendamento.user && <UserAvatar user={agendamento.user} size="sm" />}
-                                                                <div className="flex flex-col">
-                                                                    <span className="text-sm font-medium">{agendamento.user?.name || 'Usuário não encontrado'}</span>
-                                                                    {agendamento.user?.email && (
-                                                                        <span className="text-xs text-muted-foreground">{agendamento.user.email}</span>
-                                                                    )}
+                        <div className="flex flex-col gap-2 flex-1 min-h-0">
+                            {/* Área de seleção de agendamentos com scroll personalizado */}
+                            <div className="flex flex-col gap-0 flex-1 min-h-0">
+                                <div className="flex items-center justify-between flex-shrink-0">
+                                    <h4 className="font-medium text-sm text-muted-foreground">
+                                        Agendamentos em conflito ({resolverDialog.grupoConflito.agendamentos.length}):
+                                    </h4>
+                                    {resolverDialog.agendamentoSelecionado && (
+                                        <Badge variant="outline" className="text-green-600 border-green-200">
+                                            1 selecionado
+                                        </Badge>
+                                    )}
+                                </div>
+                                
+                                <div className="space-y-1 overflow-y-auto max-h-[70vh] pr-2 rounded-md flex-1 min-h-0 mb-1 last:-mb-2">
+                                    {resolverDialog.grupoConflito.agendamentos.map((agendamento) => {
+                                        const isSelected = resolverDialog.agendamentoSelecionado === agendamento.id;
+                                        const { getEventColors } = useAgendamentoColors();
+                                        const colors = getEventColors(agendamento as any);
+                                        
+                                        return (
+                                            <Card 
+                                                key={agendamento.id}
+                                                className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
+                                                    isSelected 
+                                                        ? 'ring-2 ring-green-500 border-green-200 bg-green-50 dark:bg-green-950/20 shadow-md' 
+                                                        : 'hover:bg-muted/30'
+                                                } ${colors.border} border-l-4 rounded-lg overflow-hidden`}
+                                                onClick={() => setResolverDialog(prev => ({
+                                                    ...prev,
+                                                    agendamentoSelecionado: agendamento.id
+                                                }))}
+                                            >
+                                                <CardContent className="p-3">
+                                                    <div className="flex items-start gap-3">
+                                                        {/* Radio Button Personalizado */}
+                                                        <div className={`w-5 h-5 rounded-full border-2 mt-0.5 flex items-center justify-center transition-all ${
+                                                            isSelected
+                                                                ? 'bg-green-500 border-green-500 dark:bg-green-400 dark:border-green-400'
+                                                                : 'border-gray-300 dark:border-gray-600 hover:border-green-300'
+                                                        }`}>
+                                                            {isSelected && (
+                                                                <div className="w-2 h-2 rounded-full bg-white" />
+                                                            )}
+                                                        </div>
+                                                        
+                                                        <div className="flex-1 space-y-2">
+                                                            <div className="flex items-start justify-between">
+                                                                <h5 className="font-medium">{agendamento.titulo}</h5>
+                                                                <StatusBadge status={agendamento.status} />
+                                                            </div>
+                                                            
+                                                            <div className="space-y-1">
+                                                                <div className="flex items-center gap-4 text-sm opacity-80">
+                                                                    <div className="flex items-center gap-1">
+                                                                        <User className="h-4 w-4" />
+                                                                        <div className="flex items-center gap-2">
+                                                                            {agendamento.user && <UserAvatar user={agendamento.user} size="sm" />}
+                                                                            <div className="flex flex-col">
+                                                                                <span className="font-medium">{agendamento.user?.name || 'Usuário não encontrado'}</span>
+                                                                                {agendamento.user?.email && (
+                                                                                    <span className="text-xs text-muted-foreground">{agendamento.user.email}</span>
+                                                                                )}
+                                                                            </div>
+                                                                            {agendamento.user?.perfil_acesso && (
+                                                                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPerfilColor(agendamento.user.perfil_acesso)}`}>
+                                                                                    {formatPerfil(agendamento.user.perfil_acesso)}
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
-                                                                {agendamento.user?.perfil_acesso && (
-                                                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPerfilColor(agendamento.user.perfil_acesso)}`}>
-                                                                        {formatPerfil(agendamento.user.perfil_acesso)}
-                                                                    </span>
-                                                                )}
+                                                                <div className="flex items-center gap-4 text-sm opacity-80">
+                                                                    <div className="flex items-center gap-1">
+                                                                        <Clock className="h-4 w-4" />
+                                                                        {formatPeriod(agendamento)}
+                                                                    </div>
+                                                                    <div className="flex items-center gap-1">
+                                                                        <MapPin className="h-4 w-4" />
+                                                                        {agendamento.espaco?.nome || 'Espaço não encontrado'}
+                                                                    </div>
+                                                                </div>
+                                                                <div className="mt-1 text-sm">
+                                                                    <span className="font-medium">Justificativa:</span>
+                                                                    <p className="text-muted-foreground">{agendamento.justificativa}</p>
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                        <div className="flex items-center gap-2">
-                                                            <Clock className="h-4 w-4" />
-                                                            <span>{formatPeriod(agendamento)}</span>
-                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <p className="font-medium text-foreground mb-1">Justificativa:</p>
-                                                        <p className="text-sm">{agendamento.justificativa}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
+                                                </CardContent>
+                                            </Card>
+                                        );
+                                    })}
+                                </div>
                             </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="motivo_rejeicao">
-                                    Motivo da rejeição dos demais agendamentos *
-                                </Label>
-                                <Textarea
-                                    id="motivo_rejeicao"
-                                    placeholder="Informe o motivo da rejeição dos agendamentos não selecionados..."
-                                    value={motivoRejeicao}
-                                    onChange={(e) => setMotivoRejeicao(e.target.value)}
-                                    rows={3}
-                                />
+                            {/* Campo de motivo de rejeição - fixo na parte inferior */}
+                            <div className="flex-shrink-0 space-y-4 border-t border-border pt-4">
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2">
+                                        <AlertCircle className="h-4 w-4 text-yellow-600" />
+                                        <Label htmlFor="motivo_rejeicao" className="font-semibold text-foreground">
+                                            Motivo da rejeição dos demais agendamentos *
+                                        </Label>
+                                    </div>
+                                    <Textarea
+                                        id="motivo_rejeicao"
+                                        // placeholder="Informe detalhadamente o motivo da rejeição dos agendamentos não selecionados..."
+                                        value={motivoRejeicao}
+                                        onChange={(e) => setMotivoRejeicao(e.target.value)}
+                                        rows={3}
+                                        className="resize-none rounded-lg border-2 border-input bg-background focus:border-border focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background transition-all duration-200"
+                                    />
+                                </div>
+                                
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => {
+                                            setResolverDialog({ open: false, grupoConflito: null, agendamentoSelecionado: null });
+                                            setMotivoRejeicao('');
+                                        }}
+                                        className="flex-1 rounded-lg"
+                                    >
+                                        Cancelar
+                                    </Button>
+                                    <Button
+                                        onClick={handleResolverConflito}
+                                        disabled={!resolverDialog.agendamentoSelecionado || !motivoRejeicao.trim() || motivoRejeicao.trim().length < 5}
+                                        className="flex-1 bg-green-600 hover:bg-green-700 rounded-lg"
+                                    >
+                                        <Check className="h-4 w-4 mr-2" />
+                                        Resolver Conflito
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     )}
-
-                    <DialogFooter>
-                        <Button
-                            variant="outline"
-                            onClick={() => {
-                                setResolverDialog({ open: false, grupoConflito: null, agendamentoSelecionado: null });
-                                setMotivoRejeicao('');
-                            }}
-                        >
-                            Cancelar
-                        </Button>
-                        <Button
-                            onClick={handleResolverConflito}
-                            disabled={!resolverDialog.agendamentoSelecionado || !motivoRejeicao.trim()}
-                        >
-                            <Check className="h-4 w-4 mr-2" />
-                            Resolver Conflito
-                        </Button>
-                    </DialogFooter>
                 </DialogContent>
             </Dialog>
 
@@ -1648,7 +1695,7 @@ export default function GerenciarAgendamentos({
                         )}
 
                         <div className="space-y-2">
-                            <Label htmlFor="motivo_rejeicao_todos">
+                            <Label htmlFor="motivo_rejeicao_todos" className="font-semibold text-foreground">
                                 Motivo da rejeição *
                             </Label>
                             <Textarea
@@ -1657,6 +1704,7 @@ export default function GerenciarAgendamentos({
                                 value={motivoRejeicao}
                                 onChange={(e) => setMotivoRejeicao(e.target.value)}
                                 rows={3}
+                                className="resize-none rounded-lg border-2 border-input bg-background focus:border-border focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background transition-all duration-200"
                             />
                         </div>
                     </div>

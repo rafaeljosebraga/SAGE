@@ -151,7 +151,7 @@ class GerenciarAgendamentosController extends Controller
         $request->validate([
             'grupo_conflito' => 'required|string',
             'agendamento_aprovado_id' => 'required|exists:agendamentos,id',
-            'motivo_rejeicao' => 'required|string|min:10',
+            'motivo_rejeicao' => 'required|string|min:5',
         ]);
 
         // Verificar permissão
@@ -231,7 +231,7 @@ class GerenciarAgendamentosController extends Controller
     {
         $request->validate([
             'grupo_conflito' => 'required|string',
-            'motivo_rejeicao' => 'required|string|min:10',
+            'motivo_rejeicao' => 'required|string|min:5',
         ]);
 
         // Verificar permissão
