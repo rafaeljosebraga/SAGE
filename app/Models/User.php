@@ -101,7 +101,12 @@ class User extends Authenticatable
         if ($this->profile_photo) {
             return asset('storage/' . $this->profile_photo);
         }
-        
+
         return null;
+    }
+
+    public function hasEspacosToManage(): bool
+    {
+        return $this->espacos()->exists();
     }
 }
