@@ -32,6 +32,7 @@ import { type User, type Localizacao, type Recurso, type Espaco, type Foto, type
 import { FormEventHandler, ChangeEvent, useState, useEffect, useRef } from 'react';
 import { UserAvatar } from '@/components/user-avatar';
 import { useToast } from '@/hooks/use-toast';
+import { useUnsavedChanges } from '@/contexts/unsaved-changes-context';
 
 // Tipo para o formulário de edição
 type EspacoEditFormData = {
@@ -60,6 +61,7 @@ interface EspacosEditProps {
 
 export default function EspacosEdit({ auth, espaco, localizacoes, recursos, flash }: EspacosEditProps) {
     const { toast } = useToast();
+    const { setHasUnsavedChanges } = useUnsavedChanges();
     const [fotosAtuais, setFotosAtuais] = useState<Foto[]>(espaco.fotos || []);
     const [deveScrollParaErro, setDeveScrollParaErro] = useState(false);
     const [formAlterado, setFormAlterado] = useState(false);
@@ -181,6 +183,8 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos, flas
                     variant: "success",
                     duration: 5000, // 5 segundos
                 });
+                // Limpa o estado global de alterações não salvas após salvar
+                setHasUnsavedChanges(false);
             },
             onError: () => {
                 toast({
@@ -286,7 +290,14 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos, flas
             JSON.stringify(data.recursos.sort()) !== JSON.stringify((espaco.recursos?.map(r => r.id).sort()) || []);
 
         setFormAlterado(houveAlteracao);
-    }, [data, espaco]);
+        setHasUnsavedChanges(houveAlteracao);
+    }, [data, espaco, setHasUnsavedChanges]);
+
+    useEffect(() => {
+        return () => {
+            setHasUnsavedChanges(false);
+        };
+    }, [setHasUnsavedChanges]);
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Espaços', href: '/espacos' },
@@ -370,7 +381,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos, flas
                                         value={data.nome}
                                         onChange={(e) => handleNomeChange(e.target.value)}
                                         placeholder="Nome do espaço"
-                                        className={errors.nome ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}
+                                        className={errors.nome ? 'border-red-500 bg-sidebar text-sidebar-foreground' : 'bg-sidebar border-sidebar-border text-sidebar-foreground'}
                                     />
                                     {errors.nome && (
                                         <p className="text-sm text-red-500">{errors.nome}</p>
@@ -386,7 +397,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos, flas
                                         value={data.capacidade}
                                         onChange={(e) => handleCapacidadeChange(e.target.value)}
                                         placeholder="Número de pessoas"
-                                        className={errors.nome ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}
+                                        className={errors.capacidade ? 'border-red-500 bg-sidebar text-sidebar-foreground' : 'bg-sidebar border-sidebar-border text-sidebar-foreground'}
                                     />
                                     {errors.capacidade && (
                                         <p className="text-sm text-red-500">{errors.capacidade}</p>
@@ -402,7 +413,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos, flas
                                     onChange={(e: ChangeEvent<HTMLTextAreaElement>) => handleDescricaoChange(e.target.value)}
                                     placeholder="Descrição do espaço"
                                     rows={3}
-                                    className={errors.nome ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}
+                                    className={errors.descricao ? 'border-red-500 bg-sidebar text-sidebar-foreground' : 'bg-sidebar border-sidebar-border text-sidebar-foreground'}
                                 />
                                 {errors.descricao && (
                                     <p className="text-sm text-red-500">{errors.descricao}</p>
@@ -427,7 +438,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos, flas
                                         placeholder="Selecione uma localização"
                                         searchPlaceholder="Buscar localização..."
                                         className=""
-                                        triggerClassName={(errors.localizacao_id ? 'border-red-500 ' : '') + 'bg-white border-black dark:bg-black'}
+                                        triggerClassName={(errors.localizacao_id ? 'border-red-500 ' : '') + 'bg-sidebar border-sidebar-border text-sidebar-foreground'}
                                     />
                                     {errors.localizacao_id && (
                                         <p className="text-sm text-red-500">{errors.localizacao_id}</p>
@@ -442,7 +453,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos, flas
                                     >
                                         <SelectTrigger 
                                             id="status"
-                                            className={errors.nome ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}
+                                            className={errors.nome ? 'border-red-500 bg-sidebar text-sidebar-foreground' : 'bg-sidebar border-sidebar-border text-sidebar-foreground'}
                                         >
                                             <SelectValue />
                                         </SelectTrigger>
