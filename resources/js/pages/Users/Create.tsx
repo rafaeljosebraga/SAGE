@@ -184,7 +184,7 @@ export default function Create({ perfilAcesso }: Props) {
                                         if (errors.name) clearErrors('name');
                                     }}
                                     placeholder="Digite o nome completo"
-                                    className={errors.name ? 'border-red-500' : ''}
+                                    className={errors.name ? 'border-red-500 bg-white  dark:bg-black' : 'bg-white border-black dark:bg-black'}
                                      />
                                 {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
                             </div>
@@ -200,7 +200,7 @@ export default function Create({ perfilAcesso }: Props) {
                                         if (errors.email) clearErrors('email');
                                     }}
                                     placeholder="Digite o e-mail"
-                                    className={errors.email ? 'border-red-500' : ''}
+                                    className={errors.email ? 'border-red-500 bg-white dark:bg-black' : 'bg-white border-black dark:bg-black'}
                                       />
                                 {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
                             </div>
@@ -211,7 +211,7 @@ export default function Create({ perfilAcesso }: Props) {
                                     setData('perfil_acesso', value);
                                     if (errors.perfil_acesso) clearErrors('perfil_acesso');
                                 }}>
-                                    <SelectTrigger className={errors.perfil_acesso ? 'border-red-500' : ''}>
+                                    <SelectTrigger className={errors.perfil_acesso ? 'cursor-pointer border-red-500 bg-white dark:bg-black' : 'cursor-pointer bg-white border-black dark:bg-black'}>
                                         <SelectValue placeholder="Selecione o perfil" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -244,7 +244,7 @@ export default function Create({ perfilAcesso }: Props) {
                                     onDrop={(e) => e.preventDefault()}
                                     onContextMenu={(e) => e.preventDefault()}
                                     placeholder="Digite a senha (mínimo 8 caracteres)"
-                                    className={errors.password ? 'border-red-500' : ''}
+                                    className={errors.password ? 'border-red-500 bg-white dark:bg-black' : 'bg-white border-black dark:bg-black'}
                                      />
                                 {errors.password && <p className="text-sm text-red-500">{errors.password}</p>}
                             </div>
@@ -268,19 +268,37 @@ export default function Create({ perfilAcesso }: Props) {
                                     onDrop={(e) => e.preventDefault()}
                                     onContextMenu={(e) => e.preventDefault()}
                                     placeholder="Confirme a senha"
-                                    className={errors.password_confirmation ? 'border-red-500' : ''}
+                                    className={errors.password_confirmation ? 'border-red-500 bg-white dark:bg-black' : 'bg-white border-black dark:bg-black'}
                                        />
                                 {errors.password_confirmation && <p className="text-sm text-red-500">{errors.password_confirmation}</p>}
                             </div>
                              {(errors as any).error && <p className="text-sm text-red-500">{(errors as any).error}</p>}
 
                             <div className="flex gap-4 pt-4">
-                                <Button type="submit" disabled={processing}>
+                                <Button type="submit" disabled={processing}
+                                className="
+                                        ml-1
+                                        bg-white dark:bg-white
+                                        text-black dark:text-black
+                                        hover:bg-gray-100 dark:hover:bg-gray-300
+                                        cursor-pointer 
+                                        transition-colors
+                                        border border-black" 
+                                >
                                     {processing ? 'Criando...' : 'Criar Usuário'}
                                 </Button>
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild>
-                                        <Button>
+                                        <Button
+                                        className="
+                                        bg-black dark:bg-black
+                                        text-white dark:text-white
+                                        hover:bg-gray-800 dark:hover:bg-gray-900
+                                        hover:text-white
+                                        cursor-pointer
+                                        trasition-colors
+                                    "
+                                    >
                                             Cancelar
                                         </Button>
                                     </AlertDialogTrigger>
@@ -292,12 +310,12 @@ export default function Create({ perfilAcesso }: Props) {
                                             </AlertDialogDescription>
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
-                                            <AlertDialogCancel>Não</AlertDialogCancel>
+                                            <AlertDialogCancel className='cursor-pointer'>Não</AlertDialogCancel>
                                             <AlertDialogAction
                                                 onClick={() => {
                                                     reset();
                                                 }}
-                                                className="bg-red-600 hover:bg-red-700"
+                                                className="cursor-pointer bg-red-600 hover:bg-red-700"
                                             >
                                                 Sim, cancelar
                                             </AlertDialogAction>

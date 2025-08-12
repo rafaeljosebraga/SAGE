@@ -438,7 +438,10 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
                                 size="sm"
                                 type="button"
                                 onClick={() => handleViewDetails(espaco)}
-                                className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-blue-700 dark:text-blue-700"
+                                className="cursor-pointer bg-sidebar border border-transparent text-blue-700
+                                hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700
+                                dark:bg-gray-800 dark:border-transparent dark:text-blue-300
+                                dark:hover:bg-blue-900/30 dark:hover:border-blue-700 dark:hover:text-blue-300"
                             >
                                 <Eye className="h-4 w-4" />
                             </Button>
@@ -506,7 +509,7 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
                             variant="outline"
                             type="button"
                             className="
-                                ml-0
+                                ml-2
                                 bg-white dark:bg-white
                                 text-black dark:text-black
                                 hover:bg-gray-100 dark:hover:bg-gray-200
@@ -657,7 +660,7 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
                         <div className="p-6 space-y-6 overflow-y-auto flex-1 bg-card">
                             {/* Informações Básicas */}
                             <div className="grid grid-cols-1 gap-4">
-                                <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                                <div className="bg-muted/50 dark:bg-gray-800/80 p-4 rounded-lg border border-border dark:border-gray-600">
                                     <label className="text-sm font-medium text-muted-foreground">Nome</label>
                                     <p className="text-lg font-semibold text-card-foreground mt-1">{selectedEspaco.nome}</p>
                                 </div>
@@ -665,14 +668,14 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
 
                             {/* Capacidade e Status */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                                <div className="bg-muted/50 dark:bg-gray-800/80 p-4 rounded-lg border border-border dark:border-gray-600">
                                     <label className="text-sm font-medium text-muted-foreground">Capacidade</label>
                                     <div className="flex items-center gap-2 mt-1">
                                         <Users className="h-5 w-5 text-muted-foreground" />
                                         <p className="text-lg text-card-foreground">{selectedEspaco.capacidade} pessoas</p>
                                     </div>
                                 </div>
-                                <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                                <div className="bg-muted/50 dark:bg-gray-800/80 p-4 rounded-lg border border-border dark:border-gray-600">
                                     <label className="text-sm font-medium text-muted-foreground">Status</label>
                                     <div className="mt-1">
                                         <Badge
@@ -686,7 +689,7 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
                             </div>
 
                             {/* Localização */}
-                            <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                            <div className="bg-muted/50 dark:bg-gray-800/80 p-4 rounded-lg border border-border dark:border-gray-600">
                                 <label className="text-sm font-medium text-muted-foreground">Localização</label>
                                 <div className="flex items-center gap-2 mt-1">
                                     <MapPin className="h-5 w-5 text-muted-foreground" />
@@ -697,7 +700,7 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
                             </div>
 
                             {/* Responsáveis */}
-                            <div id="responsaveis-section" className="bg-muted/30 p-4 rounded-lg border border-border">
+                            <div id="responsaveis-section" className="bg-muted/50 dark:bg-gray-800/80 p-4 rounded-lg border border-border dark:border-gray-600">
                                 <label className="text-sm font-medium text-muted-foreground">Responsáveis</label>
                                 {(() => {
                                     const responsaveis: Array<User & { tipo: string }> = [];
@@ -757,7 +760,7 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
                             </div>
 
                             {/* Disponibilidade para Reserva */}
-                            <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                            <div className="bg-muted/50 dark:bg-gray-800/80 p-4 rounded-lg border border-border dark:border-gray-600">
                                 <label className="text-sm font-medium text-muted-foreground">Disponível para Reserva</label>
                                 <div className="mt-1">
                                     <Badge
@@ -775,7 +778,7 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
 
                             {/* Descrição */}
                             {selectedEspaco.descricao && (
-                                <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                                <div className="bg-muted/50 dark:bg-gray-800/80 p-4 rounded-lg border border-border dark:border-gray-600">
                                     <label className="text-sm font-medium text-muted-foreground">Descrição</label>
                                     <p className="text-card-foreground mt-1 leading-relaxed">{selectedEspaco.descricao}</p>
                                 </div>
@@ -783,7 +786,7 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
 
                             {/* Observações */}
                             {selectedEspaco.observacoes && (
-                                <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                                <div className="bg-muted/50 dark:bg-gray-800/80 p-4 rounded-lg border border-border dark:border-gray-600">
                                     <label className="text-sm font-medium text-muted-foreground">Observações</label>
                                     <p className="text-card-foreground mt-1 leading-relaxed">{selectedEspaco.observacoes}</p>
                                 </div>
@@ -791,7 +794,7 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
 
                             {/* Recursos */}
                             {selectedEspaco.recursos && selectedEspaco.recursos.length > 0 && (
-                                <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                                <div className="bg-muted/50 dark:bg-gray-800/80 p-4 rounded-lg border border-border dark:border-gray-600">
                                     <label className="text-sm font-medium text-muted-foreground">Recursos Disponíveis</label>
                                     <div className="mt-2 flex flex-wrap gap-2">
                                         {selectedEspaco.recursos.map((recurso) => (
@@ -808,7 +811,7 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
                             )}
 
                             {/* Fotos do Espaço */}
-                            <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                            <div className="bg-muted/50 dark:bg-gray-800/80 p-4 rounded-lg border border-border dark:border-gray-600">
                                 <div className="flex items-center gap-2 mb-3">
                                     <ImageIcon className="h-5 w-5 text-muted-foreground" />
                                     <label className="text-sm font-medium text-muted-foreground">
@@ -851,25 +854,25 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
                             </div>
 
                             {/* Informações de Auditoria */}
-                            <div className="bg-muted/30 p-4 rounded-lg border border-border border-t">
+                            <div className="bg-muted/50 dark:bg-gray-800/80 p-4 rounded-lg border border-border dark:border-gray-600 border-t">
                                 <h3 className="text-lg font-medium text-card-foreground mb-3">Informações de Auditoria</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                                    <div className="bg-background/50 p-3 rounded-md border border-border">
+                                    <div className="bg-background/50 dark:bg-gray-700/50 p-3 rounded-md border border-border dark:border-gray-500">
                                         <label className="text-muted-foreground font-medium">Criado em</label>
                                         <p className="text-card-foreground mt-1">{formatDate(selectedEspaco.created_at)}</p>
                                     </div>
-                                    <div className="bg-background/50 p-3 rounded-md border border-border">
+                                    <div className="bg-background/50 dark:bg-gray-700/50 p-3 rounded-md border border-border dark:border-gray-500">
                                         <label className="text-muted-foreground font-medium">Atualizado em</label>
                                         <p className="text-card-foreground mt-1">{formatDate(selectedEspaco.updated_at)}</p>
                                     </div>
                                     {selectedEspaco.createdBy && (
-                                        <div className="bg-background/50 p-3 rounded-md border border-border">
+                                        <div className="bg-background/50 dark:bg-gray-700/50 p-3 rounded-md border border-border dark:border-gray-500">
                                             <label className="text-muted-foreground font-medium">Criado por</label>
                                             <p className="text-card-foreground mt-1">{selectedEspaco.createdBy.name}</p>
                                         </div>
                                     )}
                                     {selectedEspaco.updatedBy && (
-                                        <div className="bg-background/50 p-3 rounded-md border border-border">
+                                        <div className="bg-background/50 dark:bg-gray-700/50 p-3 rounded-md border border-border dark:border-gray-500">
                                             <label className="text-muted-foreground font-medium">Atualizado por</label>
                                             <p className="text-card-foreground mt-1">{selectedEspaco.updatedBy.name}</p>
                                         </div>
@@ -885,7 +888,10 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
                                     closeModal();
                                     router.visit(`/espacos/${selectedEspaco.id}/editar`);
                                 }}
-                                className="bg-[#D2CBB9] hover:bg-[#EF7D4C] text-black rounded-lg"
+                                className="cursor-pointer bg-black text-white rounded-lg border border-gray-300
+                                hover:bg-white hover:text-black hover:border-black transition-colors duration-300
+                                dark:bg-white dark:text-black dark:border-gray-600
+                                dark:hover:bg-black dark:hover:text-white"
                             >
                                 <Pencil className="mr-2 h-4 w-4" />
                                 Editar
