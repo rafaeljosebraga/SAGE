@@ -289,7 +289,7 @@ export function ModalDetalhesUsuario({ isOpen, onClose, usuario, espacos }: Moda
                 {/* Conteúdo */}
                 <div className="p-6 overflow-y-auto flex-1 space-y-6">
                     {/* Dados do Usuário */}
-                    <div className="bg-muted p-6 rounded-lg border border-border">
+                    <div className="bg-muted/50 dark:bg-gray-800/80 p-6 rounded-lg border border-border dark:border-gray-600">
                         <div className="flex items-start gap-4">
                             <UserAvatar user={usuario as User} size="lg" />
                             <div className="flex-1">
@@ -325,7 +325,14 @@ export function ModalDetalhesUsuario({ isOpen, onClose, usuario, espacos }: Moda
 
                 {/* Footer */}
                 <div className="p-6 border-t border-border bg-muted/20 flex justify-end">
-                    <Button variant="outline" onClick={onClose}>Fechar</Button>
+                    <Button 
+                    variant="outline" 
+                    onClick={onClose}
+                    className="cursor-pointer bg-black text-white rounded-lg border border-gray-300
+                                hover:bg-white hover:text-black hover:border-black transition-colors duration-300
+                                dark:bg-white dark:text-black dark:border-gray-600
+                                dark:hover:bg-black dark:hover:text-white"
+                    >Fechar</Button>
                 </div>
             </div>
         </div>

@@ -1161,12 +1161,18 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                             const infoGrupo = agendamento.info_grupo;
                             
                             return (
-                                <Card key={agendamento.id} className={`border-l-4 ${getEventBorderColor(agendamento)} cursor-pointer shadow-sm hover:scale-[1.01] hover:shadow-md dark:hover:shadow-white/5 transition-all duration-200 group mx-4`}>
+                                <Card key={agendamento.id} className={`border-l-4 ${getEventBorderColor(agendamento)} shadow-sm hover:scale-[1.01] hover:shadow-md dark:hover:shadow-white/5 transition-all duration-200 group mx-4`}>
                                     <CardContent className="p-6">
                                         <div className="flex items-start justify-between">
                                             <div className="space-y-3 flex-1">
                                                 <div className="flex items-center gap-3 flex-wrap">
                                                     <h3 className="font-semibold text-lg">{agendamento.titulo}</h3>
+                                                    {agendamento.created_at && (
+                                                        <Badge variant="outline" className="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-sm font-medium bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700">
+                                                            <Clock className="h-3 w-3" />
+                                                            Solicitado em: {format(new Date(agendamento.created_at), 'dd/MM/yyyy', { locale: ptBR })} às {format(new Date(agendamento.created_at), 'HH:mm', { locale: ptBR })}
+                                                        </Badge>
+                                                    )}
                                                     <StatusBadge status={agendamento.status} agendamento={agendamento} />
                                                     {isRecorrente && (
                                                         <Badge variant="secondary" className="bg-blue-100 text-blue-800">
@@ -1292,7 +1298,7 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
 
                                         {/* Seção de aprovação - posicionada no final do card */}
                                         {agendamento.aprovacao?.aprovado_por && agendamento.aprovado_em && (
-                                            <div className="-mx-6 -mb-13 mt-3 p-4 rounded-b-lg border-t border-gray-200 dark:border-gray-700">
+                                            <div className="-mx-6 -mb-12 mt-3 p-4 rounded-b-lg border-t border-gray-200 dark:border-gray-700">
                                                 <div className={`flex flex-col gap-2 px-3 py-2 rounded-lg ${getEventBackgroundColor(agendamento)} relative`}>
                                                     <div className="absolute inset-0 bg-white/70 dark:bg-gray-900/70 rounded-lg"></div>
                                                     <div className="relative z-10">

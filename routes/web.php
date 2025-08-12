@@ -44,8 +44,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete("espacos/{espaco}", [EspacoController::class, "destroy"])->name("espacos.destroy");
 
         // Rotas de Localizações em português
-        Route::get("localizacoes", [LocalizacaoController::class, "index"])->name("localizacoes.index");
         Route::get("localizacoes/criar", [LocalizacaoController::class, "create"])->name("localizacoes.create");
+        Route::get("localizacoes", [LocalizacaoController::class, "index"])->name("localizacoes.index");
         Route::get("localizacoes/{localizacao}", [LocalizacaoController::class, "show"])->name("localizacoes.show");
         Route::post("localizacoes", [LocalizacaoController::class, "store"])->name("localizacoes.store");
         Route::get("localizacoes/{localizacao}/editar", [LocalizacaoController::class, "edit"])->name("localizacoes.edit");
@@ -93,8 +93,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     //     return redirect("/avaliar-agendamentos", 301);
     // })->middleware(['diretor-geral']);
 
-    // Rotas de Avaliação de Agendamentos (APENAS para Diretor Geral)
-    Route::middleware(['diretor-geral'])->group(function () {
+    // Rotas de Avaliação e Gerenciamento de Agendamentos (Diretor Geral ou usuários com espaços atribuídos)
+    Route::middleware(['can-manage-agendamentos'])->group(function () {
         Route::get("avaliar-agendamentos", [AgendamentoController::class, "gerenciar"])->name("agendamentos.avaliar");
         Route::post("agendamentos/{agendamento}/aprovar", [AgendamentoController::class, "aprovar"])->name("agendamentos.aprovar");
         Route::post("agendamentos/{agendamento}/rejeitar", [AgendamentoController::class, "rejeitar"])->name("agendamentos.rejeitar");
@@ -110,4 +110,3 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
-

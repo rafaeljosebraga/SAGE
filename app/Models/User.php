@@ -111,7 +111,40 @@ class User extends Authenticatable
         if ($this->profile_photo) {
             return asset('storage/' . $this->profile_photo);
         }
-        
+
         return null;
+    }
+
+    public function hasEspacosToManage(): bool
+    {
+        return $this->espacos()->exists();
+    }
+
+    /**
+     * Obter IDs dos espaços atribuídos ao usuário
+     */
+    public function getEspacosAtribuidosIds(): array
+    {
+        return $this->espacos()->pluck('espacos.id')->toArray();
+    }
+
+    /**
+     * Verificar se o usuário pode gerenciar um espaço específico
+     */
+    public function canManageEspaco(int $espacoId): bool
+    {
+        if ($this->perfil_acesso === 'diretor_geral') {
+            return true;
+        }
+        
+        return in_array($espacoId, $this->getEspacosAtribuidosIds());
+    }
+
+    /**
+     * Verificar se o usuário pode acessar funcionalidades de gerenciamento
+     */
+    public function canAccessManagement(): bool
+    {
+        return $this->perfil_acesso === 'diretor_geral' || $this->hasEspacosToManage();
     }
 }
