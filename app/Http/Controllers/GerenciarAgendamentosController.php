@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Agendamento;
 use App\Models\AgendamentoConflito;
 use App\Models\Espaco;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
@@ -17,17 +18,23 @@ class GerenciarAgendamentosController extends Controller
     public function index(Request $request)
     {
         // Verificar permissão
-        if (auth()->user()->perfil_acesso !== 'diretor_geral') {
-            abort(403, 'Você não tem permissão para acessar esta página.');
-        }
-
+        // if (auth()->user()->perfil_acesso !== 'diretor_geral') {
+        //     abort(403, 'Você não tem permissão para acessar esta página.');
+        // }
+        $userId = auth()->id();
+        $espacosAtribuidos = User::find($userId)->espacos()->pluck('id')->toArray();
         // Query base para TODOS os agendamentos (sempre buscar todos para separar corretamente)
         $queryTodos = Agendamento::with([
-            'espaco.localizacao', 
-            'user', 
+            'espaco.localizacao',
+            'user',
             'aprovacao.aprovadoPor',
             'conflitoAtivo'
-        ]);
+        ])->whereHas('espaco', function ($query) use ($espacosAtribuidos) {
+            // Se o usuário não for diretor geral, filtrar pelos espaços atribuídos
+            if (auth()->user()->perfil_acesso !== 'diretor_geral') {
+                $query->whereIn('espaco_id', $espacosAtribuidos);
+            }
+        });
 
         // Aplicar filtros básicos (exceto tipo_conflito que será tratado na separação)
         if ($request->filled('espaco_id')) {
@@ -86,7 +93,7 @@ class GerenciarAgendamentosController extends Controller
 
         // Converter grupos de conflito para array indexado e filtrar grupos com apenas 1 agendamento
         $gruposConflito = array_values($gruposConflito);
-        
+
         // Filtrar grupos que têm apenas 1 agendamento (não são realmente conflitos)
         $gruposConflitoReais = [];
         foreach ($gruposConflito as $grupo) {
@@ -95,12 +102,12 @@ class GerenciarAgendamentosController extends Controller
             } else {
                 // Mover agendamentos únicos para a lista sem conflito
                 $agendamentosSemConflito[] = $grupo['agendamentos'][0];
-                
+
                 // Remover o registro de conflito órfão
                 AgendamentoConflito::where('grupo_conflito', $grupo['grupo_conflito'])->delete();
             }
         }
-        
+
         $gruposConflito = $gruposConflitoReais;
 
         // Ordenar grupos por data de criação do conflito (mais recentes primeiro)
@@ -132,12 +139,12 @@ class GerenciarAgendamentosController extends Controller
             'espacos' => $espacos,
             'estatisticas' => $estatisticas,
             'filters' => $request->only([
-                'espaco_id', 
-                'status', 
+                'espaco_id',
+                'status',
                 'tipo_conflito',
-                'data_inicio', 
-                'data_fim', 
-                'solicitante', 
+                'data_inicio',
+                'data_fim',
+                'solicitante',
                 'nome_agendamento'
             ]),
         ]);
@@ -164,7 +171,7 @@ class GerenciarAgendamentosController extends Controller
         try {
             // Obter todos os agendamentos do grupo de conflito
             $conflitos = AgendamentoConflito::obterGrupoConflito($request->grupo_conflito);
-            
+
             if ($conflitos->isEmpty()) {
                 return back()->withErrors(['grupo_conflito' => 'Grupo de conflito não encontrado.']);
             }
@@ -174,11 +181,11 @@ class GerenciarAgendamentosController extends Controller
 
             foreach ($conflitos as $conflito) {
                 $agendamento = $conflito->agendamento;
-                
+
                 if ($agendamento->id == $request->agendamento_aprovado_id) {
                     // Aprovar o agendamento selecionado
                     $agendamento->update(['status' => 'aprovado']);
-                    
+
                     $agendamento->aprovacao()->updateOrCreate(
                         ['agendamento_id' => $agendamento->id],
                         [
@@ -188,12 +195,12 @@ class GerenciarAgendamentosController extends Controller
                             'motivo_cancelamento' => null,
                         ]
                     );
-                    
+
                     $agendamentoAprovado = $agendamento;
                 } else {
                     // Rejeitar os outros agendamentos
                     $agendamento->update(['status' => 'rejeitado']);
-                    
+
                     $agendamento->aprovacao()->updateOrCreate(
                         ['agendamento_id' => $agendamento->id],
                         [
@@ -203,7 +210,7 @@ class GerenciarAgendamentosController extends Controller
                             'motivo_cancelamento' => null,
                         ]
                     );
-                    
+
                     $agendamentosRejeitados[] = $agendamento;
                 }
 
@@ -213,11 +220,10 @@ class GerenciarAgendamentosController extends Controller
 
             DB::commit();
 
-            $message = "Conflito resolvido com sucesso! Agendamento '{$agendamentoAprovado->titulo}' foi aprovado e " . 
-                      count($agendamentosRejeitados) . " agendamento(s) conflitante(s) foram rejeitados.";
+            $message = "Conflito resolvido com sucesso! Agendamento '{$agendamentoAprovado->titulo}' foi aprovado e " .
+                count($agendamentosRejeitados) . " agendamento(s) conflitante(s) foram rejeitados.";
 
             return back()->with('success', $message);
-
         } catch (\Exception $e) {
             DB::rollback();
             return back()->withErrors(['error' => 'Erro ao resolver conflito: ' . $e->getMessage()]);
@@ -244,7 +250,7 @@ class GerenciarAgendamentosController extends Controller
         try {
             // Obter todos os agendamentos do grupo de conflito
             $conflitos = AgendamentoConflito::obterGrupoConflito($request->grupo_conflito);
-            
+
             if ($conflitos->isEmpty()) {
                 return back()->withErrors(['grupo_conflito' => 'Grupo de conflito não encontrado.']);
             }
@@ -253,10 +259,10 @@ class GerenciarAgendamentosController extends Controller
 
             foreach ($conflitos as $conflito) {
                 $agendamento = $conflito->agendamento;
-                
+
                 // Rejeitar o agendamento
                 $agendamento->update(['status' => 'rejeitado']);
-                
+
                 $agendamento->aprovacao()->updateOrCreate(
                     ['agendamento_id' => $agendamento->id],
                     [
@@ -269,7 +275,7 @@ class GerenciarAgendamentosController extends Controller
 
                 // Marcar conflito como resolvido
                 $conflito->resolver(auth()->id(), "Conflito resolvido: todos os agendamentos foram rejeitados.");
-                
+
                 $totalRejeitados++;
             }
 
@@ -278,7 +284,6 @@ class GerenciarAgendamentosController extends Controller
             $message = "Conflito resolvido com sucesso! Todos os {$totalRejeitados} agendamentos conflitantes foram rejeitados.";
 
             return back()->with('success', $message);
-
         } catch (\Exception $e) {
             DB::rollback();
             return back()->withErrors(['error' => 'Erro ao resolver conflito: ' . $e->getMessage()]);
@@ -300,8 +305,8 @@ class GerenciarAgendamentosController extends Controller
             'agendamento.espaco.localizacao',
             'agendamento.aprovacao.aprovadoPor'
         ])
-        ->where('grupo_conflito', $grupoConflito)
-        ->get();
+            ->where('grupo_conflito', $grupoConflito)
+            ->get();
 
         if ($conflitos->isEmpty()) {
             abort(404, 'Grupo de conflito não encontrado.');
@@ -334,10 +339,10 @@ class GerenciarAgendamentosController extends Controller
             'agendamento.aprovacao.aprovadoPor',
             'resolvidoPor'
         ])
-        ->resolvidos()
-        ->whereDate('resolvido_em', today())
-        ->orderBy('resolvido_em', 'desc')
-        ->get();
+            ->resolvidos()
+            ->whereDate('resolvido_em', today())
+            ->orderBy('resolvido_em', 'desc')
+            ->get();
 
         // Agrupar por grupo_conflito
         $gruposResolvidos = [];
@@ -367,3 +372,4 @@ class GerenciarAgendamentosController extends Controller
         ]);
     }
 }
+

@@ -44,8 +44,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete("espacos/{espaco}", [EspacoController::class, "destroy"])->name("espacos.destroy");
 
         // Rotas de Localizações em português
-        Route::get("localizacoes", [LocalizacaoController::class, "index"])->name("localizacoes.index");
         Route::get("localizacoes/criar", [LocalizacaoController::class, "create"])->name("localizacoes.create");
+        Route::get("localizacoes", [LocalizacaoController::class, "index"])->name("localizacoes.index");
         Route::get("localizacoes/{localizacao}", [LocalizacaoController::class, "show"])->name("localizacoes.show");
         Route::post("localizacoes", [LocalizacaoController::class, "store"])->name("localizacoes.store");
         Route::get("localizacoes/{localizacao}/editar", [LocalizacaoController::class, "edit"])->name("localizacoes.edit");
@@ -98,7 +98,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get("avaliar-agendamentos", [AgendamentoController::class, "gerenciar"])->name("agendamentos.avaliar");
         Route::post("agendamentos/{agendamento}/aprovar", [AgendamentoController::class, "aprovar"])->name("agendamentos.aprovar");
         Route::post("agendamentos/{agendamento}/rejeitar", [AgendamentoController::class, "rejeitar"])->name("agendamentos.rejeitar");
-        
+        // Rotas de Gerenciamento de Conflitos
+        Route::get("gerenciar-agendamentos", [\App\Http\Controllers\GerenciarAgendamentosController::class, "index"])->name("agendamentos.gerenciar");
+        Route::post("conflitos/resolver", [\App\Http\Controllers\GerenciarAgendamentosController::class, "resolverConflito"])->name("conflitos.resolver");
+        Route::post("conflitos/rejeitar-todos", [\App\Http\Controllers\GerenciarAgendamentosController::class, "rejeitarTodosConflito"])->name("conflitos.rejeitar-todos");
+        Route::get("conflitos/{grupoConflito}/detalhes", [\App\Http\Controllers\GerenciarAgendamentosController::class, "detalhesConflito"])->name("conflitos.detalhes");
+        Route::get("conflitos/resolvidos-hoje", [\App\Http\Controllers\GerenciarAgendamentosController::class, "conflitosResolvidosHoje"])->name("conflitos.resolvidos-hoje");
+    });
+
+    Route::middleware(['has-espacos-to-manage'])->group(function () {
+        Route::get("avaliar-agendamentos", [AgendamentoController::class, "gerenciar"])->name("agendamentos.avaliar");
+        Route::post("agendamentos/{agendamento}/aprovar", [AgendamentoController::class, "aprovar"])->name("agendamentos.aprovar");
+        Route::post("agendamentos/{agendamento}/rejeitar", [AgendamentoController::class, "rejeitar"])->name("agendamentos.rejeitar");
+
         // Rotas de Gerenciamento de Conflitos
         Route::get("gerenciar-agendamentos", [\App\Http\Controllers\GerenciarAgendamentosController::class, "index"])->name("agendamentos.gerenciar");
         Route::post("conflitos/resolver", [\App\Http\Controllers\GerenciarAgendamentosController::class, "resolverConflito"])->name("conflitos.resolver");
@@ -110,4 +122,3 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
-

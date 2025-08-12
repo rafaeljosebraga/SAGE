@@ -45,9 +45,9 @@ class HandleInertiaRequests extends Middleware
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
-                'user' => $request->user() ? (function() use ($request) {
+                'user' => $request->user() ? (function () use ($request) {
                     $freshUser = $request->user()->fresh();
-                    
+
                     return [
                         'id' => $freshUser->id,
                         'name' => $freshUser->name,
@@ -58,10 +58,15 @@ class HandleInertiaRequests extends Middleware
                         'email_verified_at' => $freshUser->email_verified_at,
                         'created_at' => $freshUser->created_at,
                         'updated_at' => $freshUser->updated_at,
+                        'espacos' => $freshUser->espacos ? $freshUser->espacos->map(function ($espaco) {
+                            return [
+                                'id' => $espaco->id,
+                            ];
+                        })->toArray() : [],
                     ];
                 })() : null,
             ],
-            'ziggy' => fn (): array => [
+            'ziggy' => fn(): array => [
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),
             ],
