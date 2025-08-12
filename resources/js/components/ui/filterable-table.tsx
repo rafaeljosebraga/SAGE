@@ -189,8 +189,8 @@ export function FilterableTable({
                                     {index === 0 ? (
                                         <div className={`flex flex-col ${column.searchable === false && column.sortable === false ? 'items-center' : 'items-start'} gap-1 leading-none`}>
                                             <div className="p-2 flex items-center gap-2">
-                                                <Filter className="h-5 w-5 text-white" />
-                                                <span className="text-white text-base">Filtros</span>
+                                                <Filter className="h-5 w-5 text-black dark:text-white" />
+                                                <span className="text-black dark:text-white text-base">Filtros</span>
                                             </div>
                                             <span>{column.label}</span>
                                         </div>
