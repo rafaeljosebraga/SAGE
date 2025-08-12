@@ -2,7 +2,7 @@ import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { useCanManageUsers, useIsDiretorGeral, useAuth } from '@/hooks/use-auth';
+import { useCanManageUsers, useIsDiretorGeral,useHasEspacoAtribuido, useAuth } from '@/hooks/use-auth';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid, Users, Building, MapPin, Package, BookUser, Calendar, Settings, CalendarCheck, CalendarCog } from 'lucide-react';
@@ -11,8 +11,10 @@ import AppLogo from './app-logo';
 export function AppSidebar() {
     const canManageUsers = useCanManageUsers();
     const isDiretorGeral = useIsDiretorGeral();
+    const hasEspacoAtribuido = useHasEspacoAtribuido();
     const auth = useAuth();
-    
+    console.log(hasEspacoAtribuido);
+
     // Verificar se o usuário NÃO é administrador (mostrar agendamentos para todos exceto administradores)
     const canViewAgendamentos = auth?.user?.perfil_acesso !== 'administrador';
 
@@ -27,7 +29,7 @@ export function AppSidebar() {
                   {
                       title: 'Agendamentos',
                       href: '/agendamentos',
-                      icon: Calendar,
+                       icon: Calendar,
                   },
               ]
             : []),
@@ -40,18 +42,22 @@ export function AppSidebar() {
                   },
               ]
             : []),
+        ...(hasEspacoAtribuido||isDiretorGeral
+            ? [
+                {
+                    title: 'Avaliar Agendamentos',
+                    href: '/avaliar-agendamentos',
+                    icon: CalendarCheck,
+                },
+                {
+                    title: 'Gerenciar Agendamentos',
+                    href: '/gerenciar-agendamentos',
+                    icon: CalendarCog,
+                },
+            ]
+            : []),
         ...(isDiretorGeral
             ? [
-                  {
-                      title: 'Avaliar Agendamentos',
-                      href: '/avaliar-agendamentos',
-                      icon: CalendarCheck,
-                  },
-                  {
-                      title: 'Gerenciar Agendamentos',
-                      href: '/gerenciar-agendamentos',
-                      icon: CalendarCog,
-                  },
                   {
                       title: 'Espaços',
                       href: '/espacos',
