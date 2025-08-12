@@ -1399,7 +1399,6 @@ export default function GerenciarAgendamentos({
                                                                 relative border-l-4 rounded-lg transition-all duration-200 hover:scale-[1.01] hover:shadow-md dark:hover:shadow-white/5
                                                                 ${getEventBorderColor(agendamento)} bg-card
                                                                 border border-gray-200 dark:border-gray-700 shadow-sm
-                                                                hover:bg-orange-100/60 dark:hover:bg-orange-900/20 hover:border-orange-200 dark:hover:border-orange-800
                                                             `}
                                                         >
                                                             <div className="p-6">
