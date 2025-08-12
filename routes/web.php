@@ -93,24 +93,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     //     return redirect("/avaliar-agendamentos", 301);
     // })->middleware(['diretor-geral']);
 
-    // Rotas de Avaliação de Agendamentos (APENAS para Diretor Geral)
-    Route::middleware(['diretor-geral'])->group(function () {
+    // Rotas de Avaliação e Gerenciamento de Agendamentos (Diretor Geral ou usuários com espaços atribuídos)
+    Route::middleware(['can-manage-agendamentos'])->group(function () {
         Route::get("avaliar-agendamentos", [AgendamentoController::class, "gerenciar"])->name("agendamentos.avaliar");
         Route::post("agendamentos/{agendamento}/aprovar", [AgendamentoController::class, "aprovar"])->name("agendamentos.aprovar");
         Route::post("agendamentos/{agendamento}/rejeitar", [AgendamentoController::class, "rejeitar"])->name("agendamentos.rejeitar");
-        // Rotas de Gerenciamento de Conflitos
-        Route::get("gerenciar-agendamentos", [\App\Http\Controllers\GerenciarAgendamentosController::class, "index"])->name("agendamentos.gerenciar");
-        Route::post("conflitos/resolver", [\App\Http\Controllers\GerenciarAgendamentosController::class, "resolverConflito"])->name("conflitos.resolver");
-        Route::post("conflitos/rejeitar-todos", [\App\Http\Controllers\GerenciarAgendamentosController::class, "rejeitarTodosConflito"])->name("conflitos.rejeitar-todos");
-        Route::get("conflitos/{grupoConflito}/detalhes", [\App\Http\Controllers\GerenciarAgendamentosController::class, "detalhesConflito"])->name("conflitos.detalhes");
-        Route::get("conflitos/resolvidos-hoje", [\App\Http\Controllers\GerenciarAgendamentosController::class, "conflitosResolvidosHoje"])->name("conflitos.resolvidos-hoje");
-    });
-
-    Route::middleware(['has-espacos-to-manage'])->group(function () {
-        Route::get("avaliar-agendamentos", [AgendamentoController::class, "gerenciar"])->name("agendamentos.avaliar");
-        Route::post("agendamentos/{agendamento}/aprovar", [AgendamentoController::class, "aprovar"])->name("agendamentos.aprovar");
-        Route::post("agendamentos/{agendamento}/rejeitar", [AgendamentoController::class, "rejeitar"])->name("agendamentos.rejeitar");
-
+        
         // Rotas de Gerenciamento de Conflitos
         Route::get("gerenciar-agendamentos", [\App\Http\Controllers\GerenciarAgendamentosController::class, "index"])->name("agendamentos.gerenciar");
         Route::post("conflitos/resolver", [\App\Http\Controllers\GerenciarAgendamentosController::class, "resolverConflito"])->name("conflitos.resolver");
