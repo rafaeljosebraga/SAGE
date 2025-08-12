@@ -109,7 +109,10 @@ export default function AtribuirPermissoesIndex({ users, espacos }: AtribuirPerm
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleViewDetails(user.id)}
-                                className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-blue-700 dark:text-blue-700"
+                                className="cursor-pointer bg-sidebar border border-transparent text-blue-700
+                                hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700
+                                dark:bg-gray-800 dark:border-transparent dark:text-blue-300
+                                dark:hover:bg-blue-900/30 dark:hover:border-blue-700 dark:hover:text-blue-300"
                             >
                                 <Eye className="h-4 w-4" />
                             </Button>
@@ -124,7 +127,10 @@ export default function AtribuirPermissoesIndex({ users, espacos }: AtribuirPerm
                                 variant="outline"
                                 size="sm"
                                 asChild
-                                className="bg-sidebar dark:bg-white hover:bg-[#EF7D4C] dark:hover:bg-[#EF7D4C] text-[#EF7D4C] dark:text-[#EF7D4C] hover:text-white dark:hover:text-white"
+                                className="cursor-pointer bg-sidebar border border-transparent text-[#EF7D4C]
+                                hover:bg-[#EF7D4C]/10 hover:border-[#EF7D4C]/60 hover:text-[#EF7D4C]
+                                dark:bg-gray-800 dark:border-transparent dark:text-[#EF7D4C]
+                                dark:hover:bg-[#EF7D4C]/30 dark:hover:border-[#EF7D4C]/70 dark:hover:text-[#EF7D4C]"
                                 >
                                 <Link href={`atribuir-permissoes/${user.id}/criar`}>
                                     <Plus className="h-4 w-4" />
