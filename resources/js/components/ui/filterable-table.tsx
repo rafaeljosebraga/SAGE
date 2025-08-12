@@ -28,6 +28,8 @@ export interface ColumnConfig {
     render?: (value: any, row: any) => React.ReactNode;
     getValue?: (row: any) => string;
     getSearchValue?: (row: any) => string;
+    // Optional minimum value for number-type filters
+    minValue?: number;
 }
 
 interface FilterableTableProps {
