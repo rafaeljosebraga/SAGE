@@ -25,6 +25,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useToastDismissOnClick } from '@/hooks/use-toast-dismiss-on-click';
+import { useUnsavedChanges } from '@/contexts/unsaved-changes-context';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Save } from 'lucide-react';
 import { type User, type Recurso, type BreadcrumbItem } from '@/types';
@@ -40,6 +41,7 @@ interface RecursosEditProps {
 export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
     const { toast } = useToast();
     useToastDismissOnClick(); // Hook para dismissar toast ao clicar em botões
+    const { setHasUnsavedChanges } = useUnsavedChanges();
     const [formAlterado, setFormAlterado] = useState(false);
     const { data, setData, reset, put, processing, errors, clearErrors } = useForm({
         nome: recurso.nome || '',
@@ -104,7 +106,14 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
         normalizeString(data.observacoes) !== normalizeString(recursoOriginal.current.observacoes);
 
     setFormAlterado(houveAlteracao);
-    }, [data]);
+    setHasUnsavedChanges(houveAlteracao);
+    }, [data, setHasUnsavedChanges]);
+
+    useEffect(() => {
+        return () => {
+            setHasUnsavedChanges(false);
+        };
+    }, [setHasUnsavedChanges]);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -130,7 +139,7 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                                     Voltar
                                 </Button>
                             </AlertDialogTrigger>
-                            <AlertDialogContent>
+                            <AlertDialogContent className="dark:text-white">
                                 <AlertDialogHeader>
                                     <AlertDialogTitle>Tem certeza que deseja voltar?</AlertDialogTitle>
                                     <AlertDialogDescription>
@@ -186,7 +195,7 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                                             if (errors.nome) clearErrors('nome');
                                         }}
                                         placeholder="Nome do recurso"
-                                        className={errors.nome ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}
+                                        className={errors.nome ? 'border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
                                     />
                                     {errors.nome && (
                                         <p className="text-sm text-red-500">{errors.nome}</p>
@@ -202,7 +211,7 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                                             if (errors.status) clearErrors('status');
                                         }}
                                     >
-                                        <SelectTrigger className={errors.nome ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}>
+                                        <SelectTrigger className={errors.status ? 'border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}>
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -228,7 +237,7 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                                     }}
                                     placeholder="Descrição do recurso"
                                     rows={3}
-                                    className={errors.nome ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}
+                                    className={errors.descricao ? 'border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
                                 />
                                 {errors.descricao && (
                                     <p className="text-sm text-red-500">{errors.descricao}</p>
@@ -265,7 +274,7 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                                             if (errors.marca) clearErrors('marca');
                                         }}
                                         placeholder="Marca do equipamento"
-                                        className={errors.nome ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}
+                                        className={errors.marca ? 'border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
                                     />
                                     {errors.marca && (
                                         <p className="text-sm text-red-500">{errors.marca}</p>
@@ -283,7 +292,7 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                                             if (errors.modelo) clearErrors('modelo');
                                         }}
                                         placeholder="Modelo do equipamento"
-                                        className={errors.nome ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}
+                                        className={errors.modelo ? 'border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
                                     />
                                     {errors.modelo && (
                                         <p className="text-sm text-red-500">{errors.modelo}</p>
@@ -302,7 +311,7 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                                     }}
                                     placeholder="Observações gerais sobre o recurso"
                                     rows={3}
-                                    className={errors.nome ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}
+                                    className={errors.observacoes ? 'border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
                                 />
                                 {errors.observacoes && (
                                     <p className="text-sm text-red-500">{errors.observacoes}</p>
@@ -344,7 +353,7 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                             Cancelar
                             </Button>
                         </AlertDialogTrigger>
-                        <AlertDialogContent>
+                        <AlertDialogContent className="dark:text-white">
                             <AlertDialogHeader>
                             <AlertDialogTitle>Tem certeza que deseja cancelar?</AlertDialogTitle>
                             <AlertDialogDescription>

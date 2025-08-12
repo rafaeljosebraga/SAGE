@@ -20,6 +20,7 @@ import { ArrowLeft, Save } from 'lucide-react';
 import { type User, type Localizacao, type BreadcrumbItem } from '@/types';
 import { FormEventHandler, ChangeEvent, useState, useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useUnsavedChanges } from '@/contexts/unsaved-changes-context';
 
 interface LocalizacoesEditProps {
     auth: {
@@ -34,6 +35,7 @@ interface LocalizacoesEditProps {
 
 export default function LocalizacoesEdit({ auth, localizacao, flash }: LocalizacoesEditProps) {
     const { toast } = useToast();
+    const { setHasUnsavedChanges } = useUnsavedChanges();
     const { data, setData, reset, put, processing, errors } = useForm({
         nome: localizacao.nome || '',
         descricao: localizacao.descricao || '',
@@ -94,7 +96,14 @@ export default function LocalizacoesEdit({ auth, localizacao, flash }: Localizac
             data.descricao !== localizacao.descricao;
 
         setFormAlterado(houveAlteracao);
-    }, [data, localizacao]);
+        setHasUnsavedChanges(houveAlteracao);
+    }, [data, localizacao, setHasUnsavedChanges]);
+
+    useEffect(() => {
+        return () => {
+            setHasUnsavedChanges(false);
+        };
+    }, [setHasUnsavedChanges]);
 
 
     return (
@@ -120,7 +129,7 @@ export default function LocalizacoesEdit({ auth, localizacao, flash }: Localizac
                                 Voltar
                             </Button>
                         </AlertDialogTrigger>
-                        <AlertDialogContent>
+                        <AlertDialogContent className="dark:text-white">
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Tem certeza que deseja voltar?</AlertDialogTitle>
                                 <AlertDialogDescription>
@@ -173,7 +182,7 @@ export default function LocalizacoesEdit({ auth, localizacao, flash }: Localizac
                                     value={data.nome}
                                     onChange={(e) => setData('nome', e.target.value)}
                                     placeholder="Nome da localização (ex: Prédio A, Bloco Central)"
-                                    className={errors.nome ? 'border-red-500 bg-white dark:bg-black' : 'bg-white border-black dark:bg-black'}
+                                    className={errors.nome ? 'border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
                                 />
                                 {errors.nome && (
                                     <p className="text-sm text-red-500">{errors.nome}</p>
@@ -188,7 +197,7 @@ export default function LocalizacoesEdit({ auth, localizacao, flash }: Localizac
                                     onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setData('descricao', e.target.value)}
                                     placeholder="Descrição da localização"
                                     rows={4}
-                                    className={errors.nome ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}                                />
+                                    className={errors.descricao ? 'border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}                                />
                                 {errors.descricao && (
                                     <p className="text-sm text-red-500">{errors.descricao}</p>
                                 )}
@@ -229,7 +238,7 @@ export default function LocalizacoesEdit({ auth, localizacao, flash }: Localizac
                             Cancelar
                             </Button>
                         </AlertDialogTrigger>
-                        <AlertDialogContent>
+                        <AlertDialogContent className="dark:text-white">
                             <AlertDialogHeader>
                             <AlertDialogTitle>Tem certeza que deseja cancelar?</AlertDialogTitle>
                             <AlertDialogDescription>

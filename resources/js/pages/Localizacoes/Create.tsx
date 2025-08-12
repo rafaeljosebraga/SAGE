@@ -13,6 +13,7 @@ import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { useToastDismissOnClick } from '@/hooks/use-toast-dismiss-on-click';
 import { useToast } from '@/hooks/use-toast';
+import { useUnsavedChanges } from '@/contexts/unsaved-changes-context';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -32,6 +33,7 @@ export default function LocalizacoesCreate({ auth }: LocalizacoesCreateProps) {
     
     const { toast } = useToast();
     useToastDismissOnClick(); // Hook para dismissar toast ao clicar em botões
+    const { setHasUnsavedChanges } = useUnsavedChanges();
     const [arquivosOriginais, setArquivosOriginais] = useState<File[]>([]);
     const [formAlterado, setFormAlterado] = useState(false);
     const [deveScrollParaErro, setDeveScrollParaErro] = useState(false);
@@ -100,7 +102,14 @@ export default function LocalizacoesCreate({ auth }: LocalizacoesCreateProps) {
             data.descricao.trim() !== inicial.descricao;
 
         setFormAlterado(alterado);
-        }, [data]);
+        setHasUnsavedChanges(alterado);
+        }, [data, setHasUnsavedChanges]);
+
+        useEffect(() => {
+            return () => {
+                setHasUnsavedChanges(false);
+            };
+        }, [setHasUnsavedChanges]);
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Localizações', href: route('localizacoes.index') },
@@ -130,7 +139,7 @@ export default function LocalizacoesCreate({ auth }: LocalizacoesCreateProps) {
                                 Voltar
                             </Button>
                             </AlertDialogTrigger>
-                            <AlertDialogContent>
+                            <AlertDialogContent className="dark:text-white">
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Tem certeza que deseja voltar?</AlertDialogTitle>
                                 <AlertDialogDescription>
@@ -186,7 +195,7 @@ export default function LocalizacoesCreate({ auth }: LocalizacoesCreateProps) {
                                     value={data.nome}
                                     onChange={(e) => setData('nome', e.target.value)}
                                     placeholder="Nome da localização (ex: Prédio A, Bloco Central)"
-                                    className={errors.nome ? 'border-red-500 bg-white dark:bg-black' : 'bg-white border-black dark:bg-black'}
+                                    className={errors.nome ? 'border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
                                 />
                                 {errors.nome && (
                                     <p className="text-sm text-red-500">{errors.nome}</p>
@@ -201,7 +210,7 @@ export default function LocalizacoesCreate({ auth }: LocalizacoesCreateProps) {
                                     onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setData('descricao', e.target.value)}
                                     placeholder="Descrição da localização"
                                     rows={4}
-                                    className={errors.nome ? 'border-red-500 bg-white border-black dark:bg-black' : 'bg-white border-black dark:bg-black'}
+                                    className={errors.descricao ? 'border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
                                 />
                                 {errors.descricao && (
                                     <p className="text-sm text-red-500">{errors.descricao}</p>
@@ -231,7 +240,7 @@ export default function LocalizacoesCreate({ auth }: LocalizacoesCreateProps) {
                                     Cancelar
                                 </Button>
                             </AlertDialogTrigger>
-                            <AlertDialogContent>
+                            <AlertDialogContent className="dark:text-white">
                                 <AlertDialogHeader>
                                     <AlertDialogTitle>Tem certeza que deseja cancelar?</AlertDialogTitle>
                                     <AlertDialogDescription>

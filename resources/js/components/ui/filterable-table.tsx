@@ -179,19 +179,21 @@ export function FilterableTable({
         <div className={`${className}`}>
             <div className="rounded-md border">
                 <Table>
-                    <TableHeader>
-                        {/* Linha dos cabeçalhos */}
-                        <TableRow className="bg-card">
+                <TableHeader>
+                    <div className="py-2 px-2 flex items-center gap-3">
+                        <Filter className="h-5 w-5 text-black dark:text-white" />
+                        <span className="text-black dark:text-white text-base">Filtros</span>
+                    </div>
+
+                       {/* Linha dos cabeçalhos       <TableRow className="bg-card"> */}
+                        <TableRow >
                             {columns.map((column, index) => (
                                 <TableHead
                                     key={column.key}
                                     className="relative text-gray-90 font-semibold">
                                     {index === 0 ? (
                                         <div className={`flex flex-col ${column.searchable === false && column.sortable === false ? 'items-center' : 'items-start'} gap-1 leading-none`}>
-                                            <div className="p-2 flex items-center gap-2">
-                                                <Filter className="h-5 w-5 text-black dark:text-white" />
-                                                <span className="text-black dark:text-white text-base">Filtros</span>
-                                            </div>
+                                         
                                             <span>{column.label}</span>
                                         </div>
                                     ) : (
