@@ -14,7 +14,10 @@ class EspacoUserController extends Controller
      */
     public function index()
     {
-        $users = User::with('espacos:id,nome')->get();
+
+        $users = User::with('espacos:id,nome')
+            ->whereNotIn('perfil_acesso', ['administrador', 'diretor_geral'])->get();
+
         $espacos = Espaco::with(['localizacao', 'responsavel', 'recursos', 'fotos', 'createdBy', 'updatedBy', 'users'])->get();
 
         return Inertia::render('AtribuirPermissoes/Index', [
