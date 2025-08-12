@@ -469,7 +469,7 @@ export default function AgendamentosCreate({ espacos, recursos, espacoSelecionad
                                     <div className="space-y-4">
                                         <Button
                                             type="submit"
-                                            className="w-full"
+                                            className="w-full cursor-pointer"
                                             disabled={isFormDisabled}
                                         >
                                             {isFormDisabled ? 'Enviando...' : 'Solicitar Agendamento'}
@@ -477,7 +477,7 @@ export default function AgendamentosCreate({ espacos, recursos, espacoSelecionad
 
                                         <Button 
                                             variant="outline" 
-                                            className="w-full" 
+                                            className="w-full cursor-pointer" 
                                             asChild
                                             disabled={isFormDisabled}
                                         >
