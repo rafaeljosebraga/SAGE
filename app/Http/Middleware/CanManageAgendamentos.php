@@ -3,12 +3,10 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
-class HasEspacosToManage
+class CanManageAgendamentos
 {
     /**
      * Handle an incoming request.
@@ -17,11 +15,13 @@ class HasEspacosToManage
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $user = Auth::user();
-        if (!$user || !($user instanceof User) || !$user->hasEspacosToManage()) {
-            abort(403, 'Acesso negado. Você não possui salas para gerenciar.');
+        $user = auth()->user();
+        
+        // Verificar se o usuário tem permissão para gerenciar agendamentos
+        if (!$user || !$user->canAccessManagement()) {
+            abort(403, 'Você não tem permissão para acessar esta funcionalidade. Nenhum espaço foi atribuído a você.');
         }
-
+        
         return $next($request);
     }
 }

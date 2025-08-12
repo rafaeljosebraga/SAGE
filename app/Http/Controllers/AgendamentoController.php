@@ -660,6 +660,9 @@ class AgendamentoController extends Controller
      */
     public function gerenciar(Request $request)
     {
+        $user = auth()->user();
+        $espacosAtribuidos = $user->getEspacosAtribuidosIds();
+        
         // Filtrar apenas agendamentos SEM conflito para avaliação individual
         $query = Agendamento::with(['espaco.localizacao', 'user', 'aprovacao.aprovadoPor', 'conflitoAtivo'])
             ->representantesDeGrupo()
@@ -668,6 +671,11 @@ class AgendamentoController extends Controller
             ->whereDoesntHave('conflitoAtivo', function ($q) {
                 $q->where('status_conflito', 'pendente');
             });
+            
+        // Se o usuário não for diretor geral, filtrar pelos espaços atribuídos
+        if ($user->perfil_acesso !== 'diretor_geral') {
+            $query->whereIn('espaco_id', $espacosAtribuidos);
+        }
 
         // Filtros
         if ($request->filled('espaco_id')) {
@@ -762,49 +770,70 @@ class AgendamentoController extends Controller
             return $agendamento;
         });
 
-        $espacos = Espaco::where('disponivel_reserva', true)
-            ->where('status', 'ativo')
-            ->orderBy('nome')
-            ->get(['id', 'nome']);
+        // Filtrar espaços baseado nas permissões do usuário
+        $espacosQuery = Espaco::where('disponivel_reserva', true)
+            ->where('status', 'ativo');
+            
+        // Se o usuário não for diretor geral, mostrar apenas espaços atribuídos
+        if ($user->perfil_acesso !== 'diretor_geral') {
+            $espacosQuery->whereIn('id', $espacosAtribuidos);
+        }
+        
+        $espacos = $espacosQuery->orderBy('nome')->get(['id', 'nome']);
 
         // Estatísticas - contar apenas representantes de grupo SEM conflito para avaliação individual
         $hoje = now()->format('Y-m-d');
 
+        // Função auxiliar para aplicar filtro de espaços nas estatísticas
+        $aplicarFiltroEspacos = function($query) use ($user, $espacosAtribuidos) {
+            if ($user->perfil_acesso !== 'diretor_geral') {
+                return $query->whereIn('espaco_id', $espacosAtribuidos);
+            }
+            return $query;
+        };
+        
         $estatisticas = [
-            'pendentes' => Agendamento::representantesDeGrupo()
+            'pendentes' => $aplicarFiltroEspacos(Agendamento::representantesDeGrupo()
                 ->where('status', 'pendente')
                 ->whereDoesntHave('conflitoAtivo', function ($q) {
                     $q->where('status_conflito', 'pendente');
-                })
+                }))
                 ->count(),
-            'aprovados_hoje' => Agendamento::representantesDeGrupo()
+            'aprovados_hoje' => $aplicarFiltroEspacos(Agendamento::representantesDeGrupo()
                 ->where('status', 'aprovado')
                 ->whereHas('aprovacao', function ($q) use ($hoje) {
                     $q->whereRaw('DATE(aprovado_em) = ?', [$hoje]);
                 })
                 ->whereDoesntHave('conflitoAtivo', function ($q) {
                     $q->where('status_conflito', 'pendente');
-                })
+                }))
                 ->count(),
-            'rejeitados_hoje' => Agendamento::representantesDeGrupo()
+            'rejeitados_hoje' => $aplicarFiltroEspacos(Agendamento::representantesDeGrupo()
                 ->where('status', 'rejeitado')
                 ->whereHas('aprovacao', function ($q) use ($hoje) {
                     $q->whereRaw('DATE(aprovado_em) = ?', [$hoje]);
                 })
                 ->whereDoesntHave('conflitoAtivo', function ($q) {
                     $q->where('status_conflito', 'pendente');
-                })
+                }))
                 ->count(),
-            'total_mes' => Agendamento::representantesDeGrupo()
+            'total_mes' => $aplicarFiltroEspacos(Agendamento::representantesDeGrupo()
                 ->whereMonth('created_at', now()->month)
                 ->whereYear('created_at', now()->year)
                 ->whereDoesntHave('conflitoAtivo', function ($q) {
                     $q->where('status_conflito', 'pendente');
-                })
+                }))
                 ->count(),
-            'conflitos_pendentes' => \App\Models\AgendamentoConflito::pendentes()
-                ->distinct('grupo_conflito')
-                ->count('grupo_conflito'),
+            'conflitos_pendentes' => $user->perfil_acesso !== 'diretor_geral' 
+                ? \App\Models\AgendamentoConflito::pendentes()
+                    ->whereHas('agendamento', function($q) use ($espacosAtribuidos) {
+                        $q->whereIn('espaco_id', $espacosAtribuidos);
+                    })
+                    ->distinct('grupo_conflito')
+                    ->count('grupo_conflito')
+                : \App\Models\AgendamentoConflito::pendentes()
+                    ->distinct('grupo_conflito')
+                    ->count('grupo_conflito'),
         ];
 
         return Inertia::render('Agendamentos/Avaliar', [
@@ -820,9 +849,11 @@ class AgendamentoController extends Controller
      */
     public function aprovar(Agendamento $agendamento)
     {
-        // Apenas diretor geral pode aprovar
-        if (auth()->user()->perfil_acesso !== 'diretor_geral') {
-            abort(403, 'Você não tem permissão para aprovar este agendamento.');
+        $user = auth()->user();
+        
+        // Verificar se o agendamento é de um espaço que o usuário pode gerenciar
+        if (!$user->canManageEspaco($agendamento->espaco_id)) {
+            abort(403, 'Você não tem permissão para aprovar agendamentos neste espaço.');
         }
 
         if ($agendamento->status !== 'pendente') {
@@ -885,9 +916,11 @@ class AgendamentoController extends Controller
      */
     public function rejeitar(Request $request, Agendamento $agendamento)
     {
-        // Apenas diretor geral pode rejeitar
-        if (auth()->user()->perfil_acesso !== 'diretor_geral') {
-            abort(403, 'Você não tem permissão para rejeitar este agendamento.');
+        $user = auth()->user();
+        
+        // Verificar se o agendamento é de um espaço que o usuário pode gerenciar
+        if (!$user->canManageEspaco($agendamento->espaco_id)) {
+            abort(403, 'Você não tem permissão para rejeitar agendamentos neste espaço.');
         }
 
         if ($agendamento->status !== 'pendente') {

@@ -17,24 +17,21 @@ class GerenciarAgendamentosController extends Controller
      */
     public function index(Request $request)
     {
-        // Verificar permissão
-        // if (auth()->user()->perfil_acesso !== 'diretor_geral') {
-        //     abort(403, 'Você não tem permissão para acessar esta página.');
-        // }
-        $userId = auth()->id();
-        $espacosAtribuidos = User::find($userId)->espacos()->pluck('id')->toArray();
+        $user = auth()->user();
+        $espacosAtribuidos = $user->getEspacosAtribuidosIds();
+        
         // Query base para TODOS os agendamentos (sempre buscar todos para separar corretamente)
         $queryTodos = Agendamento::with([
             'espaco.localizacao',
             'user',
             'aprovacao.aprovadoPor',
             'conflitoAtivo'
-        ])->whereHas('espaco', function ($query) use ($espacosAtribuidos) {
-            // Se o usuário não for diretor geral, filtrar pelos espaços atribuídos
-            if (auth()->user()->perfil_acesso !== 'diretor_geral') {
-                $query->whereIn('espaco_id', $espacosAtribuidos);
-            }
-        });
+        ]);
+        
+        // Se o usuário não for diretor geral, filtrar pelos espaços atribuídos
+        if ($user->perfil_acesso !== 'diretor_geral') {
+            $queryTodos->whereIn('espaco_id', $espacosAtribuidos);
+        }
 
         // Aplicar filtros básicos (exceto tipo_conflito que será tratado na separação)
         if ($request->filled('espaco_id')) {
@@ -115,22 +112,39 @@ class GerenciarAgendamentosController extends Controller
             return strtotime($b['created_at']) - strtotime($a['created_at']);
         });
 
-        $espacos = Espaco::where('disponivel_reserva', true)
-            ->where('status', 'ativo')
-            ->orderBy('nome')
-            ->get(['id', 'nome']);
+        // Filtrar espaços baseado nas permissões do usuário
+        $espacosQuery = Espaco::where('disponivel_reserva', true)
+            ->where('status', 'ativo');
+            
+        // Se o usuário não for diretor geral, mostrar apenas espaços atribuídos
+        if ($user->perfil_acesso !== 'diretor_geral') {
+            $espacosQuery->whereIn('id', $espacosAtribuidos);
+        }
+        
+        $espacos = $espacosQuery->orderBy('nome')->get(['id', 'nome']);
 
-        // Estatísticas
+        // Estatísticas - filtrar por espaços atribuídos se não for diretor geral
+        $estatisticasQuery = function($query) use ($user, $espacosAtribuidos) {
+            if ($user->perfil_acesso !== 'diretor_geral') {
+                $query->whereHas('agendamento', function($q) use ($espacosAtribuidos) {
+                    $q->whereIn('espaco_id', $espacosAtribuidos);
+                });
+            }
+            return $query;
+        };
+        
         $estatisticas = [
-            'conflitos_pendentes' => AgendamentoConflito::pendentes()
+            'conflitos_pendentes' => $estatisticasQuery(AgendamentoConflito::pendentes())
                 ->distinct('grupo_conflito')
                 ->count('grupo_conflito'),
-            'agendamentos_em_conflito' => AgendamentoConflito::pendentes()->count(),
-            'conflitos_resolvidos_hoje' => AgendamentoConflito::resolvidos()
-                ->whereDate('resolvido_em', today())
+            'agendamentos_em_conflito' => $estatisticasQuery(AgendamentoConflito::pendentes())->count(),
+            'conflitos_resolvidos_hoje' => $estatisticasQuery(AgendamentoConflito::resolvidos()
+                ->whereDate('resolvido_em', today()))
                 ->distinct('grupo_conflito')
                 ->count('grupo_conflito'),
-            'total_agendamentos_pendentes' => Agendamento::where('status', 'pendente')->count(),
+            'total_agendamentos_pendentes' => $user->perfil_acesso !== 'diretor_geral' 
+                ? Agendamento::where('status', 'pendente')->whereIn('espaco_id', $espacosAtribuidos)->count()
+                : Agendamento::where('status', 'pendente')->count(),
         ];
 
         return Inertia::render('Agendamentos/GerenciarAgendamentos', [
@@ -161,9 +175,17 @@ class GerenciarAgendamentosController extends Controller
             'motivo_rejeicao' => 'required|string|min:5',
         ]);
 
-        // Verificar permissão
-        if (auth()->user()->perfil_acesso !== 'diretor_geral') {
-            abort(403, 'Você não tem permissão para resolver conflitos.');
+        $user = auth()->user();
+        
+        // Verificar se o conflito é de um espaço que o usuário pode gerenciar
+        if ($user->perfil_acesso !== 'diretor_geral') {
+            $conflitosDoGrupo = AgendamentoConflito::obterGrupoConflito($request->grupo_conflito);
+            if ($conflitosDoGrupo->isNotEmpty()) {
+                $espacoDoConflito = $conflitosDoGrupo->first()->agendamento->espaco_id;
+                if (!$user->canManageEspaco($espacoDoConflito)) {
+                    abort(403, 'Você não tem permissão para resolver conflitos neste espaço.');
+                }
+            }
         }
 
         DB::beginTransaction();
@@ -240,9 +262,17 @@ class GerenciarAgendamentosController extends Controller
             'motivo_rejeicao' => 'required|string|min:5',
         ]);
 
-        // Verificar permissão
-        if (auth()->user()->perfil_acesso !== 'diretor_geral') {
-            abort(403, 'Você não tem permissão para resolver conflitos.');
+        $user = auth()->user();
+        
+        // Verificar se o conflito é de um espaço que o usuário pode gerenciar
+        if ($user->perfil_acesso !== 'diretor_geral') {
+            $conflitosDoGrupo = AgendamentoConflito::obterGrupoConflito($request->grupo_conflito);
+            if ($conflitosDoGrupo->isNotEmpty()) {
+                $espacoDoConflito = $conflitosDoGrupo->first()->agendamento->espaco_id;
+                if (!$user->canManageEspaco($espacoDoConflito)) {
+                    abort(403, 'Você não tem permissão para resolver conflitos neste espaço.');
+                }
+            }
         }
 
         DB::beginTransaction();
@@ -295,10 +325,7 @@ class GerenciarAgendamentosController extends Controller
      */
     public function detalhesConflito(string $grupoConflito)
     {
-        // Verificar permissão
-        if (auth()->user()->perfil_acesso !== 'diretor_geral') {
-            abort(403, 'Você não tem permissão para acessar esta informação.');
-        }
+        $user = auth()->user();
 
         $conflitos = AgendamentoConflito::with([
             'agendamento.user',
@@ -310,6 +337,14 @@ class GerenciarAgendamentosController extends Controller
 
         if ($conflitos->isEmpty()) {
             abort(404, 'Grupo de conflito não encontrado.');
+        }
+
+        // Verificar se o usuário tem permissão para este espaço específico
+        if ($user->perfil_acesso !== 'diretor_geral') {
+            $espacoDoConflito = $conflitos->first()->agendamento->espaco_id;
+            if (!$user->canManageEspaco($espacoDoConflito)) {
+                abort(403, 'Você não tem permissão para acessar conflitos neste espaço.');
+            }
         }
 
         return response()->json([
@@ -327,22 +362,27 @@ class GerenciarAgendamentosController extends Controller
      */
     public function conflitosResolvidosHoje()
     {
-        // Verificar permissão
-        if (auth()->user()->perfil_acesso !== 'diretor_geral') {
-            abort(403, 'Você não tem permissão para acessar esta informação.');
-        }
+        $user = auth()->user();
+        $espacosAtribuidos = $user->getEspacosAtribuidosIds();
 
         // Buscar conflitos resolvidos hoje agrupados por grupo_conflito
-        $conflitosResolvidos = AgendamentoConflito::with([
+        $conflitosResolvidosQuery = AgendamentoConflito::with([
             'agendamento.user',
             'agendamento.espaco.localizacao',
             'agendamento.aprovacao.aprovadoPor',
             'resolvidoPor'
         ])
             ->resolvidos()
-            ->whereDate('resolvido_em', today())
-            ->orderBy('resolvido_em', 'desc')
-            ->get();
+            ->whereDate('resolvido_em', today());
+            
+        // Se não for diretor geral, filtrar por espaços atribuídos
+        if ($user->perfil_acesso !== 'diretor_geral') {
+            $conflitosResolvidosQuery->whereHas('agendamento', function($q) use ($espacosAtribuidos) {
+                $q->whereIn('espaco_id', $espacosAtribuidos);
+            });
+        }
+        
+        $conflitosResolvidos = $conflitosResolvidosQuery->orderBy('resolvido_em', 'desc')->get();
 
         // Agrupar por grupo_conflito
         $gruposResolvidos = [];

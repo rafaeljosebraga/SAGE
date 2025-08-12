@@ -25,7 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'can-manage-users' => \App\Http\Middleware\CanManageUsers::class,
             'diretor-geral' => \App\Http\Middleware\DiretorGeral::class,
-            'has-espacos-to-manage' => \App\Http\Middleware\HasEspacosToManage::class,
+            'can-manage-agendamentos' => \App\Http\Middleware\CanManageAgendamentos::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
