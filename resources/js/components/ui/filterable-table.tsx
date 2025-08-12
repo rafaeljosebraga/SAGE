@@ -16,7 +16,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Search, X, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Search, X, ArrowUpDown, ArrowUp, ArrowDown, Filter } from 'lucide-react';
 
 export interface ColumnConfig {
     key: string;
@@ -180,13 +180,23 @@ export function FilterableTable({
                     <TableHeader>
                         {/* Linha dos cabeçalhos */}
                         <TableRow className="bg-card">
-                            {columns.map((column) => (
+                            {columns.map((column, index) => (
                                 <TableHead
                                     key={column.key}
                                     className="relative text-gray-90 font-semibold">
-                                    <div className="flex items-center gap-2">
-                                        <span>{column.label}</span>
-                                    </div>
+                                    {index === 0 ? (
+                                        <div className={`flex flex-col ${column.searchable === false && column.sortable === false ? 'items-center' : 'items-start'} gap-1 leading-none`}>
+                                            <div className="p-2 flex items-center gap-2">
+                                                <Filter className="h-5 w-5 text-white" />
+                                                <span className="text-white text-base">Filtros</span>
+                                            </div>
+                                            <span>{column.label}</span>
+                                        </div>
+                                    ) : (
+                                        <div className={`flex items-start gap-2 ${column.searchable === false && column.sortable === false ? 'justify-center' : ''}`}>
+                                            <span>{column.label}</span>
+                                        </div>
+                                    )}
                                 </TableHead>
                             ))}
                         </TableRow>
@@ -284,7 +294,10 @@ export function FilterableTable({
                                     className={`hover:bg-muted/50 ${getRowClassName ? getRowClassName(item, index) : ''}`}
                                 >
                                     {columns.map((column) => (
-                                        <TableCell key={column.key}>
+                                        <TableCell 
+                                            key={column.key}
+                                            className={column.searchable === false && column.sortable === false ? 'text-center' : ''}
+                                        >
                                             {column.render
                                                 ? column.render(getColumnValue(item, column), item)
                                                 : getColumnValue(item, column)
