@@ -1835,12 +1835,12 @@ export default function GerenciarAgendamentos({
                         <div className="flex flex-col gap-2 flex-1 min-h-0">
                             {/* Área de seleção de agendamentos com scroll personalizado */}
                             <div className="flex flex-col gap-0 flex-1 min-h-0">
-                                <div className="flex items-center justify-between flex-shrink-0">
+                                <div className="flex items-center justify-between flex-shrink-0 mb-3">
                                     <h4 className="font-medium text-sm text-muted-foreground">
                                         Agendamentos em conflito ({resolverDialog.grupoConflito.agendamentos.length}):
                                     </h4>
                                     {resolverDialog.agendamentoSelecionado && (
-                                        <Badge variant="outline" className="text-green-600 border-green-200">
+                                        <Badge variant="outline" className="text-green-700 border-green-300 bg-green-50 dark:text-green-400 dark:border-green-700 dark:bg-green-950/30 ml-3">
                                             1 selecionado
                                         </Badge>
                                     )}
@@ -1947,11 +1947,11 @@ export default function GerenciarAgendamentos({
                                     </div>
                                     <Textarea
                                         id="motivo_rejeicao"
-                                        // placeholder="Informe detalhadamente o motivo da rejeição dos agendamentos não selecionados..."
+                                        placeholder="Descreva o motivo da rejeição dos demais agendamentos..."
                                         value={motivoRejeicao}
                                         onChange={(e) => setMotivoRejeicao(e.target.value)}
                                         rows={3}
-                                        className="resize-none rounded-lg border-2 border-input bg-background focus:border-border focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background transition-all duration-200"
+                                        className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                     />
                                 </div>
                                 
@@ -2016,7 +2016,7 @@ export default function GerenciarAgendamentos({
                                 value={motivoRejeicao}
                                 onChange={(e) => setMotivoRejeicao(e.target.value)}
                                 rows={3}
-                                className="resize-none rounded-lg border-2 border-input bg-background focus:border-border focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background transition-all duration-200"
+                                className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                             />
                         </div>
                     </div>
