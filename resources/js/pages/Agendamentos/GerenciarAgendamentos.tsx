@@ -33,7 +33,9 @@ import {
     FileText,
     Zap,
     Building,
-    CircleCheckBig
+    CircleCheckBig,
+    ChevronDown,
+    ChevronUp
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -136,6 +138,9 @@ export default function GerenciarAgendamentos({
     const [mostrarResolvidosHoje, setMostrarResolvidosHoje] = useState(false);
     const [conflitosResolvidosHoje, setConflitosResolvidosHoje] = useState<GrupoConflito[]>([]);
     const [carregandoResolvidos, setCarregandoResolvidos] = useState(false);
+    
+    // Estado para controlar cards colapsados
+    const [cardsColapsados, setCardsColapsados] = useState<{ [key: string]: boolean }>({});
 
     // Sincronizar estado local com parâmetros da URL apenas na primeira carga
     useEffect(() => {
@@ -160,7 +165,8 @@ export default function GerenciarAgendamentos({
         if (filters.nome_agendamento) {
             setNomeAgendamentoFilter(filters.nome_agendamento);
         }
-    }, []); // Executar apenas uma vez na montagem do componente
+        
+    }, []);
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Gerenciar Agendamentos', href: '/gerenciar-agendamentos' }
@@ -213,6 +219,14 @@ export default function GerenciarAgendamentos({
         setMostrarResolvidosHoje(false);
         setConflitosResolvidosHoje([]);
         setTipoConflitoFilter('com_conflito');
+    };
+
+    // Função para toggle do colapso do card
+    const toggleCardColapso = (grupoId: string) => {
+        setCardsColapsados(prev => ({
+            ...prev,
+            [grupoId]: !prev[grupoId]
+        }));
     };
 
 
@@ -1265,14 +1279,19 @@ export default function GerenciarAgendamentos({
                                             ? 'bg-card text-card-foreground border border-green-200 dark:border-green-800' 
                                             : 'bg-card text-card-foreground border border-orange-200 dark:border-orange-800'
                                     }`}>
-                                        <CardHeader className={`flex flex-col gap-1.5 px-6 ${
-                                            tipoConflitoFilter === 'resolvidos_hoje'
-                                                ? 'bg-gradient-to-r from-green-50 to-green-100 dark:from-green-950/40 dark:to-green-900/50'
-                                                : 'bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-950/40 dark:to-orange-900/50 min-h-[75px]'
-                                        }`}>
-                                            <div className={`flex items-center justify-between ${
-                                                tipoConflitoFilter !== 'resolvidos_hoje' ? 'h-full' : ''
-                                            }`}>
+                                        <CardHeader 
+                                            className={`relative flex flex-col gap-1.5 px-6 cursor-pointer hover:opacity-90 transition-all duration-200 select-none ${
+                                                tipoConflitoFilter === 'resolvidos_hoje'
+                                                    ? 'bg-gradient-to-r from-green-50 to-green-100 dark:from-green-950/40 dark:to-green-900/50'
+                                                    : 'bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-950/40 dark:to-orange-900/50'
+                                            } ${
+                                                (cardsColapsados[grupo.grupo_conflito] ?? true) 
+                                                    ? 'h-[75px]' // Altura menor quando colapsado
+                                                    : 'min-h-[75px]' // Altura original quando expandido
+                                            }`}
+                                            onClick={() => toggleCardColapso(grupo.grupo_conflito)}
+                                        >
+                                            <div className="flex items-center justify-between h-full">
                                                 <div className="flex items-center gap-4">
                                                     <div className="flex-shrink-0">
                                                         <div className={`p-3 rounded-full ${
@@ -1315,38 +1334,69 @@ export default function GerenciarAgendamentos({
                                                         </CardDescription>
                                                     </div>
                                                 </div>
-                                                {tipoConflitoFilter !== 'resolvidos_hoje' && (
-                                                    <div className="flex gap-2">
-                                                        <Tooltip>
-                                                            <TooltipTrigger asChild>
-                                                                <Button
-                                                                    variant="outline"
-                                                                    size="sm"
-                                                                    onClick={() => setResolverDialog({
-                                                                        open: true,
-                                                                        grupoConflito: grupo,
-                                                                        agendamentoSelecionado: null
-                                                                    })}
-                                                                    className="cursor-pointer bg-green-600 border-green-600 text-white hover:text-white hover:bg-green-700 hover:border-green-700 dark:bg-green-600 dark:border-green-600 dark:text-white"
-                                                                >
-                                                                    <Check className="h-4 w-4 mr-2" />
-                                                                    Resolver
-                                                                </Button>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>
-                                                                <p>Resolver conflito selecionando um agendamento para aprovar</p>
-                                                            </TooltipContent>
-                                                        </Tooltip>
-                                                        <Tooltip>
-                                                            <TooltipTrigger asChild>
-                                                                <Button
-                                                                    variant="destructive"
-                                                                    size="sm"
-                                                                    onClick={() => setRejeitarTodosDialog({
-                                                                        open: true,
-                                                                        grupoConflito: grupo
-                                                                    })}
-                                                                    className="cursor-pointer bg-orange-600 hover:bg-orange-700 border-orange-600 hover:border-orange-700"
+                                                <div className="flex gap-2 items-center">
+                                                    {/* Botão de toggle colapso */}
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    toggleCardColapso(grupo.grupo_conflito);
+                                                                }}
+                                                                className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                            >
+                                                                {(cardsColapsados[grupo.grupo_conflito] ?? true) ? (
+                                                                    <ChevronDown className="h-4 w-4" />
+                                                                ) : (
+                                                                    <ChevronUp className="h-4 w-4" />
+                                                                )}
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>{(cardsColapsados[grupo.grupo_conflito] ?? true) ? 'Expandir' : 'Recolher'}</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                    
+                                                    {tipoConflitoFilter !== 'resolvidos_hoje' && (
+                                                        <>
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setResolverDialog({
+                                                                                open: true,
+                                                                                grupoConflito: grupo,
+                                                                                agendamentoSelecionado: null
+                                                                            });
+                                                                        }}
+                                                                        className="cursor-pointer bg-green-600 border-green-600 text-white hover:text-white hover:bg-green-700 hover:border-green-700 dark:bg-green-600 dark:border-green-600 dark:text-white"
+                                                                    >
+                                                                        <Check className="h-4 w-4 mr-2" />
+                                                                        Resolver
+                                                                    </Button>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    <p>Resolver conflito selecionando um agendamento para aprovar</p>
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <Button
+                                                                        variant="destructive"
+                                                                        size="sm"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setRejeitarTodosDialog({
+                                                                                open: true,
+                                                                                grupoConflito: grupo
+                                                                            });
+                                                                        }}
+                                                                        className="cursor-pointer bg-orange-600 hover:bg-orange-700 border-orange-600 hover:border-orange-700"
                                                                 >
                                                                     <X className="h-4 w-4 mr-2" />
                                                                     Rejeitar Todos
@@ -1356,8 +1406,9 @@ export default function GerenciarAgendamentos({
                                                                 <p>Rejeitar todos os agendamentos deste conflito</p>
                                                             </TooltipContent>
                                                         </Tooltip>
-                                                    </div>
-                                                )}
+                                                        </>
+                                                    )}
+                                                </div>
                                                 {tipoConflitoFilter === 'resolvidos_hoje' && (grupo as any).resolvido_por && (
                                                     <div className="flex flex-col gap-2 px-3 py-2 rounded-lg bg-white/50 dark:bg-gray-800/30">
                                                         <div className="flex items-center gap-2">
@@ -1388,11 +1439,19 @@ export default function GerenciarAgendamentos({
                                                     </div>
                                                 )}
                                             </div>
+                                            
+                                            {/* Indicador simples com três pontinhos quando colapsado */}
+                                            {(cardsColapsados[grupo.grupo_conflito] ?? true) && (
+                                                <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2">
+                                                    <span className="text-muted-foreground text-sm font-bold">...</span>
+                                                </div>
+                                            )}
                                         </CardHeader>
-                                        <CardContent className="p-0">
-                                            <div className="relative">
-                                                <div className="space-y-3 p-4">
-                                                    {grupo.agendamentos.map((agendamento, index) => (
+                                        {!(cardsColapsados[grupo.grupo_conflito] ?? true) && (
+                                            <CardContent className="p-0">
+                                                <div className="relative">
+                                                    <div className="space-y-3 p-4">
+                                                        {grupo.agendamentos.map((agendamento, index) => (
                                                         <div 
                                                             key={agendamento.id} 
                                                             className={`
@@ -1515,6 +1574,7 @@ export default function GerenciarAgendamentos({
                                                 </div>
                                             </div>
                                         </CardContent>
+                                        )}
                                     </Card>
                                 );
                             })}
