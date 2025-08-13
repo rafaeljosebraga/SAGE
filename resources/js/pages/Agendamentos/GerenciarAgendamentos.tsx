@@ -1277,13 +1277,13 @@ export default function GerenciarAgendamentos({
                                     <Card key={grupo.grupo_conflito} className={`shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden ${
                                         tipoConflitoFilter === 'resolvidos_hoje' 
                                             ? 'bg-card text-card-foreground border border-green-200 dark:border-green-800' 
-                                            : 'bg-card text-card-foreground border border-orange-200 dark:border-orange-800'
+                                            : 'bg-card text-card-foreground border border-gray-200 dark:border-gray-700'
                                     }`}>
                                         <CardHeader 
                                             className={`relative flex flex-col gap-1.5 px-6 cursor-pointer hover:opacity-90 transition-all duration-200 select-none ${
                                                 tipoConflitoFilter === 'resolvidos_hoje'
                                                     ? 'bg-gradient-to-r from-green-50 to-green-100 dark:from-green-950/40 dark:to-green-900/50'
-                                                    : 'bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-950/40 dark:to-orange-900/50'
+                                                    : 'bg-gradient-to-r from-orange-50/70 to-orange-100/70 dark:from-orange-950/25 dark:to-orange-900/30'
                                             } ${
                                                 (cardsColapsados[grupo.grupo_conflito] ?? true) 
                                                     ? 'h-[75px]' // Altura menor quando colapsado
@@ -1297,7 +1297,7 @@ export default function GerenciarAgendamentos({
                                                         <div className={`p-3 rounded-full ${
                                                             tipoConflitoFilter === 'resolvidos_hoje'
                                                                 ? 'bg-green-100 dark:bg-green-900/50'
-                                                                : 'bg-orange-100 dark:bg-orange-900/50'
+                                                                : 'bg-orange-100/80 dark:bg-orange-900/40'
                                                         }`}>
                                                             {tipoConflitoFilter === 'resolvidos_hoje' ? (
                                                                 <CircleCheckBig className="h-6 w-6 text-green-600 dark:text-green-400" />
@@ -1396,7 +1396,7 @@ export default function GerenciarAgendamentos({
                                                                                 grupoConflito: grupo
                                                                             });
                                                                         }}
-                                                                        className="cursor-pointer bg-orange-600 hover:bg-orange-700 border-orange-600 hover:border-orange-700"
+                                                                        className="cursor-pointer bg-red-600 hover:bg-red-700 border-red-600 hover:border-red-700"
                                                                 >
                                                                     <X className="h-4 w-4 mr-2" />
                                                                     Rejeitar Todos
