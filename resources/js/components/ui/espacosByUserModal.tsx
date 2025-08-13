@@ -323,25 +323,20 @@ export function ModalDetalhesUsuario({ isOpen, onClose, usuario, espacos }: Moda
 
 
                 {/* Footer */}
-                <div className="p-6 border-t border-border bg-muted/20 flex justify-end">
-                    <Button
-                    variant="outline"
-                    onClick={onClose}
-                    className="cursor-pointer bg-black text-white rounded-lg border border-gray-300
-                                hover:bg-white hover:text-black hover:border-black transition-colors duration-300
-                                dark:bg-white dark:text-black dark:border-gray-600
-                                dark:hover:bg-black dark:hover:text-white"
-                    >Fechar</Button>
+                <div className="p-6 border-t border-border bg-muted/20 flex justify-end gap-3">
                     <Button
                         variant="outline"
+                        onClick={onClose}
+                        className="cursor-pointer min-w-24 h-9"
+                    >
+                        Fechar
+                    </Button>
+                    <Button
                         onClick={() => {
                             onClose();
                             window.location.href = `/atribuir-permissoes/${usuario.id}/criar`;
                         }}
-                        className="cursor-pointer bg-black text-white rounded-lg border border-gray-300
-                        hover:bg-white hover:text-black hover:border-black transition-colors duration-300
-                        dark:bg-white dark:text-black dark:border-gray-600
-                        dark:hover:bg-black dark:hover:text-white"
+                        className="cursor-pointer min-w-24 h-9"
                     >
                         Atribuir Salas
                     </Button>

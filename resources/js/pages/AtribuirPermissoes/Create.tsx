@@ -882,21 +882,18 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
                         </div>
 
                         {/* Footer do Modal */}
-                        <form on className="flex justify-end gap-3 p-6 border-t border-border bg-muted/20 flex-shrink-0">
+                        <div className="flex justify-end gap-3 p-6 border-t border-border bg-muted/20 flex-shrink-0">
                             <Button
                                 onClick={() => {
                                     closeModal();
                                     router.visit(`/espacos/${selectedEspaco.id}/editar`);
                                 }}
-                                className="cursor-pointer bg-black text-white rounded-lg border border-gray-300
-                                hover:bg-white hover:text-black hover:border-black transition-colors duration-300
-                                dark:bg-white dark:text-black dark:border-gray-600
-                                dark:hover:bg-black dark:hover:text-white"
+                                className="cursor-pointer"
                             >
                                 <Pencil className="mr-2 h-4 w-4" />
                                 Editar
                             </Button>
-                        </form>
+                        </div>
                     </div>
                 </div>
             )}
