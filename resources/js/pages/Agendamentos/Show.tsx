@@ -163,7 +163,12 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                     className: "bg-green-600 text-white border-green-600 dark:bg-green-700 dark:text-white dark:border-green-700",
                 });
                 // Recarregar a página para atualizar os dados
-                router.reload({ only: ['agendamento'] });
+                // router.reload({ only: ['agendamento'] });
+                const currentUrl = window.location.pathname + window.location.search;
+                router.visit(currentUrl, {
+                    preserveState: false,
+                    preserveScroll: true
+                });
             },
             onError: () => {
                 setDeleteModal({ open: false, motivo: '' });
@@ -190,7 +195,12 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                     className: "bg-green-600 text-white border-green-600 dark:bg-green-700 dark:text-white dark:border-green-700",
                 });
                 // Recarregar a página para atualizar os dados
-                router.reload({ only: ['agendamento'] });
+                // router.reload({ only: ['agendamento'] });
+                const currentUrl = window.location.pathname + window.location.search;
+                router.visit(currentUrl, {
+                    preserveState: false,
+                    preserveScroll: true
+                });
             },
             onError: () => {
                 setUncancelModal({ open: false });
@@ -218,7 +228,11 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                     duration: 5000,
                 });
                 // Redirecionar para a lista de agendamentos
-                router.visit('/agendamentos');
+                // router.visit('/agendamentos');
+                router.visit('/agendamentos', {
+                    preserveState: false,
+                    preserveScroll: false
+                });
             },
             onError: () => {
                 setForceDeleteModal({ open: false });
@@ -398,7 +412,11 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                                             const urlParams = new URLSearchParams(window.location.search);
                                             urlParams.set('from', 'show'); // Indicar que veio da tela de detalhes
                                             
-                                            router.get(`/agendamentos/${agendamento.id}/editar?${urlParams.toString()}`);
+                                            // router.get(`/agendamentos/${agendamento.id}/editar?${urlParams.toString()}`);
+                                            router.visit(`/agendamentos/${agendamento.id}/editar?${urlParams.toString()}`, {
+                                                preserveState: false,
+                                                preserveScroll: true
+                                            });
                                         }}
                                         className="cursor-pointer bg-blue-50 hover:bg-blue-100 border-blue-200 hover:border-blue-300 text-blue-700 hover:text-blue-800 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 dark:border-blue-700 dark:hover:border-blue-600 dark:text-blue-300 dark:hover:text-blue-200"
                                     >
