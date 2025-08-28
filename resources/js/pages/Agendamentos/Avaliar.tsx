@@ -581,7 +581,12 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                     variant: 'success',
                     duration: 5000,
                 });
-                router.reload();
+                // router.reload();
+                const currentUrl = window.location.pathname + window.location.search;
+                router.visit(currentUrl, {
+                    preserveState: false,
+                    preserveScroll: true
+                });
             },
             onError: (errors) => {
                 const errorMessage = Object.values(errors).flat()[0] as string || 'Erro ao aprovar agendamento. Verifique se não há conflitos de horário.';
@@ -622,7 +627,12 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                 });
                 setRejectionDialog({ open: false, agendamento: null });
                 setRejectionReason('');
-                router.reload();
+                // router.reload();
+                const currentUrl = window.location.pathname + window.location.search;
+                router.visit(currentUrl, {
+                    preserveState: false,
+                    preserveScroll: true
+                });
             },
             onError: (errors) => {
                 const errorMessage = Object.values(errors).flat()[0] as string || 'Erro ao rejeitar agendamento.';
