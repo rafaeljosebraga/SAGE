@@ -139,7 +139,7 @@ export default function AgendamentosCalendar({
                                         placeholder="Buscar por nome..."
                                         value={nomeFilter}
                                         onChange={(e) => setNomeFilter(e.target.value)}
-                                        className="pl-10"
+                                        className="pl-10 border border-black bg-white dark:bg-black"
                                     />
                                 </div>
                             </div>
@@ -150,7 +150,7 @@ export default function AgendamentosCalendar({
                                     value={espacoFilter}
                                     onValueChange={(value) => setEspacoFilter(value)}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className="border border-black bg-white dark:bg-black">
                                         <SelectValue placeholder="Todos os espaços" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -170,7 +170,7 @@ export default function AgendamentosCalendar({
                                     value={statusFilter}
                                     onValueChange={(value) => setStatusFilter(value)}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className="border border-black bg-white dark:bg-black">
                                         <SelectValue placeholder="Todos os status" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -189,7 +189,7 @@ export default function AgendamentosCalendar({
                                     type="date"
                                     value={dataInicioFilter}
                                     onChange={(e) => setDataInicioFilter(e.target.value)}
-                                    className="text-sm"
+                                    className="text-sm border border-black bg-white dark:bg-black"
                                 />
                             </div>
 
@@ -199,7 +199,7 @@ export default function AgendamentosCalendar({
                                     type="date"
                                     value={dataFimFilter}
                                     onChange={(e) => setDataFimFilter(e.target.value)}
-                                    className="text-sm"
+                                    className="text-sm border border-black bg-white dark:bg-black"
                                 />
                             </div>
 
@@ -347,7 +347,7 @@ export default function AgendamentosCalendar({
                                         placeholder="Buscar por nome..."
                                         value={nomeFilter}
                                         onChange={(e) => setNomeFilter(e.target.value)}
-                                        className="pl-10"
+                                        className="pl-10 border border-black bg-white dark:bg-black"
                                     />
                                 </div>
                             </div>
@@ -358,7 +358,7 @@ export default function AgendamentosCalendar({
                                     value={espacoFilter}
                                     onValueChange={(value) => setEspacoFilter(value)}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className="border border-black bg-white dark:bg-black">
                                         <SelectValue placeholder="Todos os espaços" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -378,7 +378,7 @@ export default function AgendamentosCalendar({
                                     value={statusFilter}
                                     onValueChange={(value) => setStatusFilter(value)}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className="border border-black bg-white dark:bg-black">
                                         <SelectValue placeholder="Todos os status" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -397,7 +397,7 @@ export default function AgendamentosCalendar({
                                     type="date"
                                     value={dataInicioFilter}
                                     onChange={(e) => setDataInicioFilter(e.target.value)}
-                                    className="text-sm"
+                                    className="text-sm border border-black bg-white dark:bg-black"
                                 />
                             </div>
 
@@ -407,7 +407,7 @@ export default function AgendamentosCalendar({
                                     type="date"
                                     value={dataFimFilter}
                                     onChange={(e) => setDataFimFilter(e.target.value)}
-                                    className="text-sm"
+                                    className="text-sm border border-black bg-white dark:bg-black"
                                 />
                             </div>
 
