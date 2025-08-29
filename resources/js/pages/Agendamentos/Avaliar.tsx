@@ -963,7 +963,7 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                                         placeholder="Buscar por nome..."
                                         value={nomeAgendamentoFilter}
                                         onChange={(e) => setNomeAgendamentoFilter(e.target.value)}
-                                        className="pl-8 pr-10 border border-black bg-white dark:bg-black"
+                                        className="pl-8 pr-10 border-input bg-background"
                                     />
                                     <Tooltip>
                                         <TooltipTrigger asChild>
@@ -1005,7 +1005,7 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                                         }, 100);
                                     }}
                                 >
-                                    <SelectTrigger className=" border border-black bg-white dark:bg-black" >
+                                    <SelectTrigger className="border-input bg-background" >
                                         <SelectValue placeholder="Status" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -1024,7 +1024,7 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                                     value={espacoFilter}
                                     onValueChange={(value) => setEspacoFilter(value)}
                                 >
-                                    <SelectTrigger className=" border border-black bg-white dark:bg-black" >
+                                    <SelectTrigger className="border-input bg-background" >
                                         <SelectValue placeholder="Todos os espaços" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -1046,7 +1046,7 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                                         placeholder="Nome do solicitante"
                                         value={solicitanteFilter}
                                         onChange={(e) => setSolicitanteFilter(e.target.value)}
-                                        className="pl-8 pr-10 border border-black bg-white dark:bg-black"
+                                        className="pl-8 pr-10 border-input bg-background"
                                     />
                                     <Tooltip>
                                         <TooltipTrigger asChild>
@@ -1073,7 +1073,7 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                                         type="date"
                                         value={dataInicioFilter}
                                         onChange={(e) => setDataInicioFilter(e.target.value)}
-                                        className="pr-10 border border-black bg-white dark:bg-black"
+                                        className="pr-10 border-input bg-background"
                                     />
                                     <Tooltip>
                                         <TooltipTrigger asChild>
@@ -1101,7 +1101,7 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                                         type="date"
                                         value={dataFimFilter}
                                         onChange={(e) => setDataFimFilter(e.target.value)}
-                                        className="pr-10 border border-black bg-white dark:bg-black"
+                                        className="pr-10 border-input bg-background"
                                     />
                                     <Tooltip>
                                         <TooltipTrigger asChild>
