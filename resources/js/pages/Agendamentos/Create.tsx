@@ -11,6 +11,17 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import {
+    AlertDialog,
+    AlertDialogTrigger,
+    AlertDialogContent,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogCancel,
+    AlertDialogAction,
+} from '@/components/ui/alert-dialog';
 
 import { useToast } from '@/hooks/use-toast';
 import type { PageProps, Espaco, Recurso, BreadcrumbItem } from '@/types';
@@ -475,16 +486,33 @@ export default function AgendamentosCreate({ espacos, recursos, espacoSelecionad
                                             {isFormDisabled ? 'Enviando...' : 'Solicitar Agendamento'}
                                         </Button>
 
-                                        <Button 
-                                            variant="outline" 
-                                            className="w-full" 
-                                            asChild
-                                            disabled={isFormDisabled}
-                                        >
-                                            <Link href={`/agendamentos${returnViewParam === 'calendar' ? '?view=calendar' : ''}`}>
-                                                Cancelar
-                                            </Link>
-                                        </Button>
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button 
+                                                    variant="outline" 
+                                                    className="w-full" 
+                                                    disabled={isFormDisabled}
+                                                >
+                                                    Cancelar
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Tem certeza que deseja cancelar?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        Todas as informações preenchidas serão limpas.
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Não</AlertDialogCancel>
+                                                    <AlertDialogAction className="bg-red-600 hover:bg-red-700" asChild>
+                                                        <Link href={`/agendamentos${returnViewParam === 'calendar' ? '?view=calendar' : ''}`}>
+                                                            Sim, cancelar
+                                                        </Link>
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
                                     </div>
 
                                     <div className="mt-4 p-3 bg-muted/50 rounded-lg">

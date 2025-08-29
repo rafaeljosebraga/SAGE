@@ -6,6 +6,16 @@ import { Link } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from '@/components/ui/alert-dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -446,31 +456,20 @@ export default function AgendamentosModals({
             </Dialog>
             
             {/* Modal de confirmação de cancelamento do formulário de criação */}
-            <Dialog open={showCancelCreateConfirm} onOpenChange={setShowCancelCreateConfirm}>
-                <DialogContent className="max-w-md">
-                    <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2">
-                            <AlertTriangle className="h-5 w-5 text-yellow-600" />
-                            Cancelar criação de agendamento
-                        </DialogTitle>
-                        <DialogDescription>
-                            Confirme se deseja cancelar a criação do agendamento.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="py-4">
-                        <p className="text-center text-muted-foreground">
-                            Deseja realmente cancelar e voltar? O progresso feito será perdido!
-                        </p>
-                    </div>
-                    <DialogFooter className="gap-2">
-                        <Button
-                            variant="outline"
-                            onClick={() => setShowCancelCreateConfirm(false)}
-                        >
+            <AlertDialog open={showCancelCreateConfirm} onOpenChange={setShowCancelCreateConfirm}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Tem certeza que deseja cancelar?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Todas as informações preenchidas serão limpas.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => setShowCancelCreateConfirm(false)}>
                             Não
-                        </Button>
-                        <Button
-                            variant="destructive"
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            className="bg-red-600 hover:bg-red-700"
                             onClick={() => {
                                 setShowCancelCreateConfirm(false);
                                 setCreateModal({ open: false });
@@ -478,10 +477,10 @@ export default function AgendamentosModals({
                             }}
                         >
                             Sim, cancelar e voltar
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             {/* Modal de Conflito */}
             <Dialog open={conflictModal.open} onOpenChange={(open) => {
