@@ -37,7 +37,7 @@ interface CalendarProps {
     getEventsForDay: (date: Date) => Agendamento[];
     getEventsForTimeSlot: (date: Date, timeSlot: string) => Agendamento[];
     getEventTooltip: (event: Agendamento, includeTime?: boolean) => string;
-    handleDateSelect: (date: Date, timeSlot?: string, preserveEspaco?: boolean) => void;
+    handleDateSelect: (date: Date, timeSlot?: string, preserveEspaco?: boolean, espacoId?: number) => void;
     handleDayClick: (date: Date, events: Agendamento[], espacoId?: number) => void;
     handleEventClick: (agendamento: Agendamento) => void;
     setDayViewModal: (modal: { open: boolean; selectedDate: Date | null; events: Agendamento[] }) => void;
@@ -958,7 +958,7 @@ export default function AgendamentosCalendar({
                                             className="h-[160px] w-full p-2 border-2 border-border/100 hover:border-border/60 rounded cursor-pointer hover:bg-muted/30 transition-all duration-200 overflow-hidden"
                                             onClick={() => {
                                                 setFormData(prev => ({ ...prev, espaco_id: espaco.id.toString() }));
-                                                handleDateSelect(day, undefined, true);
+                                                handleDateSelect(day, undefined, true, espaco.id);
                                             }}
                                         >
                                             <div className="space-y-1 h-full pr-1">
