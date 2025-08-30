@@ -177,7 +177,9 @@ export default function Create({ perfilAcesso }: Props) {
                                 <Label htmlFor="name">Nome *</Label>
                                 <Input
                                     id="name"
+                                    name="name"
                                     type="text"
+                                    autoComplete="name"
                                     value={data.name}
                                     onChange={(e) => {
                                         setData('name', e.target.value);
@@ -193,7 +195,9 @@ export default function Create({ perfilAcesso }: Props) {
                                 <Label htmlFor="email">E-mail *</Label>
                                 <Input
                                     id="email"
+                                    name="email"
                                     type="email"
+                                    autoComplete="email"
                                     value={data.email}
                                     onChange={(e) => {
                                         setData('email', e.target.value);
@@ -207,11 +211,15 @@ export default function Create({ perfilAcesso }: Props) {
 
                             <div className="space-y-2">
                                 <Label htmlFor="perfil_acesso">Perfil de Acesso *</Label>
-                                <Select value={data.perfil_acesso} onValueChange={(value) => {
-                                    setData('perfil_acesso', value);
-                                    if (errors.perfil_acesso) clearErrors('perfil_acesso');
-                                }}>
-                                    <SelectTrigger className={errors.perfil_acesso ? 'cursor-pointer border-red-500 bg-white dark:bg-black' : 'cursor-pointer bg-white border-black dark:bg-black'}>
+                                <Select 
+                                    name="perfil_acesso"
+                                    value={data.perfil_acesso} 
+                                    onValueChange={(value) => {
+                                        setData('perfil_acesso', value);
+                                        if (errors.perfil_acesso) clearErrors('perfil_acesso');
+                                    }}
+                                >
+                                    <SelectTrigger id="perfil_acesso" className={errors.perfil_acesso ? 'cursor-pointer border-red-500 bg-white dark:bg-black' : 'cursor-pointer bg-white border-black dark:bg-black'}>
                                         <SelectValue placeholder="Selecione o perfil" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -229,7 +237,9 @@ export default function Create({ perfilAcesso }: Props) {
                                 <Label htmlFor="password">Senha *</Label>
                                 <Input
                                     id="password"
+                                    name="password"
                                     type="password"
+                                    autoComplete="new-password"
                                     value={data.password}
                                     onChange={(e) => {
                                         setData('password', e.target.value);
@@ -253,7 +263,9 @@ export default function Create({ perfilAcesso }: Props) {
                                 <Label htmlFor="password_confirmation">Confirmar Senha *</Label>
                                 <Input
                                     id="password_confirmation"
+                                    name="password_confirmation"
                                     type="password"
+                                    autoComplete="new-password"
                                     value={data.password_confirmation}
                                     onChange={(e) => {
                                         setData('password_confirmation', e.target.value);

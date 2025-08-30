@@ -380,6 +380,7 @@ export default function AgendamentosCreate({ espacos, recursos, espacoSelecionad
                                                 <div key={recurso.id} className="flex items-center space-x-2">
                                                     <Checkbox
                                                         id={`recurso-${recurso.id}`}
+                                                        name={`recursos_solicitados[${recurso.id}]`}
                                                         checked={data.recursos_solicitados.includes(recurso.id)}
                                                         onCheckedChange={(checked) => {
                                                             if (checked === true) {

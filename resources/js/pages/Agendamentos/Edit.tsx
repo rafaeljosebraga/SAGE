@@ -492,6 +492,8 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                         <Input
                                             id="titulo"
                                             name="titulo"
+                                            type="text"
+                                            autoComplete="off"
                                             value={data.titulo}
                                             onChange={(e) => setData('titulo', e.target.value)}
                                             placeholder="Ex: Reunião de equipe, Treinamento..."
@@ -506,6 +508,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                         <Textarea
                                             id="justificativa"
                                             name="justificativa"
+                                            autoComplete="off"
                                             value={data.justificativa}
                                             onChange={(e) => setData('justificativa', e.target.value)}
                                             placeholder="Descreva o motivo e objetivo do agendamento..."
@@ -521,6 +524,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                         <Textarea
                                             id="observacoes"
                                             name="observacoes"
+                                            autoComplete="off"
                                             value={data.observacoes}
                                             onChange={(e) => setData('observacoes', e.target.value)}
                                             placeholder="Informações adicionais..."
@@ -552,6 +556,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                                 id="data_inicio"
                                                 name="data_inicio"
                                                 type="date"
+                                                autoComplete="off"
                                                 value={data.data_inicio}
                                                 onChange={(e) => setData('data_inicio', e.target.value)}
                                             />
@@ -566,6 +571,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                                 id="hora_inicio"
                                                 name="hora_inicio"
                                                 type="time"
+                                                autoComplete="off"
                                                 value={data.hora_inicio}
                                                 onChange={(e) => setData('hora_inicio', e.target.value)}
                                             />
@@ -580,6 +586,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                                 id="data_fim"
                                                 name="data_fim"
                                                 type="date"
+                                                autoComplete="off"
                                                 value={data.data_fim}
                                                 onChange={(e) => setData('data_fim', e.target.value)}
                                             />
@@ -594,6 +601,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                                 id="hora_fim"
                                                 name="hora_fim"
                                                 type="time"
+                                                autoComplete="off"
                                                 value={data.hora_fim}
                                                 onChange={(e) => setData('hora_fim', e.target.value)}
                                             />
@@ -627,6 +635,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                                 <div key={recurso.id} className="flex items-center space-x-2">
                                                     <Checkbox
                                                         id={`recurso-${recurso.id}`}
+                                                        name={`recursos_solicitados[${recurso.id}]`}
                                                         checked={data.recursos_solicitados.includes(recurso.id)}
                                                         onCheckedChange={(checked) => {
                                                             if (checked) {

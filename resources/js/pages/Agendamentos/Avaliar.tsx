@@ -1146,7 +1146,7 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                               nomeSortOrder !== 'none' || solicitanteSortOrder !== 'none' || 
                               dataInicioSortOrder !== 'none' || dataFimSortOrder !== 'none') && (
                                 <div className="flex flex-col">
-                                    <Label className="mb-2 opacity-0">Ações</Label>
+                                    <div className="mb-2 opacity-0 text-sm font-medium">Ações</div>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
                                             <Button 
