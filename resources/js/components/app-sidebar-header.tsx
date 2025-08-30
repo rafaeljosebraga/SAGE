@@ -2,12 +2,16 @@ import { useEffect, useState } from 'react';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { type BreadcrumbItem as BreadcrumbItemType } from '@/types';
-import { Moon, Sun } from 'lucide-react';
+import { Bell, Moon, Sun } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { NotificationsModal } from '@/components/ui/NotificationsModal';
 
 export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbItemType[] }) {
     const [theme, setTheme] = useState<'light' | 'dark' | null>(null);
     const [hasInteracted, setHasInteracted] = useState(false);
+    const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+    const [notificationCount, setNotificationCount] = useState(0);
+    const [notifications, setNotifications] = useState([]);
 
     // Carrega o tema salvo
     useEffect(() => {
@@ -20,6 +24,11 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
             setTheme('light');
         }
     }, []);
+
+    // Carrega as notificações quando o modal é aberto
+    useEffect(() => {
+        fetchNotifications();
+    }, [isNotificationsOpen]);
 
     // Alterna o tema
     const toggleTheme = () => {
@@ -35,12 +44,54 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
         }
     };
 
+    const toggleNotifications = () => {
+        setIsNotificationsOpen(!isNotificationsOpen);
+    };
+
+    // Busca notificações do usuário
+    const fetchNotifications = async () => {
+        try {
+            // Substitua pelo ID do usuário logado
+            const userId = 1; // Isso deve vir do contexto de autenticação
+            const response = await fetch(`notificacoes/user/${userId}`);
+            if (response.ok) {
+                const data = await response.json();
+                setNotifications(data);
+                setNotificationCount(data.length);
+
+                // Calcula quantas notificações não lidas
+            }
+        } catch (error) {
+            console.error('Erro ao carregar notificações:', error);
+        }
+    };
+
+
     return (
+        <>
         <header className="flex h-16 shrink-0 items-center justify-between border-b border-sidebar-border/50 px-6 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:px-4">
             <div className="flex items-center gap-2">
                 <SidebarTrigger className="-ml-1" />
                 <Breadcrumbs breadcrumbs={breadcrumbs} />
             </div>
+            {/* Botão de Notificações com Contador */}
+            <div className="flex items-center gap-3">
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <button
+                            onClick={toggleNotifications}
+                            className="relative cursor-pointer text-muted-foreground hover:text-foreground transition-all duration-300 p-2 rounded-lg hover:bg-sidebar-accent/50 hover:scale-105 active:scale-95"
+                        >
+                            <Bell className="h-5 w-5" />
+                            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                                {notificationCount > 99 ? '99+' : notificationCount}
+                            </span>
+                        </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="left">
+                        <p>Notificações</p>
+                    </TooltipContent>
+                </Tooltip>
             <Tooltip>
                 <TooltipTrigger asChild>
                     <button
@@ -49,12 +100,12 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                     >
                         <div className="relative w-5 h-5">
                             {/* Sun Icon */}
-                            <Sun 
+                            <Sun
                                 className={`absolute inset-0 h-5 w-5 text-yellow-400 ${
                                     hasInteracted ? 'transition-all duration-500 ease-in-out' : ''
                                 } ${
-                                    theme === 'dark' 
-                                        ? 'opacity-100 rotate-0 scale-100' 
+                                    theme === 'dark'
+                                        ? 'opacity-100 rotate-0 scale-100'
                                         : 'opacity-0 rotate-180 scale-75'
                                 }`}
                                 style={{
@@ -62,12 +113,12 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                                 }}
                             />
                             {/* Moon Icon */}
-                            <Moon 
+                            <Moon
                                 className={`absolute inset-0 h-5 w-5 text-blue-500 ${
                                     hasInteracted ? 'transition-all duration-500 ease-in-out' : ''
                                 } ${
-                                    theme === 'light' 
-                                        ? 'opacity-100 rotate-0 scale-100' 
+                                    theme === 'light'
+                                        ? 'opacity-100 rotate-0 scale-100'
                                         : 'opacity-0 -rotate-180 scale-75'
                                 }`}
                                 style={{
@@ -81,6 +132,14 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                     <p>Alternar tema</p>
                 </TooltipContent>
             </Tooltip>
+            </div>
         </header>
+
+            <NotificationsModal
+                isOpen={isNotificationsOpen}
+                onClose={() => setIsNotificationsOpen(false)}
+                notifications={notifications}
+            />
+        </>
     );
 }

@@ -7,6 +7,7 @@ use App\Http\Controllers\RecursoController;
 use App\Http\Controllers\EspacoUserController;
 use App\Http\Controllers\FotoController;
 use App\Http\Controllers\AgendamentoController;
+use App\Http\Controllers\notificacaoController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -98,7 +99,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get("avaliar-agendamentos", [AgendamentoController::class, "gerenciar"])->name("agendamentos.avaliar");
         Route::post("agendamentos/{agendamento}/aprovar", [AgendamentoController::class, "aprovar"])->name("agendamentos.aprovar");
         Route::post("agendamentos/{agendamento}/rejeitar", [AgendamentoController::class, "rejeitar"])->name("agendamentos.rejeitar");
-        
+
         // Rotas de Gerenciamento de Conflitos
         Route::get("gerenciar-agendamentos", [\App\Http\Controllers\GerenciarAgendamentosController::class, "index"])->name("agendamentos.gerenciar");
         Route::post("conflitos/resolver", [\App\Http\Controllers\GerenciarAgendamentosController::class, "resolverConflito"])->name("conflitos.resolver");
@@ -106,6 +107,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get("conflitos/{grupoConflito}/detalhes", [\App\Http\Controllers\GerenciarAgendamentosController::class, "detalhesConflito"])->name("conflitos.detalhes");
         Route::get("conflitos/resolvidos-hoje", [\App\Http\Controllers\GerenciarAgendamentosController::class, "conflitosResolvidosHoje"])->name("conflitos.resolvidos-hoje");
     });
+
+    // Rotas para Notificações
+    Route::get('/notificacoes/user/{user_id}', [notificacaoController::class, 'getUserNotifications']);
+    Route::put('/notificacoes/{notificacao_id}/read', [notificacaoController::class, 'markAsRead']);
+    Route::delete('/notificacoes/{notificacao_id}', [notificacaoController::class, 'deleteNotification']);
 });
 
 require __DIR__ . '/settings.php';
