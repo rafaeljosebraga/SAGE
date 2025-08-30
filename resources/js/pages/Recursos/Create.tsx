@@ -197,7 +197,7 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                                             if (errors.nome) clearErrors('nome');
                                         }}
                                         placeholder="Nome do recurso"
-                                        className={errors.nome ? 'border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
+                                        className={errors.nome ? 'h-10 border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
                                     />
                                     {errors.nome && (
                                         <p className="text-sm text-red-500">{errors.nome}</p>
@@ -216,7 +216,7 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                                     >
                                         <SelectTrigger 
                                             id="status"
-                                            className={errors.status ? 'border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}>
+                                            className={errors.status ? 'h-10 border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}>
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -282,7 +282,7 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                                             if (errors.marca) clearErrors('marca');
                                         }}
                                         placeholder="Marca do equipamento"
-                                        className={errors.marca ? 'border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
+                                        className={errors.marca ? 'h-10 border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
                                     />
                                     {errors.marca && (
                                         <p className="text-sm text-red-500">{errors.marca}</p>
@@ -301,7 +301,7 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                                             if (errors.modelo) clearErrors('modelo');
                                         }}
                                         placeholder="Modelo do equipamento"
-                                        className={errors.modelo ? 'border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
+                                        className={errors.modelo ? 'h-10 border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
                                     />
                                     {errors.modelo && (
                                         <p className="text-sm text-red-500">{errors.modelo}</p>

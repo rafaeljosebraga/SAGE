@@ -408,7 +408,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                                         value={data.nome}
                                         onChange={(e) => handleNomeChange(e.target.value)}
                                         placeholder="Nome do espaço"
-                                        className={errors.nome ? 'border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
+                                        className={errors.nome ? 'h-10 border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
                                     />
                                     {errors.nome && (
                                         <p className="text-sm text-red-500">{errors.nome}</p>
@@ -425,7 +425,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                                         onChange={(e) => handleCapacidadeChange(e.target.value)}
                                         placeholder="Ex: 50"
                                         min="1"
-                                        className={errors.capacidade ? 'border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
+                                        className={errors.capacidade ? 'h-10 border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
                                     />
                                     {errors.capacidade && (
                                         <p className="text-sm text-red-500">{errors.capacidade}</p>
@@ -468,7 +468,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                                         placeholder="Selecione uma localização"
                                         searchPlaceholder="Buscar localização..."
                                         className=""
-                                        triggerClassName={(errors.localizacao_id ? 'border-red-500 ' : '') + 'bg-sidebar border-sidebar-border text-sidebar-foreground'}
+                                        triggerClassName={(errors.localizacao_id ? 'h-10 border-red-500 ' : 'h-10 ') + 'bg-sidebar border-sidebar-border text-sidebar-foreground'}
                                     />
                                     {errors.localizacao_id && (
                                         <p className="text-sm text-red-500">{errors.localizacao_id}</p>
@@ -484,7 +484,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                                     >
                                         <SelectTrigger
                                             id="status"
-                                            className={errors.status ? 'border-red-500 bg-sidebar text-sidebar-foreground' : 'bg-sidebar border-sidebar-border text-sidebar-foreground'}
+                                            className={errors.status ? 'h-10 border-red-500 bg-sidebar text-sidebar-foreground' : 'h-10 bg-sidebar border-sidebar-border text-sidebar-foreground'}
                                         >
                                             <SelectValue />
                                         </SelectTrigger>

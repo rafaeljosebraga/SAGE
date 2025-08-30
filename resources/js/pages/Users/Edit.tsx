@@ -180,7 +180,7 @@ export default function Edit({ user, perfilAcesso }: Props) {
                                         if (errors.name) clearErrors('name');
                                     }}
                                     placeholder="Digite o nome completo"
-                                    className={errors.name ? 'border-red-500 bg-white dark:bg-black' : 'bg-white border-black dark:bg-black'}
+                                    className={errors.name ? 'h-10 border-red-500 bg-white dark:bg-black' : 'h-10 bg-white border-black dark:bg-black'}
                                        />
                                 {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
                             </div>

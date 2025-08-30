@@ -189,6 +189,10 @@ export function Combobox({
             <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
             <Input
               ref={inputRef}
+              id={id ? `${id}-search` : undefined}
+              name={name ? `${name}-search` : undefined}
+              type="text"
+              autoComplete="off"
               placeholder={searchPlaceholder}
               value={searchValue}
               onChange={(e) => {

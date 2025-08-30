@@ -480,7 +480,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                                 value: espaco.id.toString(),
                                                 label: `${espaco.nome} (${espaco.capacidade} pessoas)`
                                             }))}
-                                            triggerClassName="flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 bg-white border-black dark:bg-black"
+                                            triggerClassName="flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 dark:bg-sidebar dark:border-sidebar-border dark:text-sidebar-foreground bg-sidebar border-sidebar-border text-sidebar-foreground"
                                         />
                                         {errors.espaco_id && (
                                             <p className="text-sm text-red-600 mt-1">{errors.espaco_id}</p>
@@ -497,6 +497,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                             value={data.titulo}
                                             onChange={(e) => setData('titulo', e.target.value)}
                                             placeholder="Ex: Reunião de equipe, Treinamento..."
+                                            className="h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground"
                                         />
                                         {errors.titulo && (
                                             <p className="text-sm text-red-600 mt-1">{errors.titulo}</p>
@@ -513,6 +514,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                             onChange={(e) => setData('justificativa', e.target.value)}
                                             placeholder="Descreva o motivo e objetivo do agendamento..."
                                             rows={4}
+                                            className="bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground"
                                         />
                                         {errors.justificativa && (
                                             <p className="text-sm text-red-600 mt-1">{errors.justificativa}</p>
@@ -529,6 +531,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                             onChange={(e) => setData('observacoes', e.target.value)}
                                             placeholder="Informações adicionais..."
                                             rows={3}
+                                            className="bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground"
                                         />
                                     </div>
                                 </CardContent>
@@ -559,6 +562,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                                 autoComplete="off"
                                                 value={data.data_inicio}
                                                 onChange={(e) => setData('data_inicio', e.target.value)}
+                                                className="h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground"
                                             />
                                             {errors.data_inicio && (
                                                 <p className="text-sm text-red-600 mt-1">{errors.data_inicio}</p>
@@ -574,6 +578,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                                 autoComplete="off"
                                                 value={data.hora_inicio}
                                                 onChange={(e) => setData('hora_inicio', e.target.value)}
+                                                className="h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground"
                                             />
                                             {errors.hora_inicio && (
                                                 <p className="text-sm text-red-600 mt-1">{errors.hora_inicio}</p>
@@ -589,6 +594,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                                 autoComplete="off"
                                                 value={data.data_fim}
                                                 onChange={(e) => setData('data_fim', e.target.value)}
+                                                className="h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground"
                                             />
                                             {errors.data_fim && (
                                                 <p className="text-sm text-red-600 mt-1">{errors.data_fim}</p>
@@ -604,6 +610,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                                 autoComplete="off"
                                                 value={data.hora_fim}
                                                 onChange={(e) => setData('hora_fim', e.target.value)}
+                                                className="h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground"
                                             />
                                             {errors.hora_fim && (
                                                 <p className="text-sm text-red-600 mt-1">{errors.hora_fim}</p>

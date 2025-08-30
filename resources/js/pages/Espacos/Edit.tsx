@@ -382,7 +382,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos, flas
                                         value={data.nome}
                                         onChange={(e) => handleNomeChange(e.target.value)}
                                         placeholder="Nome do espaço"
-                                        className={errors.nome ? 'border-red-500 bg-sidebar text-sidebar-foreground' : 'bg-sidebar border-sidebar-border text-sidebar-foreground'}
+                                        className={errors.nome ? 'h-10 border-red-500 bg-sidebar text-sidebar-foreground' : 'h-10 bg-sidebar border-sidebar-border text-sidebar-foreground'}
                                     />
                                     {errors.nome && (
                                         <p className="text-sm text-red-500">{errors.nome}</p>
@@ -399,7 +399,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos, flas
                                         value={data.capacidade}
                                         onChange={(e) => handleCapacidadeChange(e.target.value)}
                                         placeholder="Número de pessoas"
-                                        className={errors.capacidade ? 'border-red-500 bg-sidebar text-sidebar-foreground' : 'bg-sidebar border-sidebar-border text-sidebar-foreground'}
+                                        className={errors.capacidade ? 'h-10 border-red-500 bg-sidebar text-sidebar-foreground' : 'h-10 bg-sidebar border-sidebar-border text-sidebar-foreground'}
                                     />
                                     {errors.capacidade && (
                                         <p className="text-sm text-red-500">{errors.capacidade}</p>
@@ -442,7 +442,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos, flas
                                         placeholder="Selecione uma localização"
                                         searchPlaceholder="Buscar localização..."
                                         className=""
-                                        triggerClassName={(errors.localizacao_id ? 'border-red-500 ' : '') + 'bg-sidebar border-sidebar-border text-sidebar-foreground'}
+                                        triggerClassName={(errors.localizacao_id ? 'h-10 border-red-500 ' : 'h-10 ') + 'bg-sidebar border-sidebar-border text-sidebar-foreground'}
                                     />
                                     {errors.localizacao_id && (
                                         <p className="text-sm text-red-500">{errors.localizacao_id}</p>
@@ -458,7 +458,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos, flas
                                     >
                                         <SelectTrigger 
                                             id="status"
-                                            className={errors.nome ? 'border-red-500 bg-sidebar text-sidebar-foreground' : 'bg-sidebar border-sidebar-border text-sidebar-foreground'}
+                                            className={errors.status ? 'h-10 border-red-500 bg-sidebar text-sidebar-foreground' : 'h-10 bg-sidebar border-sidebar-border text-sidebar-foreground'}
                                         >
                                             <SelectValue />
                                         </SelectTrigger>

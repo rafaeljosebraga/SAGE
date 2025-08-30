@@ -182,7 +182,7 @@ export default function LocalizacoesEdit({ auth, localizacao, flash }: Localizac
                                     value={data.nome}
                                     onChange={(e) => setData('nome', e.target.value)}
                                     placeholder="Nome da localização (ex: Prédio A, Bloco Central)"
-                                    className={errors.nome ? 'border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
+                                    className={errors.nome ? 'h-10 border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
                                 />
                                 {errors.nome && (
                                     <p className="text-sm text-red-500">{errors.nome}</p>
