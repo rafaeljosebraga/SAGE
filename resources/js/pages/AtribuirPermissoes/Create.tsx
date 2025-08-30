@@ -93,7 +93,6 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
     }, [isModalOpen, scrollToResponsaveis]);
 
     const handleViewDetails = (espaco: Espaco) => {
-        console.log("ABRINDO MODAL DE DETALHES");
         setSelectedEspaco(espaco);
         setIsModalOpen(true);
         setScrollToResponsaveis(false);
@@ -106,8 +105,6 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
     };
 
     const closeModal = () => {
-
-        console.log("Matando o modal");
         setIsModalOpen(false);
         setSelectedEspaco(null);
         setScrollToResponsaveis(false);

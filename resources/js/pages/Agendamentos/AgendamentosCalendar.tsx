@@ -136,6 +136,7 @@ export default function AgendamentosCalendar({
                                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         id="nome_agendamento"
+                                        name="nome_agendamento"
                                         placeholder="Buscar por nome..."
                                         value={nomeFilter}
                                         onChange={(e) => setNomeFilter(e.target.value)}
@@ -149,8 +150,9 @@ export default function AgendamentosCalendar({
                                 <Select
                                     value={espacoFilter}
                                     onValueChange={(value) => setEspacoFilter(value)}
+                                    name="espaco"
                                 >
-                                    <SelectTrigger className="border-input bg-background">
+                                    <SelectTrigger id="espaco" className="border-input bg-background">
                                         <SelectValue placeholder="Todos os espaços" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -169,8 +171,9 @@ export default function AgendamentosCalendar({
                                 <Select
                                     value={statusFilter}
                                     onValueChange={(value) => setStatusFilter(value)}
+                                    name="status"
                                 >
-                                    <SelectTrigger className="border-input bg-background">
+                                    <SelectTrigger id="status" className="border-input bg-background">
                                         <SelectValue placeholder="Todos os status" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -186,6 +189,8 @@ export default function AgendamentosCalendar({
                             <div className="min-w-[140px]">
                                 <Label htmlFor="data_inicio">Data Início</Label>
                                 <Input
+                                    id="data_inicio"
+                                    name="data_inicio"
                                     type="date"
                                     value={dataInicioFilter}
                                     onChange={(e) => setDataInicioFilter(e.target.value)}
@@ -196,6 +201,8 @@ export default function AgendamentosCalendar({
                             <div className="min-w-[140px]">
                                 <Label htmlFor="data_fim">Data Fim</Label>
                                 <Input
+                                    id="data_fim"
+                                    name="data_fim"
                                     type="date"
                                     value={dataFimFilter}
                                     onChange={(e) => setDataFimFilter(e.target.value)}
@@ -339,11 +346,12 @@ export default function AgendamentosCalendar({
                     <CardContent>
                         <div className="flex flex-wrap items-end gap-3">
                             <div className="flex-1 min-w-[200px]">
-                                <Label htmlFor="nome_agendamento">Nome do Agendamento</Label>
+                                <Label htmlFor="nome_agendamento_week">Nome do Agendamento</Label>
                                 <div className="relative">
                                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
-                                        id="nome_agendamento"
+                                        id="nome_agendamento_week"
+                                        name="nome_agendamento_week"
                                         placeholder="Buscar por nome..."
                                         value={nomeFilter}
                                         onChange={(e) => setNomeFilter(e.target.value)}
@@ -353,12 +361,13 @@ export default function AgendamentosCalendar({
                             </div>
 
                             <div className="min-w-[140px]">
-                                <Label htmlFor="espaco">Espaço</Label>
+                                <Label htmlFor="espaco_week">Espaço</Label>
                                 <Select
                                     value={espacoFilter}
                                     onValueChange={(value) => setEspacoFilter(value)}
+                                    name="espaco_week"
                                 >
-                                    <SelectTrigger className="border-input bg-background">
+                                    <SelectTrigger id="espaco_week" className="border-input bg-background">
                                         <SelectValue placeholder="Todos os espaços" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -373,12 +382,13 @@ export default function AgendamentosCalendar({
                             </div>
 
                             <div className="min-w-[120px]">
-                                <Label htmlFor="status">Status</Label>
+                                <Label htmlFor="status_week">Status</Label>
                                 <Select
                                     value={statusFilter}
                                     onValueChange={(value) => setStatusFilter(value)}
+                                    name="status_week"
                                 >
-                                    <SelectTrigger className="border-input bg-background">
+                                    <SelectTrigger id="status_week" className="border-input bg-background">
                                         <SelectValue placeholder="Todos os status" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -392,8 +402,10 @@ export default function AgendamentosCalendar({
                             </div>
 
                             <div className="min-w-[140px]">
-                                <Label htmlFor="data_inicio">Data Início</Label>
+                                <Label htmlFor="data_inicio_week">Data Início</Label>
                                 <Input
+                                    id="data_inicio_week"
+                                    name="data_inicio_week"
                                     type="date"
                                     value={dataInicioFilter}
                                     onChange={(e) => setDataInicioFilter(e.target.value)}
@@ -402,8 +414,10 @@ export default function AgendamentosCalendar({
                             </div>
 
                             <div className="min-w-[140px]">
-                                <Label htmlFor="data_fim">Data Fim</Label>
+                                <Label htmlFor="data_fim_week">Data Fim</Label>
                                 <Input
+                                    id="data_fim_week"
+                                    name="data_fim_week"
                                     type="date"
                                     value={dataFimFilter}
                                     onChange={(e) => setDataFimFilter(e.target.value)}
@@ -570,11 +584,12 @@ export default function AgendamentosCalendar({
                         <CardContent>
                             <div className="flex flex-wrap items-end gap-3">
                                 <div className="flex-1 min-w-[200px]">
-                                    <Label htmlFor="nome_agendamento">Nome do Agendamento</Label>
+                                    <Label htmlFor="nome_agendamento_day">Nome do Agendamento</Label>
                                     <div className="relative">
                                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                         <Input
-                                            id="nome_agendamento"
+                                            id="nome_agendamento_day"
+                                            name="nome_agendamento_day"
                                             placeholder="Buscar por nome..."
                                             value={nomeFilter}
                                             onChange={(e) => setNomeFilter(e.target.value)}
@@ -584,12 +599,13 @@ export default function AgendamentosCalendar({
                                 </div>
 
                                 <div className="min-w-[140px]">
-                                    <Label htmlFor="espaco">Espaço</Label>
+                                    <Label htmlFor="espaco_day">Espaço</Label>
                                     <Select
                                         value={espacoFilter}
                                         onValueChange={(value) => setEspacoFilter(value)}
+                                        name="espaco_day"
                                     >
-                                        <SelectTrigger>
+                                        <SelectTrigger id="espaco_day">
                                             <SelectValue placeholder="Todos os espaços" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -604,12 +620,13 @@ export default function AgendamentosCalendar({
                                 </div>
 
                                 <div className="min-w-[120px]">
-                                    <Label htmlFor="status">Status</Label>
+                                    <Label htmlFor="status_day">Status</Label>
                                     <Select
                                         value={statusFilter}
                                         onValueChange={(value) => setStatusFilter(value)}
+                                        name="status_day"
                                     >
-                                        <SelectTrigger className="border-input bg-background">
+                                        <SelectTrigger id="status_day" className="border-input bg-background">
                                             <SelectValue placeholder="Todos os status" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -784,6 +801,7 @@ export default function AgendamentosCalendar({
                                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                         <Input
                                             id="buscar_agendamentos"
+                                            name="buscar_agendamentos"
                                             placeholder="Buscar agendamentos..."
                                             value={searchAgendamentos}
                                             onChange={(e) => setSearchAgendamentos(e.target.value)}
@@ -793,11 +811,12 @@ export default function AgendamentosCalendar({
                                 </div>
 
                                 <div className="flex-1 min-w-[200px]">
-                                    <Label htmlFor="nome_agendamento">Nome do Agendamento</Label>
+                                    <Label htmlFor="nome_agendamento_timeline">Nome do Agendamento</Label>
                                     <div className="relative">
                                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                         <Input
-                                            id="nome_agendamento"
+                                            id="nome_agendamento_timeline"
+                                            name="nome_agendamento_timeline"
                                             placeholder="Buscar por nome..."
                                             value={nomeFilter}
                                             onChange={(e) => setNomeFilter(e.target.value)}
@@ -807,12 +826,13 @@ export default function AgendamentosCalendar({
                                 </div>
 
                                 <div className="min-w-[140px]">
-                                    <Label htmlFor="espaco">Espaço</Label>
+                                    <Label htmlFor="espaco_timeline">Espaço</Label>
                                     <Select
                                         value={espacoFilter}
                                         onValueChange={(value) => setEspacoFilter(value)}
+                                        name="espaco_timeline"
                                     >
-                                        <SelectTrigger>
+                                        <SelectTrigger id="espaco_timeline">
                                             <SelectValue placeholder="Todos os espaços" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -827,12 +847,13 @@ export default function AgendamentosCalendar({
                                 </div>
 
                                 <div className="min-w-[120px]">
-                                    <Label htmlFor="status">Status</Label>
+                                    <Label htmlFor="status_timeline">Status</Label>
                                     <Select
                                         value={statusFilter}
                                         onValueChange={(value) => setStatusFilter(value)}
+                                        name="status_timeline"
                                     >
-                                        <SelectTrigger className="border-input bg-background">
+                                        <SelectTrigger id="status_timeline" className="border-input bg-background">
                                             <SelectValue placeholder="Todos os status" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -848,6 +869,9 @@ export default function AgendamentosCalendar({
                                 <div className="min-w-[140px]">
                                     <Label htmlFor="data_inicio">Data Início</Label>
                                     <Input
+                                        id="data_inicio"
+                                        name="data_inicio"
+                                        aria-label="Data Início"
                                         type="date"
                                         value={dataInicioFilter}
                                         onChange={(e) => setDataInicioFilter(e.target.value)}
@@ -858,6 +882,9 @@ export default function AgendamentosCalendar({
                                 <div className="min-w-[140px]">
                                     <Label htmlFor="data_fim">Data Fim</Label>
                                     <Input
+                                        id="data_fim"
+                                        name="data_fim"
+                                        aria-label="Data Fim"
                                         type="date"
                                         value={dataFimFilter}
                                         onChange={(e) => setDataFimFilter(e.target.value)}

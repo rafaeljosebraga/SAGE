@@ -403,6 +403,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                                     <Label htmlFor="nome">Nome *</Label>
                                     <Input
                                         id="nome"
+                                        name="nome"
                                         type="text"
                                         value={data.nome}
                                         onChange={(e) => handleNomeChange(e.target.value)}
@@ -418,6 +419,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                                     <Label htmlFor="capacidade">Capacidade *</Label>
                                     <Input
                                         id="capacidade"
+                                        name="capacidade"
                                         type="number"
                                         value={data.capacidade}
                                         onChange={(e) => handleCapacidadeChange(e.target.value)}
@@ -435,6 +437,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                                 <Label htmlFor="descricao">Descrição</Label>
                                 <Textarea
                                     id="descricao"
+                                    name="descricao"
                                     value={data.descricao}
                                     onChange={(e) => handleDescricaoChange(e.target.value)}
                                     placeholder="Descreva o espaço..."
@@ -458,6 +461,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                                     <Label htmlFor="localizacao_id">Localização *</Label>
                                     <Combobox
                                         id="localizacao_id"
+                                        name="localizacao_id"
                                         value={data.localizacao_id}
                                         onValueChange={handleLocalizacaoChange}
                                         options={localizacoes.map(l => ({ value: l.id.toString(), label: l.nome }))}
@@ -474,6 +478,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                                 <div className="space-y-2">
                                     <Label htmlFor="status">Status</Label>
                                     <Select
+                                        name="status"
                                         value={data.status}
                                         onValueChange={handleStatusChange}
                                     >

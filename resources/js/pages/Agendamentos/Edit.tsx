@@ -491,6 +491,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                         <Label htmlFor="titulo">Título do Evento *</Label>
                                         <Input
                                             id="titulo"
+                                            name="titulo"
                                             value={data.titulo}
                                             onChange={(e) => setData('titulo', e.target.value)}
                                             placeholder="Ex: Reunião de equipe, Treinamento..."
@@ -504,6 +505,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                         <Label htmlFor="justificativa">Justificativa *</Label>
                                         <Textarea
                                             id="justificativa"
+                                            name="justificativa"
                                             value={data.justificativa}
                                             onChange={(e) => setData('justificativa', e.target.value)}
                                             placeholder="Descreva o motivo e objetivo do agendamento..."
@@ -518,6 +520,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                         <Label htmlFor="observacoes">Observações</Label>
                                         <Textarea
                                             id="observacoes"
+                                            name="observacoes"
                                             value={data.observacoes}
                                             onChange={(e) => setData('observacoes', e.target.value)}
                                             placeholder="Informações adicionais..."
@@ -547,6 +550,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                             <Label htmlFor="data_inicio">Data de Início *</Label>
                                             <Input
                                                 id="data_inicio"
+                                                name="data_inicio"
                                                 type="date"
                                                 value={data.data_inicio}
                                                 onChange={(e) => setData('data_inicio', e.target.value)}
@@ -560,6 +564,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                             <Label htmlFor="hora_inicio">Hora de Início *</Label>
                                             <Input
                                                 id="hora_inicio"
+                                                name="hora_inicio"
                                                 type="time"
                                                 value={data.hora_inicio}
                                                 onChange={(e) => setData('hora_inicio', e.target.value)}
@@ -573,6 +578,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                             <Label htmlFor="data_fim">Data de Fim *</Label>
                                             <Input
                                                 id="data_fim"
+                                                name="data_fim"
                                                 type="date"
                                                 value={data.data_fim}
                                                 onChange={(e) => setData('data_fim', e.target.value)}
@@ -586,6 +592,7 @@ export default function AgendamentosEdit({ agendamento, espacos, recursos }: Pro
                                             <Label htmlFor="hora_fim">Hora de Fim *</Label>
                                             <Input
                                                 id="hora_fim"
+                                                name="hora_fim"
                                                 type="time"
                                                 value={data.hora_fim}
                                                 onChange={(e) => setData('hora_fim', e.target.value)}

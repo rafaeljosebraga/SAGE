@@ -377,6 +377,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos, flas
                                     <Label htmlFor="nome">Nome *</Label>
                                     <Input
                                         id="nome"
+                                        name="nome"
                                         type="text"
                                         value={data.nome}
                                         onChange={(e) => handleNomeChange(e.target.value)}
@@ -392,6 +393,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos, flas
                                     <Label htmlFor="capacidade">Capacidade *</Label>
                                     <Input
                                         id="capacidade"
+                                        name="capacidade"
                                         type="number"
                                         min="1"
                                         value={data.capacidade}
@@ -409,6 +411,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos, flas
                                 <Label htmlFor="descricao">Descrição</Label>
                                 <Textarea
                                     id="descricao"
+                                    name="descricao"
                                     value={data.descricao}
                                     onChange={(e: ChangeEvent<HTMLTextAreaElement>) => handleDescricaoChange(e.target.value)}
                                     placeholder="Descrição do espaço"
@@ -432,6 +435,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos, flas
                                     <Label htmlFor="localizacao_id">Localização *</Label>
                                     <Combobox
                                         id="localizacao_id"
+                                        name="localizacao_id"
                                         value={data.localizacao_id}
                                         onValueChange={handleLocalizacaoChange}
                                         options={localizacoes.map(l => ({ value: l.id.toString(), label: l.nome }))}
@@ -448,6 +452,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos, flas
                                 <div className="space-y-2">
                                     <Label htmlFor="status">Status</Label>
                                     <Select
+                                        name="status"
                                         value={data.status}
                                         onValueChange={handleStatusChange}
                                     >

@@ -188,6 +188,7 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                                     <Label htmlFor="nome">Nome *</Label>
                                     <Input
                                         id="nome"
+                                        name="nome"
                                         type="text"
                                         value={data.nome}
                                         onChange={(e) => {
@@ -205,13 +206,16 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                                 <div className="space-y-2">
                                     <Label htmlFor="status">Status *</Label>
                                     <Select
+                                        name="status"
                                         value={data.status}
                                         onValueChange={(value) => {
                                             setData('status', value as 'disponivel' | 'manutencao' | 'indisponivel');
                                             if (errors.status) clearErrors('status');
                                         }}
                                     >
-                                        <SelectTrigger className={errors.status ? 'border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}>
+                                        <SelectTrigger 
+                                            id="status"
+                                            className={errors.status ? 'border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}>
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
