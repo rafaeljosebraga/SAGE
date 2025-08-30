@@ -180,10 +180,14 @@ export function FilterableTable({
             <div className="rounded-md border">
                 <Table>
                 <TableHeader>
-                    <div className="py-2 px-2 flex items-center gap-3">
-                        <Filter className="h-5 w-5 text-black dark:text-white" />
-                        <span className="text-black dark:text-white text-base">Filtros</span>
-                    </div>
+                    <TableRow>
+                        <TableHead colSpan={columns.length}>
+                            <div className="py-2 px-2 flex items-center gap-3">
+                                <Filter className="h-5 w-5 text-black dark:text-white" />
+                                <span className="text-black dark:text-white text-base">Filtros</span>
+                            </div>
+                        </TableHead>
+                    </TableRow>
 
                        {/* Linha dos cabeçalhos       <TableRow className="bg-card"> */}
                         <TableRow >
