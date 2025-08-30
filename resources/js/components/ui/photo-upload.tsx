@@ -15,6 +15,7 @@ import {
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Upload, X, Image as ImageIcon, Edit2, Trash2, Save, XCircle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface Foto {
     id?: number;
@@ -43,6 +44,7 @@ export function PhotoUpload({
     maxFileSize = 5,
     className = ""
 }: PhotoUploadProps) {
+    const { toast } = useToast();
     const [fotosLocal, setFotosLocal] = useState<Foto[]>(fotos);
     const [arquivosOriginais, setArquivosOriginais] = useState<File[]>([]);
     const [uploading, setUploading] = useState(false);
@@ -73,7 +75,12 @@ export function PhotoUpload({
         
         // Validar número máximo de arquivos
         if (fotosLocal.length + files.length > maxFiles) {
-            alert(`Máximo de ${maxFiles} fotos permitidas`);
+            toast({
+                title: 'Limite de fotos excedido',
+                description: `Máximo de ${maxFiles} fotos permitidas`,
+                variant: 'destructive',
+                duration: 5000,
+            });
             return;
         }
 
