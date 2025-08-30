@@ -184,8 +184,19 @@ export default function Create({ perfilAcesso }: Props) {
                                         if (errors.name) clearErrors('name');
                                     }}
                                     placeholder="Digite o nome completo"
-                                    className={errors.name ? 'border-red-500 bg-white  dark:bg-black' : 'bg-white border-black dark:bg-black'}
-                                     />
+                                    className={`
+                                        flex w-full rounded-md border px-3 py-2 text-sm
+                                        ring-offset-background 
+                                        placeholder:text-muted-foreground
+                                        focus-visible:outline-none focus-visible:ring-2 
+                                        focus-visible:ring-ring focus-visible:ring-offset-2
+                                        disabled:cursor-not-allowed disabled:opacity-50
+                                        bg-sidebar dark:bg-sidebar 
+                                        border-sidebar-border dark:border-sidebar-border 
+                                        text-sidebar-foreground dark:text-sidebar-foreground
+                                        ${errors.name ? 'border-red-500' : ''}
+                                    `}
+                                />
                                 {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
                             </div>
 
@@ -200,18 +211,49 @@ export default function Create({ perfilAcesso }: Props) {
                                         if (errors.email) clearErrors('email');
                                     }}
                                     placeholder="Digite o e-mail"
-                                    className={errors.email ? 'border-red-500 bg-white dark:bg-black' : 'bg-white border-black dark:bg-black'}
-                                      />
+                                    className={`
+                                        flex w-full rounded-md border px-3 py-2 text-sm
+                                        ring-offset-background 
+                                        placeholder:text-muted-foreground
+                                        focus-visible:outline-none focus-visible:ring-2 
+                                        focus-visible:ring-ring focus-visible:ring-offset-2
+                                        disabled:cursor-not-allowed disabled:opacity-50
+                                        bg-sidebar dark:bg-sidebar 
+                                        border-sidebar-border dark:border-sidebar-border 
+                                        text-sidebar-foreground dark:text-sidebar-foreground
+                                        [&:-webkit-autofill]:bg-sidebar
+                                        [&:-webkit-autofill]:dark:bg-sidebar
+                                        [&:-webkit-autofill]:text-sidebar-foreground
+                                        [&:-webkit-autofill]:dark:text-sidebar-foreground
+                                        [&:-webkit-autofill]:shadow-[0_0_0_1000px_var(--bg-sidebar)_inset]
+                                        [&:-webkit-autofill]:dark:shadow-[0_0_0_1000px_var(--bg-sidebar)_inset]
+                                        ${errors.email ? 'border-red-500' : ''}
+                                    `}
+                                />
                                 {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
                             </div>
 
                             <div className="space-y-2">
                                 <Label htmlFor="perfil_acesso">Perfil de Acesso *</Label>
-                                <Select value={data.perfil_acesso} onValueChange={(value) => {
-                                    setData('perfil_acesso', value);
-                                    if (errors.perfil_acesso) clearErrors('perfil_acesso');
-                                }}>
-                                    <SelectTrigger className={errors.perfil_acesso ? 'cursor-pointer border-red-500 bg-white dark:bg-black' : 'cursor-pointer bg-white border-black dark:bg-black'}>
+                                <Select 
+                                    value={data.perfil_acesso} 
+                                    onValueChange={(value) => {
+                                        setData('perfil_acesso', value);
+                                        if (errors.perfil_acesso) clearErrors('perfil_acesso');
+                                    }}
+                                >
+                                    <SelectTrigger className={`
+                                        flex w-full rounded-md border px-3 py-2 text-sm
+                                        ring-offset-background 
+                                        placeholder:text-muted-foreground
+                                        focus-visible:outline-none focus-visible:ring-2 
+                                        focus-visible:ring-ring focus-visible:ring-offset-2
+                                        disabled:cursor-not-allowed disabled:opacity-50
+                                        bg-sidebar dark:bg-sidebar 
+                                        border-sidebar-border dark:border-sidebar-border 
+                                        text-sidebar-foreground dark:text-sidebar-foreground
+                                        ${errors.perfil_acesso ? 'border-red-500' : ''}
+                                    `}>
                                         <SelectValue placeholder="Selecione o perfil" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -233,7 +275,6 @@ export default function Create({ perfilAcesso }: Props) {
                                     value={data.password}
                                     onChange={(e) => {
                                         setData('password', e.target.value);
-                                        // Limpa erros de ambos os campos de senha
                                         if (errors.password) clearErrors('password');
                                         if (errors.password_confirmation) clearErrors('password_confirmation');
                                     }}
@@ -244,8 +285,25 @@ export default function Create({ perfilAcesso }: Props) {
                                     onDrop={(e) => e.preventDefault()}
                                     onContextMenu={(e) => e.preventDefault()}
                                     placeholder="Digite a senha (mínimo 8 caracteres)"
-                                    className={errors.password ? 'border-red-500 bg-white dark:bg-black' : 'bg-white border-black dark:bg-black'}
-                                     />
+                                    className={`
+                                        flex w-full rounded-md border px-3 py-2 text-sm
+                                        ring-offset-background 
+                                        placeholder:text-muted-foreground
+                                        focus-visible:outline-none focus-visible:ring-2 
+                                        focus-visible:ring-ring focus-visible:ring-offset-2
+                                        disabled:cursor-not-allowed disabled:opacity-50
+                                        bg-sidebar dark:bg-sidebar 
+                                        border-sidebar-border dark:border-sidebar-border 
+                                        text-sidebar-foreground dark:text-sidebar-foreground
+                                        [&:-webkit-autofill]:bg-sidebar
+                                        [&:-webkit-autofill]:dark:bg-sidebar
+                                        [&:-webkit-autofill]:text-sidebar-foreground
+                                        [&:-webkit-autofill]:dark:text-sidebar-foreground
+                                        [&:-webkit-autofill]:shadow-[0_0_0_1000px_var(--bg-sidebar)_inset]
+                                        [&:-webkit-autofill]:dark:shadow-[0_0_0_1000px_var(--bg-sidebar)_inset]
+                                        ${errors.password ? 'border-red-500' : ''}
+                                    `}
+                                />
                                 {errors.password && <p className="text-sm text-red-500">{errors.password}</p>}
                             </div>
 
@@ -257,7 +315,6 @@ export default function Create({ perfilAcesso }: Props) {
                                     value={data.password_confirmation}
                                     onChange={(e) => {
                                         setData('password_confirmation', e.target.value);
-                                        // Limpa erros de ambos os campos de senha
                                         if (errors.password) clearErrors('password');
                                         if (errors.password_confirmation) clearErrors('password_confirmation');
                                     }}
@@ -268,37 +325,58 @@ export default function Create({ perfilAcesso }: Props) {
                                     onDrop={(e) => e.preventDefault()}
                                     onContextMenu={(e) => e.preventDefault()}
                                     placeholder="Confirme a senha"
-                                    className={errors.password_confirmation ? 'border-red-500 bg-white dark:bg-black' : 'bg-white border-black dark:bg-black'}
-                                       />
+                                    className={`
+                                        flex w-full rounded-md border px-3 py-2 text-sm
+                                        ring-offset-background 
+                                        placeholder:text-muted-foreground
+                                        focus-visible:outline-none focus-visible:ring-2 
+                                        focus-visible:ring-ring focus-visible:ring-offset-2
+                                        disabled:cursor-not-allowed disabled:opacity-50
+                                        bg-sidebar dark:bg-sidebar 
+                                        border-sidebar-border dark:border-sidebar-border 
+                                        text-sidebar-foreground dark:text-sidebar-foreground
+                                        [&:-webkit-autofill]:bg-sidebar
+                                        [&:-webkit-autofill]:dark:bg-sidebar
+                                        [&:-webkit-autofill]:text-sidebar-foreground
+                                        [&:-webkit-autofill]:dark:text-sidebar-foreground
+                                        [&:-webkit-autofill]:shadow-[0_0_0_1000px_var(--bg-sidebar)_inset]
+                                        [&:-webkit-autofill]:dark:shadow-[0_0_0_1000px_var(--bg-sidebar)_inset]
+                                        ${errors.password_confirmation ? 'border-red-500' : ''}
+                                    `}
+                                />
                                 {errors.password_confirmation && <p className="text-sm text-red-500">{errors.password_confirmation}</p>}
                             </div>
                              {(errors as any).error && <p className="text-sm text-red-500">{(errors as any).error}</p>}
 
                             <div className="flex gap-4 pt-4">
-                                <Button type="submit" disabled={processing}
-                                className="
+                                <Button 
+                                    type="submit" 
+                                    disabled={processing}
+                                    className="
                                         ml-1
-                                        bg-white dark:bg-white
-                                        text-black dark:text-black
-                                        hover:bg-gray-100 dark:hover:bg-gray-300
+                                        bg-green-700 dark:bg-green-800
+                                        text-white dark:text-white
+                                        hover:bg-green-600 dark:hover:bg-green-700
                                         cursor-pointer 
                                         transition-colors
-                                        border border-black" 
+                                        border-none
+                                    "
                                 >
                                     {processing ? 'Criando...' : 'Criar Usuário'}
                                 </Button>
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild>
                                         <Button
-                                        className="
-                                        bg-black dark:bg-black
-                                        text-white dark:text-white
-                                        hover:bg-gray-800 dark:hover:bg-gray-900
-                                        hover:text-white
-                                        cursor-pointer
-                                        trasition-colors
-                                    "
-                                    >
+                                            className="
+                                                bg-gray-100 dark:bg-gray-800
+                                                text-gray-800 dark:text-gray-100
+                                                hover:bg-orange-100 dark:hover:bg-orange-900
+                                                hover:text-orange-700 dark:hover:text-orange-100
+                                                cursor-pointer
+                                                transition-colors
+                                                border border-gray-300 dark:border-gray-700
+                                            "
+                                        >
                                             Cancelar
                                         </Button>
                                     </AlertDialogTrigger>
@@ -310,16 +388,28 @@ export default function Create({ perfilAcesso }: Props) {
                                             </AlertDialogDescription>
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
-                                            <AlertDialogCancel className='cursor-pointer'>Não</AlertDialogCancel>
+                                            <AlertDialogCancel 
+                                                className="
+                                                    cursor-pointer
+                                                    bg-gray-100 dark:bg-gray-800
+                                                    hover:bg-gray-200 dark:hover:bg-gray-700
+                                                    text-gray-800 dark:text-gray-100
+                                                "
+                                            >
+                                                Não
+                                            </AlertDialogCancel>
                                             <AlertDialogAction
                                                 onClick={() => {
                                                     reset();
                                                 }}
-                                                className="cursor-pointer bg-red-600 hover:bg-red-700"
+                                                className="
+                                                    cursor-pointer 
+                                                    bg-orange-600 hover:bg-orange-700
+                                                    text-white
+                                                "
                                             >
                                                 Sim, cancelar
                                             </AlertDialogAction>
-        
                                         </AlertDialogFooter>
                                     </AlertDialogContent>
                                 </AlertDialog>    
