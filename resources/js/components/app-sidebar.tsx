@@ -13,7 +13,6 @@ export function AppSidebar() {
     const isDiretorGeral = useIsDiretorGeral();
     const hasEspacoAtribuido = useHasEspacoAtribuido();
     const auth = useAuth();
-    console.log(hasEspacoAtribuido);
 
     // Verificar se o usuário NÃO é administrador (mostrar agendamentos para todos exceto administradores)
     const canViewAgendamentos = auth?.user?.perfil_acesso !== 'administrador';

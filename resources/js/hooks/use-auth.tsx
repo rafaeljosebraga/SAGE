@@ -24,9 +24,8 @@ export function useHasEspacoAtribuido() {
     if (!user || !user.perfil_acesso) {
         return false;
     }
-    const qtd = user.espacos.length;
-    console.log('Quantidade de espaços atribuídos:', qtd);
-    if (qtd > 0||user.perfil_acesso === 'diretor_geral') {
+    const qtd = user.espacos?.length || 0;
+    if (qtd > 0 || user.perfil_acesso === 'diretor_geral') {
         return true;
     }
     return false;

@@ -1,42 +1,52 @@
-import { Dialog, DialogContent, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 interface ConfirmDialogProps {
-    open: boolean;
-    title?: string;
-    confirmLabel?: string;
-    cancelLabel?: string;
-    onConfirm: () => void;
-    onCancel: () => void;
-    children: React.ReactNode;
-    onOpenChange?: (open: boolean) => void;
+  open: boolean;
+  title?: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+  children: React.ReactNode;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function ConfirmDialog({
-    open,
-    title = "Tem certeza?",
-    confirmLabel = "Confirmar",
-    cancelLabel = "Cancelar",
-    onConfirm,
-    onCancel,
-    children,
-    onOpenChange,
+  open,
+  title = "Tem certeza?",
+  confirmLabel = "Confirmar",
+  cancelLabel = "Não",
+  onConfirm,
+  onCancel,
+  children,
+  onOpenChange,
 }: ConfirmDialogProps) {
-    return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent>
-                <DialogTitle>{title}</DialogTitle>
-                <div className="text-sm text-gray-700">{children}</div>
-                <DialogFooter>
-                    <Button variant="secondary" onClick={onCancel}>
-                        {cancelLabel}
-                    </Button>
-                    <Button variant="destructive" onClick={onConfirm}>
-                        {confirmLabel}
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    );
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {children}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={onCancel}>{cancelLabel}</AlertDialogCancel>
+          <AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={onConfirm}>
+            {confirmLabel}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
 }
 

@@ -6,6 +6,16 @@ import { Link } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from '@/components/ui/alert-dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -283,6 +293,7 @@ export default function AgendamentosModals({
                                         value={formData.titulo}
                                         onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
                                         placeholder="Ex: Reunião de Planejamento"
+                                        className="bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground"
                                     />
                                 </div>
 
@@ -299,7 +310,7 @@ export default function AgendamentosModals({
                                             value: espaco.id.toString(),
                                             label: `${espaco.nome} (Cap: ${espaco.capacidade})`
                                         }))}
-                                        triggerClassName="border-input placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground flex h-9 w-full min-w-0 rounded-md border bg-background px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
+                                        triggerClassName="dark:bg-sidebar dark:border-sidebar-border dark:text-sidebar-foreground bg-sidebar border-sidebar-border text-sidebar-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground flex h-9 w-full min-w-0 rounded-md border px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
                                     />
                                 </div>
 
@@ -311,6 +322,7 @@ export default function AgendamentosModals({
                                         type="date"
                                         value={formData.data_inicio}
                                         onChange={(e) => setFormData({ ...formData, data_inicio: e.target.value })}
+                                        className="bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground"
                                     />
                                 </div>
 
@@ -322,6 +334,7 @@ export default function AgendamentosModals({
                                         type="time"
                                         value={formData.hora_inicio}
                                         onChange={(e) => setFormData({ ...formData, hora_inicio: e.target.value })}
+                                        className="bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground"
                                     />
                                 </div>
 
@@ -334,6 +347,7 @@ export default function AgendamentosModals({
                                         value={formData.data_fim}
                                         onChange={(e) => setFormData({ ...formData, data_fim: e.target.value })}
                                         min={formData.data_inicio}
+                                        className="bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground"
                                     />
                                 </div>
 
@@ -350,6 +364,7 @@ export default function AgendamentosModals({
                                                 ? formData.hora_inicio
                                                 : undefined
                                         }
+                                        className="bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground"
                                     />
                                 </div>
                             </div>
@@ -363,6 +378,7 @@ export default function AgendamentosModals({
                                     onChange={(e) => setFormData({ ...formData, justificativa: e.target.value })}
                                     placeholder="Descreva o motivo do agendamento..."
                                     rows={3}
+                                    className="bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground"
                                 />
                             </div>
 
@@ -375,6 +391,7 @@ export default function AgendamentosModals({
                                     onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
                                     placeholder="Informações adicionais..."
                                     rows={2}
+                                    className="bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground"
                                 />
                             </div>
 
@@ -397,7 +414,7 @@ export default function AgendamentosModals({
                                             value={formData.tipo_recorrencia}
                                             onValueChange={(value) => setFormData({ ...formData, tipo_recorrencia: value })}
                                         >
-                                            <SelectTrigger id="tipo_recorrencia">
+                                            <SelectTrigger id="tipo_recorrencia" className="dark:bg-sidebar dark:border-sidebar-border dark:text-sidebar-foreground bg-sidebar border-sidebar-border text-sidebar-foreground">
                                                 <SelectValue placeholder="Selecione uma opção" />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -417,6 +434,7 @@ export default function AgendamentosModals({
                                             value={formData.data_fim_recorrencia}
                                             onChange={(e) => setFormData({ ...formData, data_fim_recorrencia: e.target.value })}
                                             min={formData.data_fim}
+                                            className="bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground"
                                         />
                                     </div>
                                 </div>
@@ -446,31 +464,20 @@ export default function AgendamentosModals({
             </Dialog>
             
             {/* Modal de confirmação de cancelamento do formulário de criação */}
-            <Dialog open={showCancelCreateConfirm} onOpenChange={setShowCancelCreateConfirm}>
-                <DialogContent className="max-w-md">
-                    <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2">
-                            <AlertTriangle className="h-5 w-5 text-yellow-600" />
-                            Cancelar criação de agendamento
-                        </DialogTitle>
-                        <DialogDescription>
-                            Confirme se deseja cancelar a criação do agendamento.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="py-4">
-                        <p className="text-center text-muted-foreground">
-                            Deseja realmente cancelar e voltar? O progresso feito será perdido!
-                        </p>
-                    </div>
-                    <DialogFooter className="gap-2">
-                        <Button
-                            variant="outline"
-                            onClick={() => setShowCancelCreateConfirm(false)}
-                        >
+            <AlertDialog open={showCancelCreateConfirm} onOpenChange={setShowCancelCreateConfirm}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Tem certeza que deseja cancelar?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Todas as informações preenchidas serão limpas.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => setShowCancelCreateConfirm(false)}>
                             Não
-                        </Button>
-                        <Button
-                            variant="destructive"
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            className="bg-red-600 hover:bg-red-700"
                             onClick={() => {
                                 setShowCancelCreateConfirm(false);
                                 setCreateModal({ open: false });
@@ -478,10 +485,10 @@ export default function AgendamentosModals({
                             }}
                         >
                             Sim, cancelar e voltar
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             {/* Modal de Conflito */}
             <Dialog open={conflictModal.open} onOpenChange={(open) => {

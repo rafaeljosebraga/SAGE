@@ -139,7 +139,7 @@ export default function AgendamentosCalendar({
                                         placeholder="Buscar por nome..."
                                         value={nomeFilter}
                                         onChange={(e) => setNomeFilter(e.target.value)}
-                                        className="pl-10"
+                                        className="pl-10 border-input bg-background"
                                     />
                                 </div>
                             </div>
@@ -150,7 +150,7 @@ export default function AgendamentosCalendar({
                                     value={espacoFilter}
                                     onValueChange={(value) => setEspacoFilter(value)}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className="border-input bg-background">
                                         <SelectValue placeholder="Todos os espaços" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -170,7 +170,7 @@ export default function AgendamentosCalendar({
                                     value={statusFilter}
                                     onValueChange={(value) => setStatusFilter(value)}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className="border-input bg-background">
                                         <SelectValue placeholder="Todos os status" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -189,7 +189,7 @@ export default function AgendamentosCalendar({
                                     type="date"
                                     value={dataInicioFilter}
                                     onChange={(e) => setDataInicioFilter(e.target.value)}
-                                    className="text-sm"
+                                    className="text-sm border-input bg-background"
                                 />
                             </div>
 
@@ -199,7 +199,7 @@ export default function AgendamentosCalendar({
                                     type="date"
                                     value={dataFimFilter}
                                     onChange={(e) => setDataFimFilter(e.target.value)}
-                                    className="text-sm"
+                                    className="text-sm border-input bg-background"
                                 />
                             </div>
 
@@ -237,7 +237,7 @@ export default function AgendamentosCalendar({
 
             <div className="grid grid-cols-7 gap-1">
                 {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day) => (
-                    <div key={day} className="p-3 text-center font-medium text-muted-foreground bg-muted rounded-lg">{day}</div>
+                    <div key={day} className="p-3 text-center font-medium text-foreground bg-muted/70 dark:bg-muted/60 border border-border rounded-lg">{day}</div>
                 ))}
             </div>
             <div className="grid grid-cols-7 gap-1">
@@ -249,7 +249,7 @@ export default function AgendamentosCalendar({
                         <div
                             key={day.toISOString()}
                             className={`min-h-[120px] p-2 border-2 border-border/100 hover:border-border/60 rounded-lg cursor-pointer transition-all duration-200 ${
-                                isCurrentMonth ? 'bg-background hover:bg-muted/50' : 'bg-muted/30 hover:bg-muted/40'
+                                isCurrentMonth ? 'bg-background hover:bg-muted/40' : 'bg-muted/40 hover:bg-muted/50'
                             } ${isCurrentDay ? 'ring-2 ring-primary shadow-md border-primary/50' : 'hover:shadow-sm'}`}
                             onClick={() => handleDayClick(day, dayEvents)}
                         >
@@ -347,7 +347,7 @@ export default function AgendamentosCalendar({
                                         placeholder="Buscar por nome..."
                                         value={nomeFilter}
                                         onChange={(e) => setNomeFilter(e.target.value)}
-                                        className="pl-10"
+                                        className="pl-10 border-input bg-background"
                                     />
                                 </div>
                             </div>
@@ -358,7 +358,7 @@ export default function AgendamentosCalendar({
                                     value={espacoFilter}
                                     onValueChange={(value) => setEspacoFilter(value)}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className="border-input bg-background">
                                         <SelectValue placeholder="Todos os espaços" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -378,7 +378,7 @@ export default function AgendamentosCalendar({
                                     value={statusFilter}
                                     onValueChange={(value) => setStatusFilter(value)}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className="border-input bg-background">
                                         <SelectValue placeholder="Todos os status" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -397,7 +397,7 @@ export default function AgendamentosCalendar({
                                     type="date"
                                     value={dataInicioFilter}
                                     onChange={(e) => setDataInicioFilter(e.target.value)}
-                                    className="text-sm"
+                                    className="text-sm border-input bg-background"
                                 />
                             </div>
 
@@ -407,7 +407,7 @@ export default function AgendamentosCalendar({
                                     type="date"
                                     value={dataFimFilter}
                                     onChange={(e) => setDataFimFilter(e.target.value)}
-                                    className="text-sm"
+                                    className="text-sm border-input bg-background"
                                 />
                             </div>
 
@@ -445,7 +445,7 @@ export default function AgendamentosCalendar({
 
             {/* Cabeçalho dos dias */}
             <div className="grid grid-cols-8 gap-1">
-                <div className="p-3 text-center font-medium text-muted-foreground"></div>
+                <div className="p-3 text-center font-medium text-foreground bg-muted/60 dark:bg-muted/50 border border-border rounded-lg"></div>
                 {days.map((day) => {
                     const isCurrentDay = isToday(day);
                     return (
@@ -454,7 +454,7 @@ export default function AgendamentosCalendar({
                             className={`p-3 text-center font-medium rounded-lg ${
                                 isCurrentDay
                                     ? 'bg-primary text-primary-foreground'
-                                    : 'bg-muted text-muted-foreground'
+                                    : 'bg-muted/70 dark:bg-muted/60 text-foreground border border-border'
                             }`}
                         >
                             <div className="text-sm">{format(day, 'EEE', { locale: ptBR })}</div>
@@ -471,7 +471,7 @@ export default function AgendamentosCalendar({
                 {timeSlots.map((timeSlot) => (
                     <React.Fragment key={timeSlot}>
                         {/* Coluna de horários */}
-                        <div className="p-2 text-sm text-muted-foreground font-medium bg-muted/30 rounded-lg flex items-center justify-center">
+                        <div className="p-2 text-sm text-foreground font-medium bg-muted/40 dark:bg-muted/30 border border-border rounded-lg flex items-center justify-center">
                             {timeSlot}
                         </div>
 
@@ -578,7 +578,7 @@ export default function AgendamentosCalendar({
                                             placeholder="Buscar por nome..."
                                             value={nomeFilter}
                                             onChange={(e) => setNomeFilter(e.target.value)}
-                                            className="pl-10"
+                                            className="pl-10 border-input bg-background"
                                         />
                                     </div>
                                 </div>
@@ -609,7 +609,7 @@ export default function AgendamentosCalendar({
                                         value={statusFilter}
                                         onValueChange={(value) => setStatusFilter(value)}
                                     >
-                                        <SelectTrigger>
+                                        <SelectTrigger className="border-input bg-background">
                                             <SelectValue placeholder="Todos os status" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -653,7 +653,7 @@ export default function AgendamentosCalendar({
                 )}
 
                 {/* Cabeçalho do dia */}
-                <div className="text-center p-4 bg-muted rounded-lg">
+                <div className="text-center p-4 bg-muted/70 dark:bg-muted/60 border border-border text-foreground rounded-lg">
                     <h3 className="text-lg font-semibold">
                         {format(currentDate, 'EEEE, dd \'de\' MMMM \'de\' yyyy', { locale: ptBR })}
                     </h3>
@@ -787,7 +787,7 @@ export default function AgendamentosCalendar({
                                             placeholder="Buscar agendamentos..."
                                             value={searchAgendamentos}
                                             onChange={(e) => setSearchAgendamentos(e.target.value)}
-                                            className="pl-10"
+                                            className="pl-10 border-input bg-background"
                                         />
                                     </div>
                                 </div>
@@ -801,7 +801,7 @@ export default function AgendamentosCalendar({
                                             placeholder="Buscar por nome..."
                                             value={nomeFilter}
                                             onChange={(e) => setNomeFilter(e.target.value)}
-                                            className="pl-10"
+                                            className="pl-10 border-input bg-background"
                                         />
                                     </div>
                                 </div>
@@ -832,7 +832,7 @@ export default function AgendamentosCalendar({
                                         value={statusFilter}
                                         onValueChange={(value) => setStatusFilter(value)}
                                     >
-                                        <SelectTrigger>
+                                        <SelectTrigger className="border-input bg-background">
                                             <SelectValue placeholder="Todos os status" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -851,7 +851,7 @@ export default function AgendamentosCalendar({
                                         type="date"
                                         value={dataInicioFilter}
                                         onChange={(e) => setDataInicioFilter(e.target.value)}
-                                        className="text-sm"
+                                        className="text-sm border-input bg-background"
                                     />
                                 </div>
 
@@ -861,7 +861,7 @@ export default function AgendamentosCalendar({
                                         type="date"
                                         value={dataFimFilter}
                                         onChange={(e) => setDataFimFilter(e.target.value)}
-                                        className="text-sm"
+                                        className="text-sm border-input bg-background"
                                     />
                                 </div>
 
@@ -900,7 +900,7 @@ export default function AgendamentosCalendar({
 
                 {/* Cabeçalho com dias */}
                 <div className="grid gap-1" style={{ gridTemplateColumns: "200px repeat(7, 1fr)" }}>
-                    <div className="p-3 text-center font-medium text-muted-foreground bg-muted rounded-lg">
+                    <div className="p-3 text-center font-medium text-foreground bg-muted/70 dark:bg-muted/60 border border-border rounded-lg">
                         Espaços
                     </div>
                     {days.map((day) => {
@@ -911,7 +911,7 @@ export default function AgendamentosCalendar({
                                 className={`p-3 text-center font-medium rounded-lg ${
                                     isCurrentDay
                                         ? "bg-primary text-primary-foreground"
-                                        : "bg-muted text-muted-foreground"
+                                        : "bg-muted/70 dark:bg-muted/60 text-foreground border border-border"
                                 }`}
                             >
                                 <div className="text-sm">{format(day, "EEE", { locale: ptBR })}</div>
@@ -937,7 +937,7 @@ export default function AgendamentosCalendar({
                             <div key={espaco.id} className="grid gap-1 w-full"
                                 style={{ gridTemplateColumns: "200px repeat(7, 1fr)" }}>
                                 {/* Informações da sala */}
-                                <div className="p-3 bg-muted/30 rounded-lg">
+                                <div className="p-3 rounded-lg border border-border bg-muted/50 dark:bg-muted/40 text-foreground">
                                     <div className="font-medium text-sm">{espaco.nome}</div>
                                     <div className="text-xs text-muted-foreground">
                                         Cap: {espaco.capacidade}

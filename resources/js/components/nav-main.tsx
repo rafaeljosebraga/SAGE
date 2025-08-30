@@ -15,18 +15,28 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
     const [pendingHref, setPendingHref] = useState<string | null>(null);
 
     const handleNavigation = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+        e.preventDefault(); // Sempre prevenir o comportamento padrão
+        
         if (hasUnsavedChanges) {
-            e.preventDefault();
             setPendingHref(href);
             setShowModal(true);
+        } else {
+            // Usar router.visit com preserveState: false para forçar atualização dos dados
+            router.visit(href, {
+                preserveState: false,
+                preserveScroll: false
+            });
         }
     };
+    
     const confirmNavigation = () => {
         if (pendingHref) {
-            router.visit(pendingHref);
+            router.visit(pendingHref, {
+                preserveState: false,
+                preserveScroll: false
+            });
             setShowModal(false);
             setHasUnsavedChanges(false); // Reset unsaved changes state
-
             setPendingHref(null);
         }
     };
@@ -36,7 +46,7 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
         setPendingHref(null);
     };
 
-return (
+    return (
         <>
             <SidebarGroup className="px-2 py-0">
                 <SidebarGroupLabel>Menu</SidebarGroupLabel>
@@ -48,14 +58,13 @@ return (
                                 isActive={page.url.startsWith(item.href)}
                                 tooltip={{ children: item.title }}
                             >
-                                <Link
+                                <a
                                     href={item.href}
-                                    prefetch
                                     onClick={(e) => handleNavigation(e, item.href)}
                                 >
                                     {item.icon && <item.icon />}
                                     <span>{item.title}</span>
-                                </Link>
+                                </a>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                     ))}

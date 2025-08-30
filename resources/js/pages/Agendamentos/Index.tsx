@@ -1232,7 +1232,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                         placeholder="Buscar por nome..."
                                         value={nomeFilter}
                                         onChange={(e) => setNomeFilter(e.target.value)}
-                                        className="pl-10 pr-10"
+                                        className="pl-10 pr-10 border-input bg-background"
                                     />
                                     <Tooltip>
                                         <TooltipTrigger asChild>
@@ -1258,7 +1258,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                     value={espacoFilter}
                                     onValueChange={(value) => setEspacoFilter(value)}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className="border-input bg-background">
                                         <SelectValue placeholder="Todos os espaços" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -1278,7 +1278,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                     value={statusFilter}
                                     onValueChange={(value) => setStatusFilter(value)}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className="border-input bg-background">
                                         <SelectValue placeholder="Todos os status" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -1298,7 +1298,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                         type="date"
                                         value={dataInicioFilter}
                                         onChange={(e) => setDataInicioFilter(e.target.value)}
-                                        className="pr-8 text-sm"
+                                        className="pr-8 text-sm border-input bg-background"
                                     />
                                     <Tooltip>
                                         <TooltipTrigger asChild>
@@ -1325,7 +1325,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                         type="date"
                                         value={dataFimFilter}
                                         onChange={(e) => setDataFimFilter(e.target.value)}
-                                        className="pr-8 text-sm"
+                                        className="pr-8 text-sm border-input bg-background"
                                     />
                                     <Tooltip>
                                         <TooltipTrigger asChild>
