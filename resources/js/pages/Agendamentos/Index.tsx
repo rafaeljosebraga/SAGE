@@ -744,7 +744,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
         return selectedDateTime <= now;
     };
 
-    const handleDateSelect = (date: Date, timeSlot?: string, preserveEspaco?: boolean) => {
+    const handleDateSelect = (date: Date, timeSlot?: string, preserveEspaco?: boolean, espacoId?: number) => {
         const selectedDate = format(date, 'yyyy-MM-dd');
         const now = new Date();
         const todayStr = format(now, 'yyyy-MM-dd');
@@ -780,7 +780,7 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
 
         const newFormData = {
             titulo: '',
-            espaco_id: preserveEspaco ? formData.espaco_id : '',
+            espaco_id: espacoId ? espacoId.toString() : (preserveEspaco ? formData.espaco_id : ''),
             data_inicio: selectedDate,
             hora_inicio: selectedTime,
             data_fim: selectedDate,
@@ -812,11 +812,18 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
             open: true,
             selectedDate,
             selectedTime,
-            selectedEspaco: selectedEspacos[0]
+            selectedEspaco: espacoId ? espacoId : selectedEspacos[0]
         });
     };
 
     const handleEventClick = (agendamento: Agendamento) => {
+        // Se estamos na visualização timeline, preservar o espaço do agendamento clicado
+        if (viewMode === 'timeline') {
+            setFormData(prev => ({ 
+                ...prev, 
+                espaco_id: agendamento.espaco_id.toString() 
+            }));
+        }
         router.get(`/agendamentos/${agendamento.id}`);
     };
 
