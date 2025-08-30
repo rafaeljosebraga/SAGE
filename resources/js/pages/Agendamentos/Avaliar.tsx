@@ -1444,6 +1444,7 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                                     value={rejectionReason}
                                     onChange={(e) => setRejectionReason(e.target.value)}
                                     rows={4}
+                                    className="bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground"
                                 />
                             </div>
                         </div>

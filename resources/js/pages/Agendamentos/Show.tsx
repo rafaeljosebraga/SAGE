@@ -1302,6 +1302,9 @@ export default function AgendamentosShow({ agendamento, auth, recursosSolicitado
                             <RotateCcw className="h-5 w-5 text-green-600" />
                             Voltar Agendamento
                         </DialogTitle>
+                        <DialogDescription>
+                            {/* Esta ação irá restaurar o agendamento cancelado. */}
+                        </DialogDescription>
                     </DialogHeader>
 
                     <div className="py">

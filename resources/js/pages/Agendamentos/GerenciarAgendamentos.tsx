@@ -1849,6 +1849,9 @@ export default function GerenciarAgendamentos({
                             <CircleCheckBig className="h-5 w-5 text-green-600" />
                             Resolver Conflito de Horário
                         </DialogTitle>
+                        <DialogDescription>
+                            {/* Selecione qual agendamento deve ser aprovado. Os demais serão rejeitados automaticamente. */}
+                        </DialogDescription>
                     </DialogHeader>
 
                     {resolverDialog.grupoConflito && (
@@ -1971,7 +1974,7 @@ export default function GerenciarAgendamentos({
                                         value={motivoRejeicao}
                                         onChange={(e) => setMotivoRejeicao(e.target.value)}
                                         rows={3}
-                                        className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                        className="flex min-h-[80px] w-full rounded-md border px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground"
                                     />
                                 </div>
                                 
@@ -2036,7 +2039,7 @@ export default function GerenciarAgendamentos({
                                 value={motivoRejeicao}
                                 onChange={(e) => setMotivoRejeicao(e.target.value)}
                                 rows={3}
-                                className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                className="flex min-h-[80px] w-full rounded-md border px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground"
                             />
                         </div>
                     </div>
