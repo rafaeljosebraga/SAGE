@@ -503,6 +503,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                             <div className="flex items-center space-x-2">
                                 <Checkbox
                                     id="disponivel_reserva"
+                                    name="disponivel_reserva"
                                     checked={data.disponivel_reserva}
                                     onCheckedChange={(checked) => {
                                         setData('disponivel_reserva', Boolean(checked));
@@ -526,6 +527,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                                         <div key={recurso.id} className="flex items-center space-x-2">
                                             <Checkbox
                                                 id={`recurso-${recurso.id}`}
+                                                name={`recursos[${recurso.id}]`}
                                                 checked={data.recursos.includes(recurso.id)}
                                                 onCheckedChange={(checked) => {
                                                     handleRecursoChange(recurso.id, Boolean(checked));

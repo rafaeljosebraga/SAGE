@@ -309,6 +309,8 @@ export function PhotoUpload({
                 <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center hover:border-muted-foreground/40 transition-colors bg-muted/20 dark:bg-muted/10">
                     <input
                         ref={fileInputRef}
+                        id="photo-upload-input"
+                        name="photos"
                         type="file"
                         multiple
                         accept="image/*"
@@ -449,6 +451,7 @@ export function PhotoUpload({
                                                     <Input
                                                         ref={editDescricaoRef}
                                                         id={`desc-${index}`}
+                                                        name={`photo_description_${index}`}
                                                         value={editDescricao}
                                                         onChange={(e) => setEditDescricao(e.target.value)}
                                                         onKeyDown={(e) => {

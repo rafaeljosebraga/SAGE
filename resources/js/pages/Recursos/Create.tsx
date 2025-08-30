@@ -235,6 +235,7 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                                 <Label htmlFor="descricao">Descrição</Label>
                                 <Textarea
                                     id="descricao"
+                                    name="descricao"
                                     value={data.descricao}
                                     onChange={(e: ChangeEvent<HTMLTextAreaElement>) => {
                                         setData('descricao', e.target.value);
@@ -252,6 +253,7 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                             <div className="flex items-center space-x-2">
                                 <Checkbox
                                     id="fixo"
+                                    name="fixo"
                                     checked={data.fixo}
                                     onCheckedChange={(checked) => setData('fixo', !!checked)}
                                 />
@@ -272,6 +274,7 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                                     <Label htmlFor="marca">Marca</Label>
                                     <Input
                                         id="marca"
+                                        name="marca"
                                         type="text"
                                         value={data.marca}
                                         onChange={(e) => {
@@ -290,6 +293,7 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                                     <Label htmlFor="modelo">Modelo</Label>
                                     <Input
                                         id="modelo"
+                                        name="modelo"
                                         type="text"
                                         value={data.modelo}
                                         onChange={(e) => {
@@ -309,6 +313,7 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                                 <Label htmlFor="observacoes">Observações</Label>
                                 <Textarea
                                     id="observacoes"
+                                    name="observacoes"
                                     value={data.observacoes}
                                     onChange={(e: ChangeEvent<HTMLTextAreaElement>) => {
                                         setData('observacoes', e.target.value);
