@@ -177,26 +177,17 @@ export default function Create({ perfilAcesso }: Props) {
                                 <Label htmlFor="name">Nome *</Label>
                                 <Input
                                     id="name"
+                                    name="name"
                                     type="text"
+                                    autoComplete="name"
                                     value={data.name}
                                     onChange={(e) => {
                                         setData('name', e.target.value);
                                         if (errors.name) clearErrors('name');
                                     }}
                                     placeholder="Digite o nome completo"
-                                    className={`
-                                        flex w-full rounded-md border px-3 py-2 text-sm
-                                        ring-offset-background 
-                                        placeholder:text-muted-foreground
-                                        focus-visible:outline-none focus-visible:ring-2 
-                                        focus-visible:ring-ring focus-visible:ring-offset-2
-                                        disabled:cursor-not-allowed disabled:opacity-50
-                                        bg-sidebar dark:bg-sidebar 
-                                        border-sidebar-border dark:border-sidebar-border 
-                                        text-sidebar-foreground dark:text-sidebar-foreground
-                                        ${errors.name ? 'border-red-500' : ''}
-                                    `}
-                                />
+                                    className={errors.name ? 'h-10 border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
+                                     />
                                 {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
                             </div>
 
@@ -204,56 +195,31 @@ export default function Create({ perfilAcesso }: Props) {
                                 <Label htmlFor="email">E-mail *</Label>
                                 <Input
                                     id="email"
+                                    name="email"
                                     type="email"
+                                    autoComplete="email"
                                     value={data.email}
                                     onChange={(e) => {
                                         setData('email', e.target.value);
                                         if (errors.email) clearErrors('email');
                                     }}
                                     placeholder="Digite o e-mail"
-                                    className={`
-                                        flex w-full rounded-md border px-3 py-2 text-sm
-                                        ring-offset-background 
-                                        placeholder:text-muted-foreground
-                                        focus-visible:outline-none focus-visible:ring-2 
-                                        focus-visible:ring-ring focus-visible:ring-offset-2
-                                        disabled:cursor-not-allowed disabled:opacity-50
-                                        bg-sidebar dark:bg-sidebar 
-                                        border-sidebar-border dark:border-sidebar-border 
-                                        text-sidebar-foreground dark:text-sidebar-foreground
-                                        [&:-webkit-autofill]:bg-sidebar
-                                        [&:-webkit-autofill]:dark:bg-sidebar
-                                        [&:-webkit-autofill]:text-sidebar-foreground
-                                        [&:-webkit-autofill]:dark:text-sidebar-foreground
-                                        [&:-webkit-autofill]:shadow-[0_0_0_1000px_var(--bg-sidebar)_inset]
-                                        [&:-webkit-autofill]:dark:shadow-[0_0_0_1000px_var(--bg-sidebar)_inset]
-                                        ${errors.email ? 'border-red-500' : ''}
-                                    `}
-                                />
+                                    className={errors.email ? 'h-10 border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
+                                      />
                                 {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
                             </div>
 
                             <div className="space-y-2">
                                 <Label htmlFor="perfil_acesso">Perfil de Acesso *</Label>
                                 <Select 
+                                    name="perfil_acesso"
                                     value={data.perfil_acesso} 
                                     onValueChange={(value) => {
                                         setData('perfil_acesso', value);
                                         if (errors.perfil_acesso) clearErrors('perfil_acesso');
                                     }}
                                 >
-                                    <SelectTrigger className={`
-                                        flex w-full rounded-md border px-3 py-2 text-sm
-                                        ring-offset-background 
-                                        placeholder:text-muted-foreground
-                                        focus-visible:outline-none focus-visible:ring-2 
-                                        focus-visible:ring-ring focus-visible:ring-offset-2
-                                        disabled:cursor-not-allowed disabled:opacity-50
-                                        bg-sidebar dark:bg-sidebar 
-                                        border-sidebar-border dark:border-sidebar-border 
-                                        text-sidebar-foreground dark:text-sidebar-foreground
-                                        ${errors.perfil_acesso ? 'border-red-500' : ''}
-                                    `}>
+                                    <SelectTrigger id="perfil_acesso" className={errors.perfil_acesso ? 'h-10 cursor-pointer border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'h-10 cursor-pointer bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}>
                                         <SelectValue placeholder="Selecione o perfil" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -271,7 +237,9 @@ export default function Create({ perfilAcesso }: Props) {
                                 <Label htmlFor="password">Senha *</Label>
                                 <Input
                                     id="password"
+                                    name="password"
                                     type="password"
+                                    autoComplete="new-password"
                                     value={data.password}
                                     onChange={(e) => {
                                         setData('password', e.target.value);
@@ -285,25 +253,8 @@ export default function Create({ perfilAcesso }: Props) {
                                     onDrop={(e) => e.preventDefault()}
                                     onContextMenu={(e) => e.preventDefault()}
                                     placeholder="Digite a senha (mínimo 8 caracteres)"
-                                    className={`
-                                        flex w-full rounded-md border px-3 py-2 text-sm
-                                        ring-offset-background 
-                                        placeholder:text-muted-foreground
-                                        focus-visible:outline-none focus-visible:ring-2 
-                                        focus-visible:ring-ring focus-visible:ring-offset-2
-                                        disabled:cursor-not-allowed disabled:opacity-50
-                                        bg-sidebar dark:bg-sidebar 
-                                        border-sidebar-border dark:border-sidebar-border 
-                                        text-sidebar-foreground dark:text-sidebar-foreground
-                                        [&:-webkit-autofill]:bg-sidebar
-                                        [&:-webkit-autofill]:dark:bg-sidebar
-                                        [&:-webkit-autofill]:text-sidebar-foreground
-                                        [&:-webkit-autofill]:dark:text-sidebar-foreground
-                                        [&:-webkit-autofill]:shadow-[0_0_0_1000px_var(--bg-sidebar)_inset]
-                                        [&:-webkit-autofill]:dark:shadow-[0_0_0_1000px_var(--bg-sidebar)_inset]
-                                        ${errors.password ? 'border-red-500' : ''}
-                                    `}
-                                />
+                                    className={errors.password ? 'h-10 border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
+                                     />
                                 {errors.password && <p className="text-sm text-red-500">{errors.password}</p>}
                             </div>
 
@@ -311,7 +262,9 @@ export default function Create({ perfilAcesso }: Props) {
                                 <Label htmlFor="password_confirmation">Confirmar Senha *</Label>
                                 <Input
                                     id="password_confirmation"
+                                    name="password_confirmation"
                                     type="password"
+                                    autoComplete="new-password"
                                     value={data.password_confirmation}
                                     onChange={(e) => {
                                         setData('password_confirmation', e.target.value);
@@ -325,25 +278,8 @@ export default function Create({ perfilAcesso }: Props) {
                                     onDrop={(e) => e.preventDefault()}
                                     onContextMenu={(e) => e.preventDefault()}
                                     placeholder="Confirme a senha"
-                                    className={`
-                                        flex w-full rounded-md border px-3 py-2 text-sm
-                                        ring-offset-background 
-                                        placeholder:text-muted-foreground
-                                        focus-visible:outline-none focus-visible:ring-2 
-                                        focus-visible:ring-ring focus-visible:ring-offset-2
-                                        disabled:cursor-not-allowed disabled:opacity-50
-                                        bg-sidebar dark:bg-sidebar 
-                                        border-sidebar-border dark:border-sidebar-border 
-                                        text-sidebar-foreground dark:text-sidebar-foreground
-                                        [&:-webkit-autofill]:bg-sidebar
-                                        [&:-webkit-autofill]:dark:bg-sidebar
-                                        [&:-webkit-autofill]:text-sidebar-foreground
-                                        [&:-webkit-autofill]:dark:text-sidebar-foreground
-                                        [&:-webkit-autofill]:shadow-[0_0_0_1000px_var(--bg-sidebar)_inset]
-                                        [&:-webkit-autofill]:dark:shadow-[0_0_0_1000px_var(--bg-sidebar)_inset]
-                                        ${errors.password_confirmation ? 'border-red-500' : ''}
-                                    `}
-                                />
+                                    className={errors.password_confirmation ? 'h-10 border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
+                                       />
                                 {errors.password_confirmation && <p className="text-sm text-red-500">{errors.password_confirmation}</p>}
                             </div>
                              {(errors as any).error && <p className="text-sm text-red-500">{(errors as any).error}</p>}

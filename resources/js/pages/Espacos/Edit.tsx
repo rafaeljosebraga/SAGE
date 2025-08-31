@@ -377,11 +377,12 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos, flas
                                     <Label htmlFor="nome">Nome *</Label>
                                     <Input
                                         id="nome"
+                                        name="nome"
                                         type="text"
                                         value={data.nome}
                                         onChange={(e) => handleNomeChange(e.target.value)}
                                         placeholder="Nome do espaço"
-                                        className={errors.nome ? 'border-red-500 bg-sidebar text-sidebar-foreground' : 'bg-sidebar border-sidebar-border text-sidebar-foreground'}
+                                        className={errors.nome ? 'h-10 border-red-500 bg-sidebar text-sidebar-foreground' : 'h-10 bg-sidebar border-sidebar-border text-sidebar-foreground'}
                                     />
                                     {errors.nome && (
                                         <p className="text-sm text-red-500">{errors.nome}</p>
@@ -392,12 +393,13 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos, flas
                                     <Label htmlFor="capacidade">Capacidade *</Label>
                                     <Input
                                         id="capacidade"
+                                        name="capacidade"
                                         type="number"
                                         min="1"
                                         value={data.capacidade}
                                         onChange={(e) => handleCapacidadeChange(e.target.value)}
                                         placeholder="Número de pessoas"
-                                        className={errors.capacidade ? 'border-red-500 bg-sidebar text-sidebar-foreground' : 'bg-sidebar border-sidebar-border text-sidebar-foreground'}
+                                        className={errors.capacidade ? 'h-10 border-red-500 bg-sidebar text-sidebar-foreground' : 'h-10 bg-sidebar border-sidebar-border text-sidebar-foreground'}
                                     />
                                     {errors.capacidade && (
                                         <p className="text-sm text-red-500">{errors.capacidade}</p>
@@ -409,6 +411,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos, flas
                                 <Label htmlFor="descricao">Descrição</Label>
                                 <Textarea
                                     id="descricao"
+                                    name="descricao"
                                     value={data.descricao}
                                     onChange={(e: ChangeEvent<HTMLTextAreaElement>) => handleDescricaoChange(e.target.value)}
                                     placeholder="Descrição do espaço"
@@ -432,13 +435,14 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos, flas
                                     <Label htmlFor="localizacao_id">Localização *</Label>
                                     <Combobox
                                         id="localizacao_id"
+                                        name="localizacao_id"
                                         value={data.localizacao_id}
                                         onValueChange={handleLocalizacaoChange}
                                         options={localizacoes.map(l => ({ value: l.id.toString(), label: l.nome }))}
                                         placeholder="Selecione uma localização"
                                         searchPlaceholder="Buscar localização..."
                                         className=""
-                                        triggerClassName={(errors.localizacao_id ? 'border-red-500 ' : '') + 'bg-sidebar border-sidebar-border text-sidebar-foreground'}
+                                        triggerClassName={(errors.localizacao_id ? 'h-10 border-red-500 ' : 'h-10 ') + 'bg-sidebar border-sidebar-border text-sidebar-foreground'}
                                     />
                                     {errors.localizacao_id && (
                                         <p className="text-sm text-red-500">{errors.localizacao_id}</p>
@@ -448,12 +452,13 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos, flas
                                 <div className="space-y-2">
                                     <Label htmlFor="status">Status</Label>
                                     <Select
+                                        name="status"
                                         value={data.status}
                                         onValueChange={handleStatusChange}
                                     >
                                         <SelectTrigger 
                                             id="status"
-                                            className={errors.nome ? 'border-red-500 bg-sidebar text-sidebar-foreground' : 'bg-sidebar border-sidebar-border text-sidebar-foreground'}
+                                            className={errors.status ? 'h-10 border-red-500 bg-sidebar text-sidebar-foreground' : 'h-10 bg-sidebar border-sidebar-border text-sidebar-foreground'}
                                         >
                                             <SelectValue />
                                         </SelectTrigger>
@@ -472,6 +477,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos, flas
                             <div className="flex items-center space-x-2">
                                 <Checkbox
                                     id="disponivel_reserva"
+                                    name="disponivel_reserva"
                                     checked={data.disponivel_reserva}
                                     onCheckedChange={(checked) => setData('disponivel_reserva', Boolean(checked))}
                                 />
@@ -494,6 +500,7 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos, flas
                                         <div key={recurso.id} className="flex items-center space-x-2">
                                             <Checkbox
                                                 id={`recurso-${recurso.id}`}
+                                                name={`recursos[${recurso.id}]`}
                                                 checked={data.recursos.includes(recurso.id)}
                                                 onCheckedChange={(checked) => 
                                                     handleRecursoChange(recurso.id, Boolean(checked))

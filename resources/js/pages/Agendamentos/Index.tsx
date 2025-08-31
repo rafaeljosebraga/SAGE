@@ -1236,6 +1236,9 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         id="nome_agendamento"
+                                        name="nome_agendamento"
+                                        aria-label="Nome do Agendamento"
+                                        autoComplete="off"
                                         placeholder="Buscar por nome..."
                                         value={nomeFilter}
                                         onChange={(e) => setNomeFilter(e.target.value)}
@@ -1262,10 +1265,12 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                             <div className="min-w-[140px]">
                                 <Label htmlFor="espaco">Espaço</Label>
                                 <Select
+                                    name="espaco_id"
+                                    aria-label="Espaço"
                                     value={espacoFilter}
                                     onValueChange={(value) => setEspacoFilter(value)}
                                 >
-                                    <SelectTrigger className="border-input bg-background">
+                                    <SelectTrigger id="espaco" className="border-input bg-background">
                                         <SelectValue placeholder="Todos os espaços" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -1282,10 +1287,12 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                             <div className="min-w-[120px]">
                                 <Label htmlFor="status">Status</Label>
                                 <Select
+                                    name="status"
+                                    aria-label="Status"
                                     value={statusFilter}
                                     onValueChange={(value) => setStatusFilter(value)}
                                 >
-                                    <SelectTrigger className="border-input bg-background">
+                                    <SelectTrigger id="status" className="border-input bg-background">
                                         <SelectValue placeholder="Todos os status" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -1302,6 +1309,9 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                 <Label htmlFor="data_inicio">Data Início</Label>
                                 <div className="relative">
                                     <Input
+                                        id="data_inicio"
+                                        name="data_inicio"
+                                        aria-label="Data Início"
                                         type="date"
                                         value={dataInicioFilter}
                                         onChange={(e) => setDataInicioFilter(e.target.value)}
@@ -1329,6 +1339,9 @@ export default function AgendamentosIndex({ agendamentos, espacos, filters, auth
                                 <Label htmlFor="data_fim">Data Fim</Label>
                                 <div className="relative">
                                     <Input
+                                        id="data_fim"
+                                        name="data_fim"
+                                        aria-label="Data Fim"
                                         type="date"
                                         value={dataFimFilter}
                                         onChange={(e) => setDataFimFilter(e.target.value)}

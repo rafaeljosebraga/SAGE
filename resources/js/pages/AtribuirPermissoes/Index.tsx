@@ -23,8 +23,8 @@ export default function AtribuirPermissoesIndex({ users, espacos }: AtribuirPerm
 
     async function handleViewDetails(id: number) {
         try {
-            console.log(users);
-            console.log('Buscando espaços para o usuário ID:', id);
+
+
             const response = await axios.get(`/usuarios/${id}/espacos`);
             setUsuarioSelecionado(users.find(user => user.id === id) || null);
             setSalasDoUsuario(response.data); // é a lista de espacos

@@ -171,14 +171,16 @@ export default function Edit({ user, perfilAcesso }: Props) {
                                 <Label htmlFor="name">Nome *</Label>
                                 <Input
                                     id="name"
+                                    name="name"
                                     type="text"
+                                    autoComplete="name"
                                     value={data.name}
                                      onChange={(e) => {
                                         setData('name', e.target.value);
                                         if (errors.name) clearErrors('name');
                                     }}
                                     placeholder="Digite o nome completo"
-                                    className={errors.name ? 'border-red-500 bg-white dark:bg-black' : 'bg-white border-black dark:bg-black'}
+                                    className={errors.name ? 'h-10 border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
                                        />
                                 {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
                             </div>
@@ -187,25 +189,31 @@ export default function Edit({ user, perfilAcesso }: Props) {
                                 <Label htmlFor="email">E-mail *</Label>
                                 <Input
                                     id="email"
+                                    name="email"
                                     type="email"
+                                    autoComplete="email"
                                     value={data.email}
                                       onChange={(e) => {
                                         setData('email', e.target.value);
                                         if (errors.email) clearErrors('email');
                                     }}
                                     placeholder="Digite o e-mail"
-                                    className={errors.email ? 'border-red-500 bg-white dark:bg-black' : 'bg-white border-black dark:bg-black'}
+                                    className={errors.email ? 'h-10 border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
                                               />
                                 {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
                             </div>
 
                             <div className="space-y-2">
                                 <Label htmlFor="perfil_acesso">Perfil de Acesso *</Label>
-                                 <Select value={data.perfil_acesso} onValueChange={(value) => {
-                                    setData('perfil_acesso', value);
-                                    if (errors.perfil_acesso) clearErrors('perfil_acesso');
-                                }}>
-                                    <SelectTrigger className={errors.perfil_acesso ? 'cursor-pointer border-red-500 bg-white dark:bg-black' : 'cursor-pointer bg-white border-black dark:bg-black'}>
+                                 <Select 
+                                    name="perfil_acesso"
+                                    value={data.perfil_acesso} 
+                                    onValueChange={(value) => {
+                                        setData('perfil_acesso', value);
+                                        if (errors.perfil_acesso) clearErrors('perfil_acesso');
+                                    }}
+                                >
+                                    <SelectTrigger id="perfil_acesso" className={errors.perfil_acesso ? 'h-10 cursor-pointer border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'h-10 cursor-pointer bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}>
                                         <SelectValue placeholder="Selecione o perfil" />
                                     </SelectTrigger>
                                     <SelectContent>

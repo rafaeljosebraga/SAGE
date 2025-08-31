@@ -93,7 +93,6 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
     }, [isModalOpen, scrollToResponsaveis]);
 
     const handleViewDetails = (espaco: Espaco) => {
-        console.log("ABRINDO MODAL DE DETALHES");
         setSelectedEspaco(espaco);
         setIsModalOpen(true);
         setScrollToResponsaveis(false);
@@ -106,8 +105,6 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
     };
 
     const closeModal = () => {
-
-        console.log("Matando o modal");
         setIsModalOpen(false);
         setSelectedEspaco(null);
         setScrollToResponsaveis(false);
@@ -660,7 +657,7 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
                         <div className="p-6 space-y-6 overflow-y-auto flex-1 bg-card">
                             {/* Informações Básicas */}
                             <div className="grid grid-cols-1 gap-4">
-                                <div className="bg-muted/50 dark:bg-gray-800/80 p-4 rounded-lg border border-border dark:border-gray-600">
+                                <div className="p-4 rounded-lg border bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground">
                                     <label className="text-sm font-medium text-muted-foreground">Nome</label>
                                     <p className="text-lg font-semibold text-card-foreground mt-1">{selectedEspaco.nome}</p>
                                 </div>
@@ -668,14 +665,14 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
 
                             {/* Capacidade e Status */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="bg-muted/50 dark:bg-gray-800/80 p-4 rounded-lg border border-border dark:border-gray-600">
+                                <div className="p-4 rounded-lg border bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground">
                                     <label className="text-sm font-medium text-muted-foreground">Capacidade</label>
                                     <div className="flex items-center gap-2 mt-1">
                                         <Users className="h-5 w-5 text-muted-foreground" />
                                         <p className="text-lg text-card-foreground">{selectedEspaco.capacidade} pessoas</p>
                                     </div>
                                 </div>
-                                <div className="bg-muted/50 dark:bg-gray-800/80 p-4 rounded-lg border border-border dark:border-gray-600">
+                                <div className="p-4 rounded-lg border bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground">
                                     <label className="text-sm font-medium text-muted-foreground">Status</label>
                                     <div className="mt-1">
                                         <Badge
@@ -689,7 +686,7 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
                             </div>
 
                             {/* Localização */}
-                            <div className="bg-muted/50 dark:bg-gray-800/80 p-4 rounded-lg border border-border dark:border-gray-600">
+                            <div className="p-4 rounded-lg border bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground">
                                 <label className="text-sm font-medium text-muted-foreground">Localização</label>
                                 <div className="flex items-center gap-2 mt-1">
                                     <MapPin className="h-5 w-5 text-muted-foreground" />
@@ -700,7 +697,7 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
                             </div>
 
                             {/* Responsáveis */}
-                            <div id="responsaveis-section" className="bg-muted/50 dark:bg-gray-800/80 p-4 rounded-lg border border-border dark:border-gray-600">
+                            <div id="responsaveis-section" className="p-4 rounded-lg border bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground">
                                 <label className="text-sm font-medium text-muted-foreground">Responsáveis</label>
                                 {(() => {
                                     const responsaveis: Array<User & { tipo: string }> = [];
@@ -760,7 +757,7 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
                             </div>
 
                             {/* Disponibilidade para Reserva */}
-                            <div className="bg-muted/50 dark:bg-gray-800/80 p-4 rounded-lg border border-border dark:border-gray-600">
+                            <div className="p-4 rounded-lg border bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground">
                                 <label className="text-sm font-medium text-muted-foreground">Disponível para Reserva</label>
                                 <div className="mt-1">
                                     <Badge
@@ -778,7 +775,7 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
 
                             {/* Descrição */}
                             {selectedEspaco.descricao && (
-                                <div className="bg-muted/50 dark:bg-gray-800/80 p-4 rounded-lg border border-border dark:border-gray-600">
+                                <div className="p-4 rounded-lg border bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground">
                                     <label className="text-sm font-medium text-muted-foreground">Descrição</label>
                                     <p className="text-card-foreground mt-1 leading-relaxed">{selectedEspaco.descricao}</p>
                                 </div>
@@ -786,7 +783,7 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
 
                             {/* Observações */}
                             {selectedEspaco.observacoes && (
-                                <div className="bg-muted/50 dark:bg-gray-800/80 p-4 rounded-lg border border-border dark:border-gray-600">
+                                <div className="p-4 rounded-lg border bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground">
                                     <label className="text-sm font-medium text-muted-foreground">Observações</label>
                                     <p className="text-card-foreground mt-1 leading-relaxed">{selectedEspaco.observacoes}</p>
                                 </div>
@@ -811,7 +808,7 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
                             )}
 
                             {/* Fotos do Espaço */}
-                            <div className="bg-muted/50 dark:bg-gray-800/80 p-4 rounded-lg border border-border dark:border-gray-600">
+                            <div className="p-4 rounded-lg border bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground">
                                 <div className="flex items-center gap-2 mb-3">
                                     <ImageIcon className="h-5 w-5 text-muted-foreground" />
                                     <label className="text-sm font-medium text-muted-foreground">
@@ -854,7 +851,7 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
                             </div>
 
                             {/* Informações de Auditoria */}
-                            <div className="bg-muted/50 dark:bg-gray-800/80 p-4 rounded-lg border border-border dark:border-gray-600 border-t">
+                            <div className="p-4 rounded-lg border bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground border-t">
                                 <h3 className="text-lg font-medium text-card-foreground mb-3">Informações de Auditoria</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                                     <div className="bg-background/50 dark:bg-gray-700/50 p-3 rounded-md border border-border dark:border-gray-500">
@@ -888,7 +885,7 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
                                     closeModal();
                                     router.visit(`/espacos/${selectedEspaco.id}/editar`);
                                 }}
-                                className="cursor-pointer"
+                                className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive shadow-xs h-9 px-4 py-2 has-[>svg]:px-3 cursor-pointer bg-black text-white border border-gray-300 hover:bg-white hover:text-black hover:border-black transition-colors duration-300 dark:bg-white dark:text-black dark:border-gray-600 dark:hover:bg-black dark:hover:text-white rounded-lg"
                             >
                                 <Pencil className="mr-2 h-4 w-4" />
                                 Editar

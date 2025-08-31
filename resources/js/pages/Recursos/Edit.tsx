@@ -188,6 +188,7 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                                     <Label htmlFor="nome">Nome *</Label>
                                     <Input
                                         id="nome"
+                                        name="nome"
                                         type="text"
                                         value={data.nome}
                                         onChange={(e) => {
@@ -195,7 +196,7 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                                             if (errors.nome) clearErrors('nome');
                                         }}
                                         placeholder="Nome do recurso"
-                                        className={errors.nome ? 'border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
+                                        className={errors.nome ? 'h-10 border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
                                     />
                                     {errors.nome && (
                                         <p className="text-sm text-red-500">{errors.nome}</p>
@@ -205,13 +206,16 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                                 <div className="space-y-2">
                                     <Label htmlFor="status">Status *</Label>
                                     <Select
+                                        name="status"
                                         value={data.status}
                                         onValueChange={(value) => {
                                             setData('status', value as 'disponivel' | 'manutencao' | 'indisponivel');
                                             if (errors.status) clearErrors('status');
                                         }}
                                     >
-                                        <SelectTrigger className={errors.status ? 'border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}>
+                                        <SelectTrigger 
+                                            id="status"
+                                            className={errors.status ? 'h-10 border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}>
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -274,7 +278,7 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                                             if (errors.marca) clearErrors('marca');
                                         }}
                                         placeholder="Marca do equipamento"
-                                        className={errors.marca ? 'border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
+                                        className={errors.marca ? 'h-10 border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
                                     />
                                     {errors.marca && (
                                         <p className="text-sm text-red-500">{errors.marca}</p>
@@ -292,7 +296,7 @@ export default function RecursosEdit({ auth, recurso }: RecursosEditProps) {
                                             if (errors.modelo) clearErrors('modelo');
                                         }}
                                         placeholder="Modelo do equipamento"
-                                        className={errors.modelo ? 'border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
+                                        className={errors.modelo ? 'h-10 border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
                                     />
                                     {errors.modelo && (
                                         <p className="text-sm text-red-500">{errors.modelo}</p>

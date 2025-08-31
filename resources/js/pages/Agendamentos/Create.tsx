@@ -167,11 +167,12 @@ export default function AgendamentosCreate({ espacos, recursos, espacoSelecionad
                                     <div>
                                         <Label htmlFor="espaco_id">Espaço *</Label>
                                         <Select
+                                            name="espaco_id"
                                             value={data.espaco_id}
                                             onValueChange={handleEspacoChange}
                                             disabled={isFormDisabled}
                                         >
-                                            <SelectTrigger>
+                                            <SelectTrigger id="espaco_id">
                                                 <SelectValue placeholder="Selecione um espaço" />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -191,6 +192,7 @@ export default function AgendamentosCreate({ espacos, recursos, espacoSelecionad
                                         <Label htmlFor="titulo">Título do Evento *</Label>
                                         <Input
                                             id="titulo"
+                                            name="titulo"
                                             value={data.titulo}
                                             onChange={(e) => setData('titulo', e.target.value)}
                                             placeholder="Ex: Reunião de equipe, Treinamento..."
@@ -205,6 +207,7 @@ export default function AgendamentosCreate({ espacos, recursos, espacoSelecionad
                                         <Label htmlFor="justificativa">Justificativa *</Label>
                                         <Textarea
                                             id="justificativa"
+                                            name="justificativa"
                                             value={data.justificativa}
                                             onChange={(e) => setData('justificativa', e.target.value)}
                                             placeholder="Descreva o motivo e objetivo do agendamento..."
@@ -220,6 +223,7 @@ export default function AgendamentosCreate({ espacos, recursos, espacoSelecionad
                                         <Label htmlFor="observacoes">Observações</Label>
                                         <Textarea
                                             id="observacoes"
+                                            name="observacoes"
                                             value={data.observacoes}
                                             onChange={(e) => setData('observacoes', e.target.value)}
                                             placeholder="Informações adicionais..."
@@ -244,6 +248,7 @@ export default function AgendamentosCreate({ espacos, recursos, espacoSelecionad
                                             <Label htmlFor="data_inicio">Data de Início *</Label>
                                             <Input
                                                 id="data_inicio"
+                                                name="data_inicio"
                                                 type="date"
                                                 value={data.data_inicio}
                                                 onChange={(e) => setData('data_inicio', e.target.value)}
@@ -259,6 +264,7 @@ export default function AgendamentosCreate({ espacos, recursos, espacoSelecionad
                                             <Label htmlFor="hora_inicio">Hora de Início *</Label>
                                             <Input
                                                 id="hora_inicio"
+                                                name="hora_inicio"
                                                 type="time"
                                                 value={data.hora_inicio}
                                                 onChange={(e) => setData('hora_inicio', e.target.value)}
@@ -273,6 +279,7 @@ export default function AgendamentosCreate({ espacos, recursos, espacoSelecionad
                                             <Label htmlFor="data_fim">Data de Fim *</Label>
                                             <Input
                                                 id="data_fim"
+                                                name="data_fim"
                                                 type="date"
                                                 value={data.data_fim}
                                                 onChange={(e) => setData('data_fim', e.target.value)}
@@ -288,6 +295,7 @@ export default function AgendamentosCreate({ espacos, recursos, espacoSelecionad
                                             <Label htmlFor="hora_fim">Hora de Fim *</Label>
                                             <Input
                                                 id="hora_fim"
+                                                name="hora_fim"
                                                 type="time"
                                                 value={data.hora_fim}
                                                 onChange={(e) => setData('hora_fim', e.target.value)}
@@ -304,6 +312,7 @@ export default function AgendamentosCreate({ espacos, recursos, espacoSelecionad
                                         <div className="flex items-center space-x-2">
                                             <Checkbox
                                                 id="recorrente"
+                                                name="recorrente"
                                                 checked={data.recorrente}
                                                 onCheckedChange={handleRecorrenteChange}
                                                 disabled={isFormDisabled}
@@ -316,11 +325,12 @@ export default function AgendamentosCreate({ espacos, recursos, espacoSelecionad
                                                 <div>
                                                     <Label htmlFor="tipo_recorrencia">Tipo de Recorrência *</Label>
                                                     <Select
+                                                        name="tipo_recorrencia"
                                                         value={data.tipo_recorrencia}
                                                         onValueChange={(value) => setData('tipo_recorrencia', value)}
                                                         disabled={isFormDisabled}
                                                     >
-                                                        <SelectTrigger>
+                                                        <SelectTrigger id="tipo_recorrencia">
                                                             <SelectValue placeholder="Selecione uma opção" />
                                                         </SelectTrigger>
                                                         <SelectContent>
@@ -338,6 +348,7 @@ export default function AgendamentosCreate({ espacos, recursos, espacoSelecionad
                                                     <Label htmlFor="data_fim_recorrencia">Data Fim da Recorrência *</Label>
                                                     <Input
                                                         id="data_fim_recorrencia"
+                                                        name="data_fim_recorrencia"
                                                         type="date"
                                                         value={data.data_fim_recorrencia}
                                                         onChange={(e) => setData('data_fim_recorrencia', e.target.value)}
@@ -369,6 +380,7 @@ export default function AgendamentosCreate({ espacos, recursos, espacoSelecionad
                                                 <div key={recurso.id} className="flex items-center space-x-2">
                                                     <Checkbox
                                                         id={`recurso-${recurso.id}`}
+                                                        name={`recursos_solicitados[${recurso.id}]`}
                                                         checked={data.recursos_solicitados.includes(recurso.id)}
                                                         onCheckedChange={(checked) => {
                                                             if (checked === true) {

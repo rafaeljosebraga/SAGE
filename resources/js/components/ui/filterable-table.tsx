@@ -180,10 +180,14 @@ export function FilterableTable({
             <div className="rounded-md border">
                 <Table>
                 <TableHeader>
-                    <div className="py-2 px-2 flex items-center gap-3">
-                        <Filter className="h-5 w-5 text-black dark:text-white" />
-                        <span className="text-black dark:text-white text-base">Filtros</span>
-                    </div>
+                    <TableRow>
+                        <TableHead colSpan={columns.length}>
+                            <div className="py-2 px-2 flex items-center gap-3">
+                                <Filter className="h-5 w-5 text-black dark:text-white" />
+                                <span className="text-black dark:text-white text-base">Filtros</span>
+                            </div>
+                        </TableHead>
+                    </TableRow>
 
                        {/* Linha dos cabeçalhos       <TableRow className="bg-card"> */}
                         <TableRow >
@@ -213,6 +217,8 @@ export function FilterableTable({
                                         <div className="relative">
                                             {column.type === 'select' && column.options ? (
                                                 <Select
+                                                    name={column.key}
+                                                    aria-label={column.label}
                                                     value={filters[column.key] || 'all'}
                                                     onValueChange={(value) => {
                                                         if (value === 'all') {
@@ -238,6 +244,10 @@ export function FilterableTable({
                                                 <>
                                                     <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4" />
                                                     <Input
+                                                        id={`filter-${column.key}`}
+                                                        name={column.key}
+                                                        aria-label={`Filtro ${column.label}`}
+                                                        autoComplete="off"
                                                         type={column.type === 'number' ? 'number' : 'text'}
                                                         min={column.minValue}
                                                         placeholder={column.label === 'Recursos' ? "Buscar por nome..." : "Filtrar..."}

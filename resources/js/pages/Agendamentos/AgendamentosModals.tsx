@@ -293,7 +293,7 @@ export default function AgendamentosModals({
                                         value={formData.titulo}
                                         onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
                                         placeholder="Ex: Reunião de Planejamento"
-                                        className="bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground"
+                                        className="h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground"
                                     />
                                 </div>
 
@@ -310,7 +310,7 @@ export default function AgendamentosModals({
                                             value: espaco.id.toString(),
                                             label: `${espaco.nome} (Cap: ${espaco.capacidade})`
                                         }))}
-                                        triggerClassName="dark:bg-sidebar dark:border-sidebar-border dark:text-sidebar-foreground bg-sidebar border-sidebar-border text-sidebar-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground flex h-9 w-full min-w-0 rounded-md border px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
+                                        triggerClassName="dark:bg-sidebar dark:border-sidebar-border dark:text-sidebar-foreground bg-sidebar border-sidebar-border text-sidebar-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground flex h-10 w-full min-w-0 rounded-md border px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
                                     />
                                 </div>
 
@@ -322,7 +322,7 @@ export default function AgendamentosModals({
                                         type="date"
                                         value={formData.data_inicio}
                                         onChange={(e) => setFormData({ ...formData, data_inicio: e.target.value })}
-                                        className="bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground"
+                                        className="h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground"
                                     />
                                 </div>
 
@@ -334,7 +334,7 @@ export default function AgendamentosModals({
                                         type="time"
                                         value={formData.hora_inicio}
                                         onChange={(e) => setFormData({ ...formData, hora_inicio: e.target.value })}
-                                        className="bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground"
+                                        className="h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground"
                                     />
                                 </div>
 
@@ -347,7 +347,7 @@ export default function AgendamentosModals({
                                         value={formData.data_fim}
                                         onChange={(e) => setFormData({ ...formData, data_fim: e.target.value })}
                                         min={formData.data_inicio}
-                                        className="bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground"
+                                        className="h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground"
                                     />
                                 </div>
 
@@ -364,7 +364,7 @@ export default function AgendamentosModals({
                                                 ? formData.hora_inicio
                                                 : undefined
                                         }
-                                        className="bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground"
+                                        className="h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground"
                                     />
                                 </div>
                             </div>
@@ -414,7 +414,7 @@ export default function AgendamentosModals({
                                             value={formData.tipo_recorrencia}
                                             onValueChange={(value) => setFormData({ ...formData, tipo_recorrencia: value })}
                                         >
-                                            <SelectTrigger id="tipo_recorrencia" className="dark:bg-sidebar dark:border-sidebar-border dark:text-sidebar-foreground bg-sidebar border-sidebar-border text-sidebar-foreground">
+                                            <SelectTrigger id="tipo_recorrencia" className="h-10 dark:bg-sidebar dark:border-sidebar-border dark:text-sidebar-foreground bg-sidebar border-sidebar-border text-sidebar-foreground">
                                                 <SelectValue placeholder="Selecione uma opção" />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -434,7 +434,7 @@ export default function AgendamentosModals({
                                             value={formData.data_fim_recorrencia}
                                             onChange={(e) => setFormData({ ...formData, data_fim_recorrencia: e.target.value })}
                                             min={formData.data_fim}
-                                            className="bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground"
+                                            className="h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground"
                                         />
                                     </div>
                                 </div>

@@ -89,7 +89,7 @@ export default function Password() {
                                 value={data.current_password}
                                 onChange={(e) => setData('current_password', e.target.value)}
                                 type="password"
-                                className="mt-1 block w-full"
+                                className="h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground mt-1 block w-full"
                                 autoComplete="current-password"
                                 placeholder="Senha atual"
                             />
@@ -106,7 +106,7 @@ export default function Password() {
                                 value={data.password}
                                 onChange={(e) => setData('password', e.target.value)}
                                 type="password"
-                                className="mt-1 block w-full"
+                                className="h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground mt-1 block w-full"
                                 autoComplete="new-password"
                                 placeholder="Nova senha"
                             />
@@ -122,7 +122,7 @@ export default function Password() {
                                 value={data.password_confirmation}
                                 onChange={(e) => setData('password_confirmation', e.target.value)}
                                 type="password"
-                                className="mt-1 block w-full"
+                                className="h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground mt-1 block w-full"
                                 autoComplete="new-password"
                                 placeholder="Confirmar senha"
                             />

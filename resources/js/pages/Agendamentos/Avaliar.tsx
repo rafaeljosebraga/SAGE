@@ -960,6 +960,10 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                                 <div className="relative">
                                     <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                                     <Input
+                                        id="nome_agendamento"
+                                        name="nome_agendamento"
+                                        aria-label="Nome do Agendamento"
+                                        autoComplete="off"
                                         placeholder="Buscar por nome..."
                                         value={nomeAgendamentoFilter}
                                         onChange={(e) => setNomeAgendamentoFilter(e.target.value)}
@@ -986,6 +990,8 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                             <div className="min-w-[120px]">
                                 <Label htmlFor="status">Status</Label>
                                 <Select
+                                    name="status"
+                                    aria-label="Status"
                                     value={statusFilter}
                                     onValueChange={(value) => {
                                         setStatusFilter(value);
@@ -1005,7 +1011,7 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                                         }, 100);
                                     }}
                                 >
-                                    <SelectTrigger className="border-input bg-background" >
+                                    <SelectTrigger id="status" className="border-input bg-background" >
                                         <SelectValue placeholder="Status" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -1021,10 +1027,12 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                             <div className="min-w-[140px]">
                                 <Label htmlFor="espaco">Espaço</Label>
                                 <Select
+                                    name="espaco_id"
+                                    aria-label="Espaço"
                                     value={espacoFilter}
                                     onValueChange={(value) => setEspacoFilter(value)}
                                 >
-                                    <SelectTrigger className="border-input bg-background" >
+                                    <SelectTrigger id="espaco" className="border-input bg-background" >
                                         <SelectValue placeholder="Todos os espaços" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -1043,6 +1051,10 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                                 <div className="relative">
                                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                                     <Input
+                                        id="solicitante"
+                                        name="solicitante"
+                                        aria-label="Solicitante"
+                                        autoComplete="off"
                                         placeholder="Nome do solicitante"
                                         value={solicitanteFilter}
                                         onChange={(e) => setSolicitanteFilter(e.target.value)}
@@ -1070,6 +1082,9 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                                 <Label htmlFor="data_inicio">Data Início</Label>
                                 <div className="relative">
                                     <Input
+                                        id="data_inicio"
+                                        name="data_inicio"
+                                        aria-label="Data Início"
                                         type="date"
                                         value={dataInicioFilter}
                                         onChange={(e) => setDataInicioFilter(e.target.value)}
@@ -1098,6 +1113,9 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                                 <Label htmlFor="data_fim">Data Fim</Label>
                                 <div className="relative">
                                     <Input
+                                        id="data_fim"
+                                        name="data_fim"
+                                        aria-label="Data Fim"
                                         type="date"
                                         value={dataFimFilter}
                                         onChange={(e) => setDataFimFilter(e.target.value)}
@@ -1128,7 +1146,7 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                               nomeSortOrder !== 'none' || solicitanteSortOrder !== 'none' || 
                               dataInicioSortOrder !== 'none' || dataFimSortOrder !== 'none') && (
                                 <div className="flex flex-col">
-                                    <Label className="mb-2 opacity-0">Ações</Label>
+                                    <div className="mb-2 opacity-0 text-sm font-medium">Ações</div>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
                                             <Button 
@@ -1421,10 +1439,12 @@ export default function AvaliarAgendamentos({ agendamentos, espacos, estatistica
                                 <Label htmlFor="motivo">Motivo da Rejeição *</Label>
                                 <Textarea
                                     id="motivo"
+                                    name="motivo"
                                     placeholder="Descreva o motivo da rejeição..."
                                     value={rejectionReason}
                                     onChange={(e) => setRejectionReason(e.target.value)}
                                     rows={4}
+                                    className="bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground"
                                 />
                             </div>
                         </div>
