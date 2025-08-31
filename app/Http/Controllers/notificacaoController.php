@@ -8,36 +8,66 @@ use App\Models\Espaco;
 
 class notificacaoController extends Controller
 {
-    //
-    public function notificaUser($user_id, $titulo, $mensagem)
+    public function index($user_id)
     {
+        return inertia('Notificacoes/Index', [
+            'notificacoes' => $this->getUserNotifications($user_id)
+        ]);
+    }
+    //
+    public function notificaUser(Request $request, $user_id)
+    {
+        $titulo = $request->input('titulo');
+        $mensagem = $request->input('mensagem');
         $notificacao = new notificacao();
         $notificacao->user_id = $user_id;
         $notificacao->titulo = $titulo;
         $notificacao->mensagem = $mensagem;
         $notificacao->lida = false;
+        $notificacao->excluido = false;
         $notificacao->save();
-        return $notificacao;
+        return redirect()->back()->with([
+            'success' => 'Notificação enviada com sucesso!',
+            'notificacao' => $notificacao
+        ]);
     }
 
-    public function notificaEspacoManagers($espaco_id, $titulo, $mensagem)
+    public function notificaEspacoManagers($espaco_id, Request $request)
     {
-        $users = espaco::find($espaco_id)->users();
+        $espaco = Espaco::findOrFail($espaco_id);
+        $users = $espaco->users;
+
+        // Get the title and message from the initial request
+        $titulo = $request->input('titulo');
+        $mensagem = $request->input('mensagem');
+
         foreach ($users as $user) {
-            $this->notificaUser($user->id, $titulo, $mensagem);
+            // 1. Create a new Request instance for each notification.
+            //    Populate it with the data that the notificaUser method expects.
+            $notificationRequest = new Request([
+                'titulo'   => $titulo,
+                'mensagem' => $mensagem,
+            ]);
+
+            // 2. Call notificaUser with the new request and the user's ID.
+            //    This now matches the expected signature: (Request, integer).
+            $this->notificaUser($notificationRequest, $user->id);
         }
+
+        return redirect()->back()->with('success', 'Notificações enviadas com sucesso!');
     }
 
     public function markAsRead($notificacao_id)
     {
-        $notificacao = notificacao::find($notificacao_id);
+        $notificacao = Notificacao::find($notificacao_id);
+
         if ($notificacao) {
             $notificacao->lida = true;
             $notificacao->save();
-            return response()->json(['message' => 'Notificação marcada como lida.'], 200);
-        } else {
-            return response()->json(['message' => 'Notificação não encontrada.'], 404);
         }
+
+        // Redireciona de volta e recarrega as notificações
+        return redirect()->back()->with('success', 'Notificação marcada como lida.');
     }
 
     public function getUserNotifications($user_id)
@@ -50,13 +80,13 @@ class notificacaoController extends Controller
 
     public function deleteNotification($notificacao_id)
     {
-        $notificacao = notificacao::find($notificacao_id);
+        $notificacao = Notificacao::find($notificacao_id);
+
         if ($notificacao) {
             $notificacao->excluido = true;
             $notificacao->save();
-            return response()->json(['message' => 'Notificação excluída.'], 200);
-        } else {
-            return response()->json(['message' => 'Notificação não encontrada.'], 404);
         }
+
+        return redirect()->back()->with('success', 'Notificação excluída.');
     }
 }
