@@ -1,101 +1,94 @@
-
 import React, { useState, useEffect } from 'react';
+import { router } from '@inertiajs/react';
 
-const ComponenteNotificacao = ({ ComponenteAcao, idUsuario }) => {
-    const [notificacoes, setNotificacoes] = useState([]);
-    const [carregando, setCarregando] = useState(true);
+const ComponenteNotificacao = ({ComponenteAcao,notificacoes,onReload}) => {
     const [erro, setErro] = useState(null);
 
-    // Buscar notificações do usuário
-    const buscarNotificacoes = async () => {
-        try {
-            const resposta = await fetch(`/api/notificacoes/usuario/${idUsuario}`);
-            const dados = await resposta.json();
-            setNotificacoes(dados);
-            setCarregando(false);
-        } catch (err) {
-            setErro('Falha ao carregar notificações');
-            setCarregando(false);
-        }
+
+    const marcarComoLida = (id) => {
+        router.put(`/notificacoes/${id}/read`, {}, {
+            preserveScroll: true,
+            onSuccess: () => {
+                if (onReload) onReload();}
+        });
     };
 
-    useEffect(() => {
-        buscarNotificacoes();
-    }, [idUsuario]);
-
-    const marcarComoLida = async (id) => {
-        try {
-            await fetch(`/api/notificacoes/marcar-como-lida/${id}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-            setNotificacoes(notificacoes.map(notif =>
-                notif.id === id ? {...notif, lida: true} : notif
-            ));
-        } catch (err) {
-            setErro('Falha ao marcar notificação como lida');
-        }
+    const excluirNotificacao = (id) => {
+        router.delete(`/notificacoes/${id}`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                // pede para o pai recarregar
+                if (onReload) {
+                    onReload();}
+            }
+        });
     };
 
-    const excluirNotificacao = async (id) => {
-        try {
-            await fetch(`/api/notificacoes/excluir/${id}`, {
-                method: 'DELETE',
-            });
-            setNotificacoes(notificacoes.filter(notif => notif.id !== id));
-        } catch (err) {
-            setErro('Falha ao excluir notificação');
-        }
-    };
 
-    if (carregando) return <div>Carregando notificações...</div>;
+
     if (erro) return <div>{erro}</div>;
 
-    return (
-        <div>
-            <h2>Suas Notificações</h2>
+return (
+  <div className="w-full max-w-3xl mx-auto p-6">
+    <h2 className="text-2xl font-bold text-gray-900 mb-6">Suas Notificações</h2>
 
-            {notificacoes.length === 0 ? (
-                <p>Nenhuma notificação para exibir</p>
-            ) : (
-                <div>
-                    {notificacoes.map(notificacao => (
-                        <div key={notificacao.id}>
-                            <div>
-                                <h3>{notificacao.titulo}</h3>
-                                <span>
-                                    {new Date(notificacao.created_at).toLocaleString('pt-BR')}
-                                </span>
-                            </div>
-                            <p>{notificacao.mensagem}</p>
+    {notificacoes.length === 0 ? (
+      <p className="text-gray-500 text-center">Nenhuma notificação para exibir</p>
+    ) : (
+      <div className="space-y-4">
+        {notificacoes.map((notificacao) => (
+          <div
+            key={notificacao.id}
+            className="bg-white shadow-md rounded-2xl border border-gray-200 overflow-hidden"
+          >
+            {/* Cabeçalho */}
+            <div className="flex items-center justify-between bg-gray-100 px-4 py-2 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-800">
+                {notificacao.titulo}
+              </h3>
+              <span className="text-sm text-gray-500">
+                {new Date(notificacao.created_at).toLocaleString("pt-BR")}
+              </span>
+            </div>
 
-                            <div>
-                                {!notificacao.lida && (
-                                    <button onClick={() => marcarComoLida(notificacao.id)}>
-                                        Marcar como Lida
-                                    </button>
-                                )}
-                                <button onClick={() => excluirNotificacao(notificacao.id)}>
-                                    Excluir
-                                </button>
+            {/* Corpo */}
+            <div className="px-4 py-3">
+              <p className="text-gray-700 leading-relaxed">
+                {notificacao.mensagem}
+              </p>
+            </div>
 
-                                {/* Espaço para o componente personalizado */}
-                                {ComponenteAcao && (
-                                    <div>
-                                        <ComponenteAcao notificacao={notificacao} />
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    ))}
+            {/* Ações */}
+            <div className="flex items-center gap-3 px-4 py-3 border-t border-gray-200">
+              {!notificacao.lida && (
+                <button
+                  className="px-3 py-1.5 text-sm font-medium rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition"
+                  onClick={() => marcarComoLida(notificacao.id)}
+                >
+                  Marcar como Lida
+                </button>
+              )}
+              <button
+                className="px-3 py-1.5 text-sm font-medium rounded-lg bg-red-500 text-white hover:bg-red-600 transition"
+                onClick={() => excluirNotificacao(notificacao.id)}
+              >
+                Excluir
+              </button>
+
+              {ComponenteAcao && (
+                <div className="ml-auto">
+                  <ComponenteAcao notificacao={notificacao} />
                 </div>
-            )}
-        </div>
-    );
-};
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+);
 
+}
 // Exemplo de componente personalizado que pode ser passado como prop
 export const ComponenteAcaoExemplo = ({ notificacao }) => {
     return (

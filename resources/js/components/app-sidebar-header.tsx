@@ -5,8 +5,10 @@ import { type BreadcrumbItem as BreadcrumbItemType } from '@/types';
 import { Bell, Moon, Sun } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { NotificationsModal } from '@/components/ui/NotificationsModal';
+import { useAuth } from '@/hooks/use-auth';
 
 export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbItemType[] }) {
+    const auth = useAuth();
     const [theme, setTheme] = useState<'light' | 'dark' | null>(null);
     const [hasInteracted, setHasInteracted] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -51,9 +53,8 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
     // Busca notificações do usuário
     const fetchNotifications = async () => {
         try {
-            // Substitua pelo ID do usuário logado
-            const userId = 1; // Isso deve vir do contexto de autenticação
-            const response = await fetch(`notificacoes/user/${userId}`);
+            const userId = auth.user.id;
+            const response = await fetch(`/notificacoes/user/${userId}`);
             if (response.ok) {
                 const data = await response.json();
                 setNotifications(data);
@@ -139,6 +140,7 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                 isOpen={isNotificationsOpen}
                 onClose={() => setIsNotificationsOpen(false)}
                 notifications={notifications}
+                userID={auth.user.id} // Substitua pelo ID do usuário logado
             />
         </>
     );
