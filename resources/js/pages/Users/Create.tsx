@@ -243,7 +243,6 @@ export default function Create({ perfilAcesso }: Props) {
                                     value={data.password}
                                     onChange={(e) => {
                                         setData('password', e.target.value);
-                                        // Limpa erros de ambos os campos de senha
                                         if (errors.password) clearErrors('password');
                                         if (errors.password_confirmation) clearErrors('password_confirmation');
                                     }}
@@ -269,7 +268,6 @@ export default function Create({ perfilAcesso }: Props) {
                                     value={data.password_confirmation}
                                     onChange={(e) => {
                                         setData('password_confirmation', e.target.value);
-                                        // Limpa erros de ambos os campos de senha
                                         if (errors.password) clearErrors('password');
                                         if (errors.password_confirmation) clearErrors('password_confirmation');
                                     }}
@@ -287,30 +285,34 @@ export default function Create({ perfilAcesso }: Props) {
                              {(errors as any).error && <p className="text-sm text-red-500">{(errors as any).error}</p>}
 
                             <div className="flex gap-4 pt-4">
-                                <Button type="submit" disabled={processing}
-                                className="
+                                <Button 
+                                    type="submit" 
+                                    disabled={processing}
+                                    className="
                                         ml-1
-                                        bg-white dark:bg-white
-                                        text-black dark:text-black
-                                        hover:bg-gray-100 dark:hover:bg-gray-300
+                                        bg-green-700 dark:bg-green-800
+                                        text-white dark:text-white
+                                        hover:bg-green-600 dark:hover:bg-green-700
                                         cursor-pointer 
                                         transition-colors
-                                        border border-black" 
+                                        border-none
+                                    "
                                 >
                                     {processing ? 'Criando...' : 'Criar Usuário'}
                                 </Button>
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild>
                                         <Button
-                                        className="
-                                        bg-black dark:bg-black
-                                        text-white dark:text-white
-                                        hover:bg-gray-800 dark:hover:bg-gray-900
-                                        hover:text-white
-                                        cursor-pointer
-                                        trasition-colors
-                                    "
-                                    >
+                                            className="
+                                                bg-gray-100 dark:bg-gray-800
+                                                text-gray-800 dark:text-gray-100
+                                                hover:bg-orange-100 dark:hover:bg-orange-900
+                                                hover:text-orange-700 dark:hover:text-orange-100
+                                                cursor-pointer
+                                                transition-colors
+                                                border border-gray-300 dark:border-gray-700
+                                            "
+                                        >
                                             Cancelar
                                         </Button>
                                     </AlertDialogTrigger>
@@ -322,16 +324,28 @@ export default function Create({ perfilAcesso }: Props) {
                                             </AlertDialogDescription>
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
-                                            <AlertDialogCancel className='cursor-pointer'>Não</AlertDialogCancel>
+                                            <AlertDialogCancel 
+                                                className="
+                                                    cursor-pointer
+                                                    bg-gray-100 dark:bg-gray-800
+                                                    hover:bg-gray-200 dark:hover:bg-gray-700
+                                                    text-gray-800 dark:text-gray-100
+                                                "
+                                            >
+                                                Não
+                                            </AlertDialogCancel>
                                             <AlertDialogAction
                                                 onClick={() => {
                                                     reset();
                                                 }}
-                                                className="cursor-pointer bg-red-600 hover:bg-red-700"
+                                                className="
+                                                    cursor-pointer 
+                                                    bg-orange-600 hover:bg-orange-700
+                                                    text-white
+                                                "
                                             >
                                                 Sim, cancelar
                                             </AlertDialogAction>
-        
                                         </AlertDialogFooter>
                                     </AlertDialogContent>
                                 </AlertDialog>    
