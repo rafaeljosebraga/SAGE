@@ -19,7 +19,7 @@ import { useToastDismissOnClick } from '@/hooks/use-toast-dismiss-on-click';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, UserPlus } from 'lucide-react';
+import { ArrowLeft, UserPlus, Eye, EyeOff } from 'lucide-react';
 import { FormEvent } from 'react';
 import { FormEventHandler, useState, useEffect, useRef } from 'react';
 
@@ -45,6 +45,8 @@ interface Props {
 export default function Create({ perfilAcesso }: Props) {
     const { toast } = useToast();
     const [formAlterado, setFormAlterado] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     useToastDismissOnClick(); // Hook para dismissar toast ao clicar em botões
     const { data, setData, post, processing, errors, reset, clearErrors } = useForm({
         name: '',
@@ -235,51 +237,73 @@ export default function Create({ perfilAcesso }: Props) {
 
                             <div className="space-y-2">
                                 <Label htmlFor="password">Senha *</Label>
-                                <Input
-                                    id="password"
-                                    name="password"
-                                    type="password"
-                                    autoComplete="new-password"
-                                    value={data.password}
-                                    onChange={(e) => {
-                                        setData('password', e.target.value);
-                                        if (errors.password) clearErrors('password');
-                                        if (errors.password_confirmation) clearErrors('password_confirmation');
-                                    }}
-                                    onCopy={(e) => e.preventDefault()}
-                                    onPaste={(e) => e.preventDefault()}
-                                    onCut={(e) => e.preventDefault()}
-                                    onDrag={(e) => e.preventDefault()}
-                                    onDrop={(e) => e.preventDefault()}
-                                    onContextMenu={(e) => e.preventDefault()}
-                                    placeholder="Digite a senha (mínimo 8 caracteres)"
-                                    className={errors.password ? 'h-10 border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
-                                     />
+                                <div className="relative">
+                                    <Input
+                                        id="password"
+                                        name="password"
+                                        type={showPassword ? 'text' : 'password'}
+                                        autoComplete="new-password"
+                                        value={data.password}
+                                        onChange={(e) => {
+                                            setData('password', e.target.value);
+                                            if (errors.password) clearErrors('password');
+                                            if (errors.password_confirmation) clearErrors('password_confirmation');
+                                        }}
+                                        onCopy={(e) => e.preventDefault()}
+                                        onPaste={(e) => e.preventDefault()}
+                                        onCut={(e) => e.preventDefault()}
+                                        onDrag={(e) => e.preventDefault()}
+                                        onDrop={(e) => e.preventDefault()}
+                                        onContextMenu={(e) => e.preventDefault()}
+                                        placeholder="Digite a senha (mínimo 8 caracteres)"
+                                        className={(errors.password ? 'h-10 border-red-500 ' : 'h-10 ') + 'pr-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
+                                    />
+                                    <button
+                                        type="button"
+                                        aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                                        onClick={() => setShowPassword((v) => !v)}
+                                        className="absolute inset-y-0 right-3 flex items-center text-muted-foreground opacity-50 hover:opacity-100 hover:text-foreground"
+                                        tabIndex={-1}
+                                    >
+                                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                    </button>
+                                </div>
                                 {errors.password && <p className="text-sm text-red-500">{errors.password}</p>}
                             </div>
 
                             <div className="space-y-2">
                                 <Label htmlFor="password_confirmation">Confirmar Senha *</Label>
-                                <Input
-                                    id="password_confirmation"
-                                    name="password_confirmation"
-                                    type="password"
-                                    autoComplete="new-password"
-                                    value={data.password_confirmation}
-                                    onChange={(e) => {
-                                        setData('password_confirmation', e.target.value);
-                                        if (errors.password) clearErrors('password');
-                                        if (errors.password_confirmation) clearErrors('password_confirmation');
-                                    }}
-                                    onCopy={(e) => e.preventDefault()}
-                                    onPaste={(e) => e.preventDefault()}
-                                    onCut={(e) => e.preventDefault()}
-                                    onDrag={(e) => e.preventDefault()}
-                                    onDrop={(e) => e.preventDefault()}
-                                    onContextMenu={(e) => e.preventDefault()}
-                                    placeholder="Confirme a senha"
-                                    className={errors.password_confirmation ? 'h-10 border-red-500 bg-sidebar dark:bg-sidebar text-sidebar-foreground dark:text-sidebar-foreground' : 'h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
-                                       />
+                                <div className="relative">
+                                    <Input
+                                        id="password_confirmation"
+                                        name="password_confirmation"
+                                        type={showConfirmPassword ? 'text' : 'password'}
+                                        autoComplete="new-password"
+                                        value={data.password_confirmation}
+                                        onChange={(e) => {
+                                            setData('password_confirmation', e.target.value);
+                                            if (errors.password) clearErrors('password');
+                                            if (errors.password_confirmation) clearErrors('password_confirmation');
+                                        }}
+                                        onCopy={(e) => e.preventDefault()}
+                                        onPaste={(e) => e.preventDefault()}
+                                        onCut={(e) => e.preventDefault()}
+                                        onDrag={(e) => e.preventDefault()}
+                                        onDrop={(e) => e.preventDefault()}
+                                        onContextMenu={(e) => e.preventDefault()}
+                                        placeholder="Confirme a senha"
+                                        className={(errors.password_confirmation ? 'h-10 border-red-500 ' : 'h-10 ') + 'pr-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground'}
+                                    />
+                                    <button
+                                        type="button"
+                                        aria-label={showConfirmPassword ? 'Ocultar confirmação de senha' : 'Mostrar confirmação de senha'}
+                                        onClick={() => setShowConfirmPassword((v) => !v)}
+                                        className="absolute inset-y-0 right-3 flex items-center text-muted-foreground opacity-50 hover:opacity-100 hover:text-foreground"
+                                        tabIndex={-1}
+                                    >
+                                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                    </button>
+                                </div>
                                 {errors.password_confirmation && <p className="text-sm text-red-500">{errors.password_confirmation}</p>}
                             </div>
                              {(errors as any).error && <p className="text-sm text-red-500">{(errors as any).error}</p>}

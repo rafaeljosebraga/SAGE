@@ -1355,29 +1355,31 @@ export default function GerenciarAgendamentos({
                                                     </div>
                                                 </div>
                                                 <div className="flex gap-2 items-center">
-                                                    {/* Botão de toggle colapso */}
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    toggleCardColapso(grupo.grupo_conflito);
-                                                                }}
-                                                                className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                                            >
-                                                                {(cardsColapsados[grupo.grupo_conflito] ?? true) ? (
-                                                                    <ChevronDown className="h-4 w-4" />
-                                                                ) : (
-                                                                    <ChevronUp className="h-4 w-4" />
-                                                                )}
-                                                            </Button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>{(cardsColapsados[grupo.grupo_conflito] ?? true) ? 'Expandir' : 'Recolher'}</p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
+                                                    {/* Botão de toggle colapso - exibir aqui apenas quando NÃO for resolvidos_hoje */}
+                                                    {tipoConflitoFilter !== 'resolvidos_hoje' && (
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        toggleCardColapso(grupo.grupo_conflito);
+                                                                    }}
+                                                                    className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                                >
+                                                                    {(cardsColapsados[grupo.grupo_conflito] ?? true) ? (
+                                                                        <ChevronDown className="h-4 w-4" />
+                                                                    ) : (
+                                                                        <ChevronUp className="h-4 w-4" />
+                                                                    )}
+                                                                </Button>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>{(cardsColapsados[grupo.grupo_conflito] ?? true) ? 'Expandir' : 'Recolher'}</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    )}
                                                     
                                                     {tipoConflitoFilter !== 'resolvidos_hoje' && (
                                                         <>
@@ -1430,32 +1432,58 @@ export default function GerenciarAgendamentos({
                                                     )}
                                                 </div>
                                                 {tipoConflitoFilter === 'resolvidos_hoje' && (grupo as any).resolvido_por && (
-                                                    <div className="flex flex-col gap-2 px-3 py-2 rounded-lg bg-white/50 dark:bg-gray-800/30">
-                                                        <div className="flex items-center gap-2">
-                                                            <UserAvatar user={(grupo as any).resolvido_por} size="sm" />
-                                                            <div className="flex flex-col">
-                                                                <div className="flex items-center gap-2">
-                                                                    <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
-                                                                        {(grupo as any).resolvido_por.name}
-                                                                    </span>
-                                                                    {(grupo as any).resolvido_por.perfil_acesso && (
-                                                                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${getPerfilColor((grupo as any).resolvido_por.perfil_acesso)}`}>
-                                                                            {formatPerfil((grupo as any).resolvido_por.perfil_acesso)}
+                                                    <div className="flex items-center gap-2">
+                                                        {/* Mover o chevron para ao lado do selo de resolvido (antes dele) */}
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        toggleCardColapso(grupo.grupo_conflito);
+                                                                    }}
+                                                                    className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                                >
+                                                                    {(cardsColapsados[grupo.grupo_conflito] ?? true) ? (
+                                                                        <ChevronDown className="h-4 w-4" />
+                                                                    ) : (
+                                                                        <ChevronUp className="h-4 w-4" />
+                                                                    )}
+                                                                </Button>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>{(cardsColapsados[grupo.grupo_conflito] ?? true) ? 'Expandir' : 'Recolher'}</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+
+                                                        <div className="flex flex-col gap-2 px-3 py-2 rounded-lg bg-white/50 dark:bg-gray-800/30">
+                                                            <div className="flex items-center gap-2">
+                                                                <UserAvatar user={(grupo as any).resolvido_por} size="sm" />
+                                                                <div className="flex flex-col">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                                                                            {(grupo as any).resolvido_por.name}
+                                                                        </span>
+                                                                        {(grupo as any).resolvido_por.perfil_acesso && (
+                                                                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${getPerfilColor((grupo as any).resolvido_por.perfil_acesso)}`}>
+                                                                                {formatPerfil((grupo as any).resolvido_por.perfil_acesso)}
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                    {(grupo as any).resolvido_por.email && (
+                                                                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                                            {(grupo as any).resolvido_por.email}
                                                                         </span>
                                                                     )}
                                                                 </div>
-                                                                {(grupo as any).resolvido_por.email && (
-                                                                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                                        {(grupo as any).resolvido_por.email}
-                                                                    </span>
-                                                                )}
                                                             </div>
+                                                            {(grupo as any).resolvido_em && (
+                                                                <div className="text-xs text-gray-600 dark:text-gray-400 ml-1">
+                                                                    Aprovado {format(new Date((grupo as any).resolvido_em), 'dd/MM/yyyy', { locale: ptBR })} às {format(new Date((grupo as any).resolvido_em), 'HH:mm', { locale: ptBR })}
+                                                                </div>
+                                                            )}
                                                         </div>
-                                                        {(grupo as any).resolvido_em && (
-                                                            <div className="text-xs text-gray-600 dark:text-gray-400 ml-1">
-                                                                Aprovado {format(new Date((grupo as any).resolvido_em), 'dd/MM/yyyy', { locale: ptBR })} às {format(new Date((grupo as any).resolvido_em), 'HH:mm', { locale: ptBR })}
-                                                            </div>
-                                                        )}
                                                     </div>
                                                 )}
                                             </div>
