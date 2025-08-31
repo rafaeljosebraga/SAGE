@@ -1,7 +1,8 @@
 // components/NotificationsModal.jsx
 import { useEffect, useRef } from 'react';
+import {Link} from '@inertiajs/react';
 
-export function NotificationsModal({ isOpen, onClose, notifications}) {
+export function NotificationsModal({ isOpen, onClose, notifications, userID}) {
     const modalRef = useRef(null);
 
     // Fechar o modal ao clicar fora dele
@@ -81,6 +82,9 @@ export function NotificationsModal({ isOpen, onClose, notifications}) {
                             Nenhuma notificação no momento.
                         </div>
                     )}
+                    <div className="p-3 text-center text-sm font-medium hover:underline cursor-pointer">
+                        <Link href = {`/notificacoes/visualizar/${userID}`}>Visualizar Todas as Notificações</Link>
+                    </div>
                 </div>
             </div>
         </div>

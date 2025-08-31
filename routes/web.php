@@ -112,6 +112,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/notificacoes/user/{user_id}', [notificacaoController::class, 'getUserNotifications']);
     Route::put('/notificacoes/{notificacao_id}/read', [notificacaoController::class, 'markAsRead']);
     Route::delete('/notificacoes/{notificacao_id}', [notificacaoController::class, 'deleteNotification']);
+    Route::get('/notificacoes/visualizar/{user_id}', [notificacaoController::class, 'index'])->name('notificacoes.index');
+    Route::post('/notificacoes/user/{user_id}', [notificacaoController::class, 'notificaUser']);
+    Route::post('/notificacoes/espaco/{espaco_id}/managers', [notificacaoController::class, 'notificaEspacoManagers']);
 });
 
 require __DIR__ . '/settings.php';
