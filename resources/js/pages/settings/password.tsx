@@ -4,7 +4,8 @@ import SettingsLayout from '@/layouts/settings/layout';
 import { type BreadcrumbItem } from '@/types';
 import { Transition } from '@headlessui/react';
 import { Head, useForm } from '@inertiajs/react';
-import { FormEventHandler, useRef } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
+import { FormEventHandler, useRef, useState } from 'react';
 
 import HeadingSmall from '@/components/heading-small';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,10 @@ export default function Password() {
     const passwordInput = useRef<HTMLInputElement>(null);
     const currentPasswordInput = useRef<HTMLInputElement>(null);
     const { toast } = useToast();
+
+    const [showCurrent, setShowCurrent] = useState(false);
+    const [showNew, setShowNew] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
 
     const { data, setData, errors, put, reset, processing, recentlySuccessful } = useForm({
         current_password: '',
@@ -83,16 +88,27 @@ export default function Password() {
                         <div className="grid gap-2">
                             <Label htmlFor="current_password">Senha atual</Label>
 
-                            <Input
-                                id="current_password"
-                                ref={currentPasswordInput}
-                                value={data.current_password}
-                                onChange={(e) => setData('current_password', e.target.value)}
-                                type="password"
-                                className="h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground mt-1 block w-full"
-                                autoComplete="current-password"
-                                placeholder="Senha atual"
-                            />
+                            <div className="relative mt-1">
+                                <Input
+                                    id="current_password"
+                                    ref={currentPasswordInput}
+                                    value={data.current_password}
+                                    onChange={(e) => setData('current_password', e.target.value)}
+                                    type={showCurrent ? 'text' : 'password'}
+                                    className="h-10 pr-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground block w-full"
+                                    autoComplete="current-password"
+                                    placeholder="Senha atual"
+                                />
+                                <button
+                                    type="button"
+                                    aria-label={showCurrent ? 'Ocultar senha atual' : 'Mostrar senha atual'}
+                                    onClick={() => setShowCurrent((v) => !v)}
+                                    className="absolute inset-y-0 right-3 flex items-center text-muted-foreground opacity-50 hover:opacity-100 hover:text-foreground"
+                                    tabIndex={-1}
+                                >
+                                    {showCurrent ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </button>
+                            </div>
 
                             <InputError message={errors.current_password} />
                         </div>
@@ -100,16 +116,27 @@ export default function Password() {
                         <div className="grid gap-2">
                             <Label htmlFor="password">Nova senha</Label>
 
-                            <Input
-                                id="password"
-                                ref={passwordInput}
-                                value={data.password}
-                                onChange={(e) => setData('password', e.target.value)}
-                                type="password"
-                                className="h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground mt-1 block w-full"
-                                autoComplete="new-password"
-                                placeholder="Nova senha"
-                            />
+                            <div className="relative mt-1">
+                                <Input
+                                    id="password"
+                                    ref={passwordInput}
+                                    value={data.password}
+                                    onChange={(e) => setData('password', e.target.value)}
+                                    type={showNew ? 'text' : 'password'}
+                                    className="h-10 pr-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground block w-full"
+                                    autoComplete="new-password"
+                                    placeholder="Nova senha"
+                                />
+                                <button
+                                    type="button"
+                                    aria-label={showNew ? 'Ocultar nova senha' : 'Mostrar nova senha'}
+                                    onClick={() => setShowNew((v) => !v)}
+                                    className="absolute inset-y-0 right-3 flex items-center text-muted-foreground opacity-50 hover:opacity-100 hover:text-foreground"
+                                    tabIndex={-1}
+                                >
+                                    {showNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </button>
+                            </div>
 
                             <InputError message={errors.password} />
                         </div>
@@ -117,15 +144,26 @@ export default function Password() {
                         <div className="grid gap-2">
                             <Label htmlFor="password_confirmation">Confirmar senha</Label>
 
-                            <Input
-                                id="password_confirmation"
-                                value={data.password_confirmation}
-                                onChange={(e) => setData('password_confirmation', e.target.value)}
-                                type="password"
-                                className="h-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground mt-1 block w-full"
-                                autoComplete="new-password"
-                                placeholder="Confirmar senha"
-                            />
+                            <div className="relative mt-1">
+                                <Input
+                                    id="password_confirmation"
+                                    value={data.password_confirmation}
+                                    onChange={(e) => setData('password_confirmation', e.target.value)}
+                                    type={showConfirm ? 'text' : 'password'}
+                                    className="h-10 pr-10 bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground block w-full"
+                                    autoComplete="new-password"
+                                    placeholder="Confirmar senha"
+                                />
+                                <button
+                                    type="button"
+                                    aria-label={showConfirm ? 'Ocultar confirmação de senha' : 'Mostrar confirmação de senha'}
+                                    onClick={() => setShowConfirm((v) => !v)}
+                                    className="absolute inset-y-0 right-3 flex items-center text-muted-foreground opacity-50 hover:opacity-100 hover:text-foreground"
+                                    tabIndex={-1}
+                                >
+                                    {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </button>
+                            </div>
 
                             <InputError message={errors.password_confirmation} />
                         </div>

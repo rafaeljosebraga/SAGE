@@ -288,7 +288,7 @@ export function ModalDetalhesUsuario({ isOpen, onClose, usuario, espacos }: Moda
                 {/* Conteúdo */}
                 <div className="p-6 overflow-y-auto flex-1 space-y-6">
                     {/* Dados do Usuário */}
-                    <div className="bg-muted/50 dark:bg-gray-800/80 p-6 rounded-lg border border-border dark:border-gray-600">
+                    <div className="p-6 rounded-lg border bg-sidebar dark:bg-sidebar border-sidebar-border dark:border-sidebar-border text-sidebar-foreground dark:text-sidebar-foreground">
                         <div className="flex items-start gap-4">
                             <UserAvatar user={usuario as User} size="lg" />
                             <div className="flex-1">
