@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\notificacao;
 use App\Models\Espaco;
+use App\Models\decoNotificacao;
 
 class notificacaoController extends Controller
 {
