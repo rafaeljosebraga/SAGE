@@ -307,8 +307,8 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos, flas
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Editar Espaço - ${espaco.nome}`} />
-
-            <div className="space-y-6">
+            
+            <div className="space-y-6 p-4"> {/* Add padding to main container */}
                 <div className="flex items-center gap-4">
                     {formAlterado ? (
                     <AlertDialog>
@@ -584,105 +584,109 @@ export default function EspacosEdit({ auth, espaco, localizacoes, recursos, flas
                             })()}
                         </CardContent>
                     </Card>
-                </form>
 
-                {/* Seção de Fotos - Separada do formulário - OBRIGATÓRIA */}
-                <Card 
-                    id="painel-fotos"
-                    className={errors.fotos ? 'border-red-500' : ''}
-                    data-testid="fotos-card"
-                >
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            Fotos do Espaço *
-                            {(!fotosAtuais || fotosAtuais.length === 0) && (
-                                <span className="text-sm font-normal text-red-500">
-                                    (Obrigatório - mínimo 1 foto)
-                                </span>
-                            )}
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <PhotoUpload
-                            espacoId={espaco.id}
-                            fotos={espaco.fotos || []}
-                            maxFiles={10}
-                            maxFileSize={5}
-                            onFotosChange={handleFotosChange}
-                        />
-                        {errors.fotos && (
-                            <p className="text-sm text-red-500 mt-2">{errors.fotos}</p>
-                        )}
-                    </CardContent>
-                </Card>
-
-                {/* Botões de Ação - No final, igual ao Create */}
-                <div className="flex items-center gap-4">
-                    <Button
-                        type="button"
-                        disabled={processing}
-                        onClick={submit}
-                        className="
-                                ml-1
-                                bg-white dark:bg-white
-                                text-black dark:text-black
-                                hover:bg-gray-100 dark:hover:bg-gray-300
-                                cursor-pointer 
-                                transition-colors" 
+                    {/* Seção de Fotos - Separada do formulário - OBRIGATÓRIA */}
+                    <Card 
+                        id="painel-fotos"
+                        className={errors.fotos ? 'border-red-500' : ''}
+                        data-testid="fotos-card"
                     >
-                        <Save className="mr-2 h-4 w-4" />
-                        {processing ? 'Salvando...' : 'Salvar Alterações'}
-                    </Button>
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button
-                            type="button"
-                            variant="outline"
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                Fotos do Espaço *
+                                {(!fotosAtuais || fotosAtuais.length === 0) && (
+                                    <span className="text-sm font-normal text-red-500">
+                                        (Obrigatório - mínimo 1 foto)
+                                    </span>
+                                )}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <PhotoUpload
+                                espacoId={espaco.id}
+                                fotos={espaco.fotos || []}
+                                maxFiles={10}
+                                maxFileSize={5}
+                                onFotosChange={handleFotosChange}
+                            />
+                            {errors.fotos && (
+                                <p className="text-sm text-red-500 mt-2">{errors.fotos}</p>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    <div className="flex items-center justify-end gap-4 mt-6">
+                        <Button
+                            type="submit"
                             disabled={processing}
                             className="
-                                        bg-black dark:bg-black
-                                        text-white dark:text-white
-                                        hover:bg-gray-800 dark:hover:bg-gray-900
-                                        hover:text-white
+                                ml-1
+                                bg-green-700 dark:bg-green-800
+                                text-white dark:text-white
+                                hover:bg-green-600 dark:hover:bg-green-700
+                                cursor-pointer 
+                                transition-colors
+                                border-none
+                                gap-2
+                                disabled:opacity-50
+                                disabled:cursor-not-allowed
+                            "
+                        >
+                            <Save className="mr-2 h-4 w-4" />
+                            {processing ? 'Salvando...' : 'Salvar Alterações'}
+                        </Button>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button
+                                type="button"
+                                variant="outline"
+                                disabled={processing}
+                                className="
+                                        bg-gray-100 dark:bg-gray-800
+                                        text-gray-800 dark:text-gray-100
+                                        hover:bg-orange-100 dark:hover:bg-orange-900
+                                        hover:text-orange-700 dark:hover:text-orange-100
                                         cursor-pointer
-                                        trasition-colors
+                                        transition-colors
+                                        border border-gray-300 dark:border-gray-700
                                     "
-                            >
-                            Cancelar
-                            </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                            <AlertDialogTitle>Tem certeza que deseja cancelar?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Todas as alterações feitas serão descartadas. O formulário voltará ao estado original.
-                            </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                            <AlertDialogCancel className="cursor-pointer">Não</AlertDialogCancel>
-                            <AlertDialogAction
-                                onClick={() => {
-                                setData({
-                                    nome: espaco.nome || '',
-                                    descricao: espaco.descricao || '',
-                                    capacidade: espaco.capacidade?.toString() || '',
-                                    localizacao_id: espaco.localizacao_id?.toString() || '',
-                                    status: espaco.status || 'ativo',
-                                    disponivel_reserva: espaco.disponivel_reserva || false,
-                                    recursos: espaco.recursos?.map(r => r.id) || [],
-                                    fotos: ''
-                                });
-                                setFotosAtuais(espaco.fotos || []);
-                                clearErrors();
-                                }}
-                                className="cursor-pointer bg-red-600 hover:bg-red-700"
-                            >
-                                Sim, cancelar
-                            </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                        </AlertDialog>
-                </div>
+                                >
+                                Cancelar
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                <AlertDialogTitle>Tem certeza que deseja cancelar?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Todas as alterações feitas serão descartadas. O formulário voltará ao estado original.
+                                </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                <AlertDialogCancel className="cursor-pointer">Não</AlertDialogCancel>
+                                <AlertDialogAction
+                                    onClick={() => {
+                                    setData({
+                                        nome: espaco.nome || '',
+                                        descricao: espaco.descricao || '',
+                                        capacidade: espaco.capacidade?.toString() || '',
+                                        localizacao_id: espaco.localizacao_id?.toString() || '',
+                                        status: espaco.status || 'ativo',
+                                        disponivel_reserva: espaco.disponivel_reserva || false,
+                                        recursos: espaco.recursos?.map(r => r.id) || [],
+                                        fotos: ''
+                                    });
+                                    setFotosAtuais(espaco.fotos || []);
+                                    clearErrors();
+                                    }}
+                                    className="cursor-pointer bg-red-600 hover:bg-red-700"
+                                >
+                                    Sim, cancelar
+                                </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                            </AlertDialog>
+                    </div>
+                </form>
             </div>
         </AppLayout>
     );

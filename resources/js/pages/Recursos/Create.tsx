@@ -178,7 +178,7 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                      <h1 className="text-3xl font-bold text-black dark:text-white">Novo Recurso</h1>
                 </div>
 
-                <form onSubmit={submit} className="space-y-6">
+                <form onSubmit={submit} className="space-y-6 px-4 pb-4">
                     <Card>
                         <CardHeader>
                             <CardTitle>Informações Básicas</CardTitle>
@@ -330,24 +330,39 @@ export default function RecursosCreate({ auth }: RecursosCreateProps) {
                         </CardContent>
                     </Card>
 
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center justify-end gap-4 pr-4">
                         <Button
                             type="submit"
                             disabled={processing}
                             className="
                                 ml-1
-                                bg-white dark:bg-white 
-                                text-black dark:text-black 
-                                hover:bg-gray-100 dark:hover:bg-gray-200 
+                                bg-green-700 dark:bg-green-800
+                                text-white dark:text-white
+                                hover:bg-green-600 dark:hover:bg-green-700
                                 cursor-pointer 
-                                transition-colors" 
+                                transition-colors
+                                border-none
+                                gap-2
+                                disabled:opacity-50
+                                disabled:cursor-not-allowed
+                            "
                         >
-                            <Save className="mr-2 h-4 w-4" />
+                            <Save className="h-4 w-4" />
                             {processing ? 'Salvando...' : 'Salvar Recurso'}
                         </Button>
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
-                                <Button className="cursor-pointer">
+                                <Button 
+                                    className="
+                                        bg-gray-100 dark:bg-gray-800
+                                        text-gray-800 dark:text-gray-100
+                                        hover:bg-orange-100 dark:hover:bg-orange-900
+                                        hover:text-orange-700 dark:hover:text-orange-100
+                                        cursor-pointer
+                                        transition-colors
+                                        border border-gray-300 dark:border-gray-700
+                                    "
+                                >
                                     Cancelar
                                 </Button>
                             </AlertDialogTrigger>

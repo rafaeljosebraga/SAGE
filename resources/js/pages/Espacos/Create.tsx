@@ -330,7 +330,7 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Criar Espaço" />
 
-            <div className="space-y-6">
+            <div className="space-y-6 p-4">
                 <div className="flex items-center gap-4">
                     {formAlterado ? (
                         <AlertDialog>
@@ -578,35 +578,38 @@ export default function EspacosCreate({ auth, localizacoes, recursos }: EspacosC
                     </Card>
 
                     {/* Botões de Ação */}
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center justify-end gap-4 mt-6">
                         <Button
-                            type="button"
-                            disabled={isSubmitting || processing}
-                            onClick={handleSubmitClick}
+                            type="submit"
+                            disabled={processing}
                             className="
                                 ml-1
-                                bg-white dark:bg-white
-                                text-black dark:text-black
-                                hover:bg-gray-100 dark:hover:bg-gray-300
+                                bg-green-700 dark:bg-green-800
+                                text-white dark:text-white
+                                hover:bg-green-600 dark:hover:bg-green-700
                                 cursor-pointer 
-                                transition-colors" 
+                                transition-colors
+                                border-none
+                                gap-2
+                                disabled:opacity-50
+                                disabled:cursor-not-allowed
+                            "
                         >
                             <Save className="mr-2 h-4 w-4" />
-                            {(isSubmitting || processing) ? 'Salvando...' : 'Salvar Espaço'}
+                            {processing ? 'Salvando...' : 'Salvar Espaço'}
                         </Button>
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
                                 <Button
                                     type="button"
-                                    variant="outline"
-                                    disabled={isSubmitting || processing}
                                     className="
-                                        bg-black dark:bg-black
-                                        text-white dark:text-white
-                                        hover:bg-gray-800 dark:hover:bg-gray-900
-                                        hover:text-white
+                                        bg-gray-100 dark:bg-gray-800
+                                        text-gray-800 dark:text-gray-100
+                                        hover:bg-orange-100 dark:hover:bg-orange-900
+                                        hover:text-orange-700 dark:hover:text-orange-100
                                         cursor-pointer
-                                        trasition-colors
+                                        transition-colors
+                                        border border-gray-300 dark:border-gray-700
                                     "
                                 >
                                     Cancelar

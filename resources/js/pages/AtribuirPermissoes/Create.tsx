@@ -613,7 +613,18 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
                                             <Button
                                                 type="submit"
                                                 disabled={processing || (selectedEspacos.length === 0 && disposedEspacos.length === 0) || !selectedUserId}
-                                                className="gap-2 cursor-pointer"
+                                                className="
+                                                    ml-1
+                                                    bg-green-700 dark:bg-green-800
+                                                    text-white dark:text-white
+                                                    hover:bg-green-600 dark:hover:bg-green-700
+                                                    cursor-pointer 
+                                                    transition-colors
+                                                    border-none
+                                                    gap-2
+                                                    disabled:opacity-50
+                                                    disabled:cursor-not-allowed
+                                                "
                                             >
                                                 <Save className="h-4 w-4" />
                                                 {processing ? 'Salvando...' : 'Salvar Permissões'}
@@ -725,7 +736,7 @@ export default function Create({espacos,usID, espacosAtribuidos}: AtribuirPermis
                                     return responsaveis.length > 0 ? (
                                         <div className="mt-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                             {responsaveis.map((responsavel, index) => (
-                                                <div key={responsavel.id} className="bg-background/50 p-3 rounded-md border border-border">
+                                                <div key={responsavel.id} className="bg-background/50 p-3 rounded-md border border-border dark:border-gray-500">
                                                     <div className="flex items-start gap-2">
                                                         <UserAvatar user={responsavel} size="md" />
                                                         <div className="flex-1 min-w-0">
